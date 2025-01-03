@@ -1,7 +1,11 @@
 # RonApi & RonAi Core
+This project aims to add Ai opponents to the Reign of Nether mod.
+- [Curse Forge page](https://www.curseforge.com/minecraft/mc-mods/reign-of-nether-rts-in-minecraft)
+- [Github repository](https://github.com/SoLegendary/reignofnether)
+
 This project consists of:
 - An abstraction layer to manipulate the Reign of Nether codebase like a pure RTS solution instead of a minecraft mod (RonApi add-on)
-- An RTS AI framework, fine-tuned for Reign of Nether data, build on top of the RonApi (RoNAi add-on)
+- An RTS AI framework, fine-tuned for Reign of Nether data, build on top of the RonApi (RoNAi Core add-on)
   - In case of drastic changes to the RoN codebase, only the RonApi will need to be updated to accommodate changes
 
 ## RonApi features
@@ -17,7 +21,7 @@ This project consists of:
 ## RonAi Core features
 ### Creating and registering a new Ai script
 - Extending IAiLogic class to define the Priorities and parameters of the Ai
-  - [x] Name must be unique as it is used to display the script for users to select when spawning bots (TODO)
+  - [x] Name must be unique as it is used to display the script for users to select when spawning bots
   - [x] Unit priorities indicate in which order units should be created
   - [x] Building priorities indicate in which order structures must be built
   - [ ] Research priorities indicate when researches need to be done
@@ -34,7 +38,7 @@ This project consists of:
   - [x] Automatically select a location around the capitol to build structures
     - [ ] Allow structures to be built on to specific locations (Main, Farms, Woodline, Ore, Proxy...)
     - [x] Bug: Ai buildings sometimes clip into each others
-    - [ ] Bug: buildings are too far apart and the spiral becomes exponentially bigger
+    - [X] Bug: buildings are too far apart and the spiral becomes exponentially bigger
   - [ ] Build Stockpiles/Portals near distant resources
   - [ ] Build multiple Capitols
   - [x] Automatically select workers for construction projects
