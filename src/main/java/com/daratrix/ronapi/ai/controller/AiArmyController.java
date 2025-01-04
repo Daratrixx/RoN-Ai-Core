@@ -73,8 +73,12 @@ public class AiArmyController {
             return;
         }
 
+        float x = target.getX();
+        float y = target.getY();
+        float z = target.getZ();
+
         for (IUnit u : group) {
-            u.issueAttackOrder(target.getX(), target.getY(), target.getZ());
+            u.issueAttackOrder(x, y, z);
         }
     }
 
@@ -83,11 +87,19 @@ public class AiArmyController {
             return;
         }
 
+        float x = target.getX();
+        float y = target.getY();
+        float z = target.getZ();
+        int strictDistance = 10 * 10; // squared
+        int softDistance = 5 * 5; // squared
+
         for (IUnit u : group) {
-            if (GeometryUtils.isWithinDistance(u, target, 10)) {
-                u.issueAttackOrder(target.getX(), target.getY(), target.getZ());
-            } else {
-                u.issueMoveOrder(target.getX(), target.getY(), target.getZ());
+            var d = GeometryUtils.distanceSquared(u, target);
+            // if very far force move, if kinda close attack move, if close do nothing
+            if (d > strictDistance) {
+                u.issueMoveOrder(x, y, z);
+            } else if (d > softDistance) {
+                u.issueAttackOrder(x, y, z);
             }
         }
     }

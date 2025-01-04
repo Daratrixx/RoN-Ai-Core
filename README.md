@@ -58,6 +58,7 @@ This project consists of:
     - [ ] Bug: reassigned workers sometimes do not switch tasks
 - 20% Army management
   - [X] Army gather point
+    - [X] Bug: Army gather point is sometimes on the wrong side of the base
   - [X] Attack
     - [X] Select an attack target and send a group to attack
     - [ ] Attack group staging point

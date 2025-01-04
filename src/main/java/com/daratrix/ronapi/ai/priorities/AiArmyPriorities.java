@@ -47,19 +47,25 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
         var dZ = GeometryUtils.distanceZ(base, Vec3i.ZERO);
 
         if (dX > 0) {
-            this.defaultGatherPoint.setX(base.getMaxX());
-        } else if (dX < 0) {
-            this.defaultGatherPoint.setX(base.getMinX());
+            var x = base.getX();
+            if (x > 0) {
+                this.defaultGatherPoint.setX(base.getMinX() + 15);
+            } else {
+                this.defaultGatherPoint.setX(base.getMaxX() - 15);
+            }
         } else {
-            this.defaultGatherPoint.setX(0);
+            this.defaultGatherPoint.setX(Math.min(Math.max(0, base.getMinX() + 15), base.getMaxX() - 15));
         }
 
         if (dZ > 0) {
-            this.defaultGatherPoint.setZ(base.getMaxZ());
-        } else if (dZ < 0) {
-            this.defaultGatherPoint.setZ(base.getMinZ());
+            var z = base.getZ();
+            if (z > 0) {
+                this.defaultGatherPoint.setZ(base.getMinZ() + 15);
+            } else {
+                this.defaultGatherPoint.setZ(base.getMaxZ() - 15);
+            }
         } else {
-            this.defaultGatherPoint.setZ(0);
+            this.defaultGatherPoint.setZ(Math.min(Math.max(0, base.getMinZ() + 15), base.getMaxZ() - 15));
         }
 
         // adjust to terrain height
@@ -79,7 +85,7 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
     public void setAttackTarget(IPlayer player) {
         var armyPop = player.getArmyPop();
         var workerPop = player.getWorkerPop();
-        if(armyPop * 2 < workerPop) {
+        if (armyPop * 2 < workerPop) {
             this.armyTarget = null;
             return; // army is too small, shouldn't try to attack
         }
