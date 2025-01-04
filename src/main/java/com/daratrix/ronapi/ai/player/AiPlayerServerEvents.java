@@ -29,40 +29,38 @@ public class AiPlayerServerEvents {
         PlayerServerEvents.startRTSBot(aiPlayerName, pos, faction);
         var rtsPlayer = PlayerServerEvents.rtsPlayers.stream().filter(p -> p.id == id).findFirst().get();
         System.out.println("Creating new AI agent " + rtsPlayer.name);
-        var aiPlayer = createAiPlayer(rtsPlayer, name);
-        WorldApi.getSingleton().track(aiPlayer);
+        var controller = createAiPlayer(rtsPlayer, name);
+        WorldApi.getSingleton().track((AiPlayer) controller.player);
 
-        // extra resources for faster development
-        //ResourcesServerEvents.addSubtractResources(new Resources(rtsPlayer.name, 25000, 25000, 25000));
+        if (controller.logic.useGreedisgood()) {
+            // extra resources for faster development
+            ResourcesServerEvents.addSubtractResources(new Resources(rtsPlayer.name, 25000, 25000, 25000));
+        }
     }
 
     public static AiPlayer restoreAiPlayer(RTSPlayer rtsPlayer) {
         System.out.println("Restoring AI agent " + rtsPlayer.name);
         var logicName = rtsPlayer.name.substring(0, rtsPlayer.name.lastIndexOf("-"));
-        return createAiPlayer(rtsPlayer, logicName);
+        return (AiPlayer) createAiPlayer(rtsPlayer, logicName).player;
     }
 
-    public static AiPlayer createAiPlayer(RTSPlayer rtsPlayer, String logicName) {
+    public static AiController createAiPlayer(RTSPlayer rtsPlayer, String logicName) {
         var aiPlayer = new AiPlayer(rtsPlayer);
-        startAiController(aiPlayer, logicName);
+        var controller = startAiController(aiPlayer, logicName);
 
-        // warpten for faster development
-        ResearchServerEvents.addCheat(rtsPlayer.name, "warpten");
-        ResearchClientboundPacket.addCheat(rtsPlayer.name, "warpten");
+        if (controller.logic.useWarpten()) {
+            // warpten for faster development
+            ResearchServerEvents.addCheat(rtsPlayer.name, "warpten");
+            ResearchClientboundPacket.addCheat(rtsPlayer.name, "warpten");
+        }
 
-        return aiPlayer;
+        return controller;
     }
 
-    public static void startAiController(IAiPlayer aiPlayer, String logicName) {
+    public static AiController startAiController(IAiPlayer aiPlayer, String logicName) {
         System.out.println("Creating AI controller using logic " + logicName);
         var logic = AiLogics.get(logicName);
-        var controller = new AiController(aiPlayer, logic);
-        TimerServerEvents.queueTimer(1, (x) -> {
-            //WorldApi.updateWorld(x);
-            //controller.runAiUpdatePriorities(x);
-            //controller.runAiProduceBuildings(x);
-            //controller.runAiHarvesting(x);
-        });
+        return new AiController(aiPlayer, logic);
     }
 
     public static int getNextBotId() {

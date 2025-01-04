@@ -24,6 +24,11 @@ public class AiController {
 
     public static final Map<String, AiController> controllers = new HashMap<>();
 
+    public static void reset() {
+        AiController.controllers.values().forEach(AiController::cleanup);
+        AiController.controllers.clear();
+    }
+
     public final IAiPlayer player;
     public final IAiLogic logic;
     public final AiArmyController armyController;

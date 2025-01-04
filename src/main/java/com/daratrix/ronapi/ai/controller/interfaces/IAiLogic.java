@@ -70,4 +70,12 @@ public interface IAiLogic {
 
         return (int) 1 + player.countDone(this.getWorkerTypeId()) / 8;
     }
+
+    default boolean useWarpten() {
+        return true;
+    }
+
+    default boolean useGreedisgood() {
+        return true;
+    }
 }

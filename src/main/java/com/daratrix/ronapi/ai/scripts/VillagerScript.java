@@ -135,4 +135,14 @@ public class VillagerScript implements IAiLogic {
         this.setUnitPriorities(player, priorities.getUnitPriorities());
         this.setArmyPriorities(player, priorities.getArmyPriorities());
     }
+
+    @Override
+    public boolean useWarpten() {
+        return true;
+    }
+
+    @Override
+    public boolean useGreedisgood() {
+        return true;
+    }
 }

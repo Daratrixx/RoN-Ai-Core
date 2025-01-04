@@ -48,13 +48,8 @@ public class AiServerEvent {
                 }
                 break;
         }
-        aiTickIndex = (aiTickIndex + 1) % 4;
-    }
 
-    public static void cleanupControllers() {
-        AiController.controllers.values().forEach(AiController::cleanup);
-        AiController.controllers.clear();
-        TimerServerEvents.destroyTimer(aiTickTimer);
+        aiTickIndex = (aiTickIndex + 1) % 4;
     }
 
     @SubscribeEvent
@@ -66,8 +61,8 @@ public class AiServerEvent {
 
     @SubscribeEvent
     public static void onServerClosing(ServerStoppingEvent evt) {
-        cleanupControllers();
+        AiController.reset();
+        TimerServerEvents.destroyTimer(aiTickTimer);
         System.out.println("Removed existing Ai controllers and timer");
     }
-
 }
