@@ -5,6 +5,7 @@ import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.ai.priorities.AiArmyPriorities;
 import com.daratrix.ronapi.models.interfaces.ILocated;
 import com.daratrix.ronapi.models.interfaces.IUnit;
+import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import net.minecraft.core.BlockPos;
 
@@ -12,9 +13,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class AiArmyController {
-
     public final IAiPlayer player;
     public final IAiLogic logic;
+    public final FileLogger logger;
 
     public final ArrayList<IUnit> army = new ArrayList<>();
     public final ArrayList<IUnit> idleArmy = new ArrayList<>();
@@ -22,9 +23,10 @@ public class AiArmyController {
     public final ArrayList<IUnit> attackGroup = new ArrayList<>();
     public final ArrayList<IUnit> harassGroup = new ArrayList<>();
 
-    public AiArmyController(IAiPlayer player, IAiLogic logic) {
+    public AiArmyController(IAiPlayer player, IAiLogic logic, FileLogger logger) {
         this.player = player;
         this.logic = logic;
+        this.logger = logger;
     }
 
     public String getArmyListName(IUnit unit) {

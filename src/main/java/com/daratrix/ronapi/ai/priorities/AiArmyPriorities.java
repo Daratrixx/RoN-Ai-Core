@@ -3,18 +3,24 @@ package com.daratrix.ronapi.ai.priorities;
 import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.interfaces.ILocated;
 import com.daratrix.ronapi.models.interfaces.IPlayer;
+import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 
 public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiArmyPriority> {
 
+    public final FileLogger logger;
     public BlockPos.MutableBlockPos defaultGatherPoint = new BlockPos.MutableBlockPos();
 
     public ILocated armyTarget = null;
     public BlockPos.MutableBlockPos armyGatherPoint = new BlockPos.MutableBlockPos();
     public ILocated harassTarget = null;
     public BlockPos.MutableBlockPos harassGatherPoint = new BlockPos.MutableBlockPos();
+
+    public AiArmyPriorities(FileLogger logger) {
+        this.logger = logger;
+    }
 
 
     @Override

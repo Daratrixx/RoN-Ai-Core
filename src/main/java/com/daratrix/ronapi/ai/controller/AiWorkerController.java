@@ -1,33 +1,22 @@
 package com.daratrix.ronapi.ai.controller;
 
-import com.daratrix.ronapi.ai.AiDependencies;
-import com.daratrix.ronapi.ai.controller.interfaces.IAiControllerPriorities;
 import com.daratrix.ronapi.ai.controller.interfaces.IAiLogic;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.ai.priorities.AiHarvestPriorities;
-import com.daratrix.ronapi.apis.BuildingApi;
 import com.daratrix.ronapi.apis.TypeIds;
-import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.ApiResource;
-import com.daratrix.ronapi.models.interfaces.IBuilding;
 import com.daratrix.ronapi.models.interfaces.IUnit;
-import com.daratrix.ronapi.utils.GeometryUtils;
+import com.daratrix.ronapi.utils.FileLogger;
 import com.solegendary.reignofnether.building.Building;
-import com.solegendary.reignofnether.resources.ResourceSources;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.AABB;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class AiWorkerController {
-
-    public static final Map<String, AiWorkerController> controllers = new HashMap<>();
-
     public final IAiPlayer player;
     public final IAiLogic logic;
+    public final FileLogger logger;
 
     public final ArrayList<IUnit> workers = new ArrayList<>();
     public final ArrayList<IUnit> huntWorkers = new ArrayList<>();
@@ -39,8 +28,8 @@ public class AiWorkerController {
     public final ArrayList<IUnit> idleWorkers = new ArrayList<>();
     public final HashMap<Integer, ArrayList<IUnit>> workerTracker = new HashMap<>();
 
-    public AiWorkerController(IAiPlayer player, IAiLogic logic) {
-        controllers.put(player.getName(), this);
+    public AiWorkerController(IAiPlayer player, IAiLogic logic, FileLogger logger) {
+        this.logger = logger;
         this.player = player;
         this.logic = logic;
 
@@ -231,7 +220,7 @@ public class AiWorkerController {
 
         var targetResource = resources.stream().filter(r -> r.getTypeId() == taskId).findFirst().orElse(null);
         if (targetResource == null) {
-            System.out.println("No " + TypeIds.toItemName(taskId) + " target");
+            this.logger.log("No " + TypeIds.toItemName(taskId) + " target");
             return;
         }
 

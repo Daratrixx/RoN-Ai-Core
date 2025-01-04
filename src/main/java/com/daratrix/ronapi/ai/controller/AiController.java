@@ -9,6 +9,7 @@ import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.interfaces.IBuilding;
 import com.daratrix.ronapi.models.interfaces.IUnit;
+import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.resources.ResourceSources;
@@ -29,6 +30,7 @@ public class AiController {
         AiController.controllers.clear();
     }
 
+    public final FileLogger logger;
     public final IAiPlayer player;
     public final IAiLogic logic;
     public final AiArmyController armyController;
@@ -38,12 +40,13 @@ public class AiController {
     private IBuilding capitol = null;
 
     public AiController(IAiPlayer player, IAiLogic logic) {
-        controllers.put(player.getName(), this);
+        this.logger = new FileLogger("logs/Ron-Ai/" + player.getName() + ".ai.log");
         this.player = player;
         this.logic = logic;
-        this.armyController = new AiArmyController(player, logic);
-        this.workerController = new AiWorkerController(player, logic);
-        this.priorities = new AiControllerPriorities();
+        this.armyController = new AiArmyController(player, logic, this.logger);
+        this.workerController = new AiWorkerController(player, logic, this.logger);
+        this.priorities = new AiControllerPriorities(this.logger);
+        AiController.controllers.put(player.getName(), this);
     }
 
     public String getWorkerListName(IUnit unit) {
@@ -106,7 +109,7 @@ public class AiController {
         var busyFarms = this.workerController.farmWorkers.stream().map(u -> u.getCurrentOrderTarget() instanceof Building b ? b : null).filter(Objects::nonNull).collect(Collectors.toCollection(ArrayList::new));
         var idleFarms = new ArrayList<Building>(finishedFarms);
         idleFarms.removeAll(busyFarms);
-        System.out.println("- FARMS: " + finishedFarms.size() + " finishedFarms/" + busyFarms.size() + " busyFarms/" + idleFarms.size() + " idleFarms");
+        this.logger.log("- FARMS: " + finishedFarms.size() + " finishedFarms/" + busyFarms.size() + " busyFarms/" + idleFarms.size() + " idleFarms");
 
         var animalDetectionBox = new AABB(this.capitol.getX() - 120, this.capitol.getY() - 20, this.capitol.getZ() - 120,
                 this.capitol.getX() + 120, this.capitol.getY() + 20, this.capitol.getZ() + 120);
@@ -128,12 +131,12 @@ public class AiController {
         var resources = WorldApi.getSingleton().resources.values().stream().distinct().filter(r -> r.getAmount() > 0).collect(Collectors.toCollection(ArrayList::new));
         resources.sort((a, b) -> GeometryUtils.distanceComparator(a, b, this.capitol));
 
-        System.out.println(this.player.getName() + " current worker assignment (total: " + this.workerController.workers.size() + " workers)");
-        System.out.println("- foodWorkers: " + (this.workerController.huntWorkers.size() + this.workerController.foodBlockWorkers.size() + this.workerController.farmWorkers.size()) + "(" + this.workerController.huntWorkers.size() + " hunts/" + this.workerController.foodBlockWorkers.size() + " blocks/" + this.workerController.farmWorkers.size() + " farms)");
-        System.out.println("- woodWorkers: " + this.workerController.woodWorkers.size());
-        System.out.println("- oreWorkers: " + this.workerController.oreWorkers.size());
-        System.out.println("- builders: " + this.workerController.builders.size());
-        System.out.println("- idle: " + this.workerController.idleWorkers.size());
+        this.logger.log(this.player.getName() + " current worker assignment (total: " + this.workerController.workers.size() + " workers)");
+        this.logger.log("- foodWorkers: " + (this.workerController.huntWorkers.size() + this.workerController.foodBlockWorkers.size() + this.workerController.farmWorkers.size()) + "(" + this.workerController.huntWorkers.size() + " hunts/" + this.workerController.foodBlockWorkers.size() + " blocks/" + this.workerController.farmWorkers.size() + " farms)");
+        this.logger.log("- woodWorkers: " + this.workerController.woodWorkers.size());
+        this.logger.log("- oreWorkers: " + this.workerController.oreWorkers.size());
+        this.logger.log("- builders: " + this.workerController.builders.size());
+        this.logger.log("- idle: " + this.workerController.idleWorkers.size());
 
         // first we assign workers to task groups
         this.workerController.assignWorkers(priorities, !idleFarms.isEmpty());
@@ -171,17 +174,17 @@ public class AiController {
         this.updateCapitol();
         this.workerController.refreshWorkerTracker();
         this.player.checkCompletedBuildings();
-        System.out.println("Constructing buildings: " + String.join(", ", this.player.getBuildingsFiltered(b -> b.isUnderConstruction()).map(b -> b.getName()).toList()));
-        System.out.println("Completed buildings: " + String.join(", ", this.player.getBuildingsFiltered(b -> b.isDone()).map(b -> b.getName()).toList()));
+        this.logger.log("Constructing buildings: " + String.join(", ", this.player.getBuildingsFiltered(b -> b.isUnderConstruction()).map(b -> b.getName()).toList()));
+        this.logger.log("Completed buildings: " + String.join(", ", this.player.getBuildingsFiltered(b -> b.isDone()).map(b -> b.getName()).toList()));
         var builderLimit = this.logic.getConcurrentBuilderLimit(this.player);
         var builderCount = this.workerController.builders.size();
 
         if (builderCount >= builderLimit) {
-            System.out.println("Skipping building priorities as builder limit is reached (" + builderCount + "/" + builderLimit + ")");
+            this.logger.log("Skipping building priorities as builder limit is reached (" + builderCount + "/" + builderLimit + ")");
             return;
         }
 
-        System.out.println("Processing building priorities (concurrent: " + builderCount + "/" + builderLimit + ")");
+        this.logger.log("Processing building priorities (concurrent: " + builderCount + "/" + builderLimit + ")");
 
         var resourcePullPriority = player.countDone(this.logic.getFarmTypeId()) > 2
                 ? new int[]{TypeIds.Resources.WoodBlock, TypeIds.Resources.FoodBlock, TypeIds.Resources.OreBlock}
@@ -196,7 +199,7 @@ public class AiController {
             var toStart = p.count - existingCount;
 
             if (missing <= 0) {
-                System.out.println("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count + ")");
+                this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count + ")");
                 continue; // already fulfilled the priority
             }
 
@@ -209,7 +212,7 @@ public class AiController {
                     .limit(Math.max(0, Math.min(p.count - existingCount, builderLimit - builderCount)))
                     .collect(Collectors.toCollection(ArrayList::new));
 
-            System.out.println(availableWorkers.size() + " available IDLE workers for " + TypeIds.toItemName(p.typeId));
+            this.logger.log(availableWorkers.size() + " available IDLE workers for " + TypeIds.toItemName(p.typeId));
 
             if (toStart > 0 && !constructing.isEmpty()) {
                 // priority started, make sure we are still working on the priority with at least one worker
@@ -224,7 +227,7 @@ public class AiController {
                         for (int pullPriority : resourcePullPriority) {
                             var pulling = this.workerController.workerTracker.get(pullPriority);
                             if (!pulling.isEmpty()) {
-                                System.out.println("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to continue building  " + TypeIds.toItemName(p.typeId));
+                                this.logger.log("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to continue building  " + TypeIds.toItemName(p.typeId));
                                 this.workerController.transferWorkerAssignment(pulling, availableWorkers, 1);
                                 break;
                             }
@@ -240,7 +243,7 @@ public class AiController {
                     ++builderCount;
 
                     if (builderCount >= builderLimit) {
-                        System.out.println("Skipping remaining priorities as builder limit is reached (" + builderCount + "/" + builderLimit + ")");
+                        this.logger.log("Skipping remaining priorities as builder limit is reached (" + builderCount + "/" + builderLimit + ")");
                         return;
                     }
                 }
@@ -249,30 +252,30 @@ public class AiController {
             }
 
             if (toStart <= 0) {
-                //System.out.println("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count + ")");
+                //this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count + ")");
                 continue; // already fulfilled the priority
             }
 
             var canMake = AiDependencies.canMake(p.typeId, this.player);
             if (!canMake) {
-                System.out.println("Skipping impossible " + TypeIds.toItemName(p.typeId));
+                this.logger.log("Skipping impossible " + TypeIds.toItemName(p.typeId) + " due to missing " + TypeIds.toItemName(AiDependencies.lastMissingrequirement));
                 continue; // impossible to fulfill the priority
             }
 
             var canAfford = this.player.canAfford(p.typeId);
             if (!canAfford) {
-                System.out.println("Not enough resources for " + TypeIds.toItemName(p.typeId));
+                this.logger.log("Not enough resources for " + TypeIds.toItemName(p.typeId));
                 continue; // impossible to fulfill the priority
             }
 
-            System.out.println("Processing " + TypeIds.toItemName(p.typeId) + " as " + p.typeId + " (" + doneCount + "/" + existingCount + "/" + p.count + ")");
+            this.logger.log("Processing " + TypeIds.toItemName(p.typeId) + " as " + p.typeId + " (" + doneCount + "/" + existingCount + "/" + p.count + ")");
 
             // if there are not enough idle workers, we try to pull workers from other resources with excess workers according to priorities that are already processed
             if (availableWorkers.size() < 1) {
                 for (int pullPriority : resourcePullPriority) {
                     var pulling = this.workerController.workerTracker.get(pullPriority);
                     if (!pulling.isEmpty()) {
-                        System.out.println("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to start building  " + TypeIds.toItemName(p.typeId));
+                        this.logger.log("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to start building  " + TypeIds.toItemName(p.typeId));
                         this.workerController.transferWorkerAssignment(pulling, availableWorkers, 1);
                         break;
                     }
@@ -280,7 +283,7 @@ public class AiController {
             }
 
             for (var builder : availableWorkers) {
-                System.out.println(this.capitol != null ? "Building from Capitol" : "Building from Builder");
+                this.logger.log(this.capitol != null ? "Building from Capitol" : "Building from Builder");
                 var lookupOrigin = this.capitol != null ? this.capitol.getPos() : new BlockPos(builder.getX(), 0, builder.getZ());
                 var buildingLocation = BuildingApi.getBuildingLocation(lookupOrigin, p.typeId, player.getName());
 
@@ -293,13 +296,13 @@ public class AiController {
                 } else {
                     this.workerController.builders.remove(builder);
                     this.workerController.idleWorkers.add(builder);
-                    System.err.println("Failed to issue build order");
+                    this.logger.log("Failed to issue build order");
                     return;
                 }
             }
         }
 
-        System.out.println("Completed all priorities");
+        this.logger.log("Completed all priorities");
     }
 
     public void runAiProduceUnits(float elapsed) {
@@ -312,34 +315,34 @@ public class AiController {
             var needed = p.count - doneCount;
 
             if (needed <= 0) {
-                System.out.println("Skipping completed " + TypeIds.toItemName(p.typeId));
+                this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId));
                 continue; // already fulfilled the priority
             }
 
             var canMake = AiDependencies.canMake(p.typeId, this.player);
             if (!canMake) {
-                System.out.println("Missing requirement for " + TypeIds.toItemName(p.typeId));
+                this.logger.log("Skipping impossible " + TypeIds.toItemName(p.typeId) + " due to missing " + TypeIds.toItemName(AiDependencies.lastMissingrequirement));
                 continue; // impossible to fulfill the priority
             }
 
             var canAfford = this.player.canAfford(p.typeId);
             if (!canAfford) {
-                System.out.println("Not enough resources for " + TypeIds.toItemName(p.typeId));
+                this.logger.log("Not enough resources for " + TypeIds.toItemName(p.typeId));
                 continue; // impossible to fulfill the priority
             }
 
-            System.out.println("Processing " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + existingCount + "/" + p.count + ")");
+            this.logger.log("Processing " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + existingCount + "/" + p.count + ")");
 
-            //System.out.println("Looking for producers: " + String.join(",", AiDependencies.getSourceTypeIds(p.typeId).stream().map(x -> TypeIds.toItemName(x)).toList()));
+            //this.logger.log("Looking for producers: " + String.join(",", AiDependencies.getSourceTypeIds(p.typeId).stream().map(x -> TypeIds.toItemName(x)).toList()));
 
             var producers = this.player.getIdleBuildings(AiDependencies.getSourceTypeIds(p.typeId)).toList();
-            System.out.println(producers.size() + " producers for " + TypeIds.toItemName(p.typeId));
+            this.logger.log(producers.size() + " producers for " + TypeIds.toItemName(p.typeId));
             for (int i = 0; i < needed && i < producers.size(); ++i) {
                 var producer = producers.get(i);
                 if (producer.issueTrainOrder(p.typeId)) {
                     WorldApi.queueWorldUpdate();
                 } else {
-                    System.err.println("Failed to issue train order for " + TypeIds.toItemName(p.typeId));
+                    this.logger.log("Failed to issue train order for " + TypeIds.toItemName(p.typeId));
                 }
             }
         }
@@ -367,6 +370,7 @@ public class AiController {
     }
 
     public void cleanup() {
+        this.logger.flush();
         this.capitol = null;
     }
 }

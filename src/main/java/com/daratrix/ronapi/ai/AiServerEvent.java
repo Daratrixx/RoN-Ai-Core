@@ -16,7 +16,6 @@ public class AiServerEvent {
     private static int aiTickIndex;
 
     public static void aiTick(float t) {
-        System.out.println(RonApi.MOD_ID + ">AiServerEvent.aiTick " + aiTickIndex);
         var controllers = AiController.controllers.values();
         switch (aiTickIndex) {
             case 0:
@@ -45,6 +44,7 @@ public class AiServerEvent {
                 WorldApi.updateWorld(t);
                 for (AiController c : controllers) {
                     c.runAiProduceBuildings(t);
+                    c.logger.flush();
                 }
                 break;
         }

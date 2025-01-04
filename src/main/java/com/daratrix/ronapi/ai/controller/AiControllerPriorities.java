@@ -4,15 +4,23 @@ import com.daratrix.ronapi.ai.controller.interfaces.IAiControllerPriorities;
 import com.daratrix.ronapi.ai.priorities.AiArmyPriorities;
 import com.daratrix.ronapi.ai.priorities.AiHarvestPriorities;
 import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
+import com.daratrix.ronapi.utils.FileLogger;
 
 public class AiControllerPriorities implements IAiControllerPriorities {
-    private final AiProductionPriorities buildingPriorities = new AiProductionPriorities();
-    private final AiProductionPriorities unitPriorities = new AiProductionPriorities();
-    private final AiProductionPriorities researchPriorities = new AiProductionPriorities();
-    private final AiHarvestPriorities harvestingPriorities = new AiHarvestPriorities();
-    private final AiArmyPriorities armyPriorities = new AiArmyPriorities();
+    public final FileLogger logger;
+    private final AiProductionPriorities buildingPriorities;
+    private final AiProductionPriorities unitPriorities;
+    private final AiProductionPriorities researchPriorities;
+    private final AiHarvestPriorities harvestingPriorities;
+    private final AiArmyPriorities armyPriorities;
 
-    public AiControllerPriorities() {
+    public AiControllerPriorities(FileLogger logger) {
+        this.logger = logger;
+        this.buildingPriorities = new AiProductionPriorities(logger);
+        this.unitPriorities = new AiProductionPriorities(logger);
+        this.researchPriorities = new AiProductionPriorities(logger);
+        this.harvestingPriorities = new AiHarvestPriorities(logger);
+        this.armyPriorities = new AiArmyPriorities(logger);
     }
 
     @Override

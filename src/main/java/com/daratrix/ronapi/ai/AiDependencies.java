@@ -31,6 +31,7 @@ public class AiDependencies {
         }
     }
 
+    public static int lastMissingrequirement = 0; // for logging
     public static boolean canMake(int priority, IAiPlayer aiPlayer) {
         List<Integer> requirements = PriorityRequirements.getOrDefault(priority, null);
         if(requirements == null) {
@@ -39,7 +40,7 @@ public class AiDependencies {
 
         for (Integer requirement : requirements) {
             if(aiPlayer.countDone(requirement) == 0) {
-                System.err.println("Can't make " + TypeIds.toItemName(priority) + " due to missing " + TypeIds.toItemName(requirement));
+                lastMissingrequirement = requirement; // for logging
                 return false;
             }
         }

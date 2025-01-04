@@ -202,7 +202,7 @@ public class BuildingApi {
             var spiralZ = spiral.getZ();
             pos.set(lookupOrigin.getX() + (spiralX * 2) + (spiralX * w), 0, lookupOrigin.getZ() + (spiralZ * 2) + (spiralZ * l));
             pos.setY(WorldApi.getTerrainHeight(pos));
-            System.out.println("Scanning " + pos.toShortString());
+            //System.out.println("Scanning " + pos.toShortString());
             // offset buildingBlocks by pos and store the results in testingBlocks
             offsetBuildingBlocks(buildingBlocks, pos, testingBlocks);
             GeometryUtils.setMinMaxFromBlocks(min, max, testingBlocks.stream().map(BuildingBlock::getBlockPos));
@@ -212,14 +212,14 @@ public class BuildingApi {
             if (isBuildingPlacementWithinWorldBorder(boundingBox)
                     && !isOverlappingAnyOtherBuilding(boundingBox)
                     && !isBuildingPlacementInvalid(testingBlocks, foundationBlocks, checkNeverTerrain)) {
-                System.out.println("Found location for " + TypeIds.toItemName(typeId));
+                //System.out.println("Found location for " + TypeIds.toItemName(typeId));
                 return pos;
             }
 
             spiral.next();
         }
 
-        System.err.println("Failed to find location for " + TypeIds.toItemName(typeId));
+        //System.err.println("Failed to find location for " + TypeIds.toItemName(typeId));
         return null;
     }
 
@@ -234,7 +234,7 @@ public class BuildingApi {
         if (MC.level == null)
             return true;
 
-        System.out.println("isBuildingPlacementInvalid " + foundation.size() + "/" + blocksToDraw.size());
+        //System.out.println("isBuildingPlacementInvalid " + foundation.size() + "/" + blocksToDraw.size());
 
         int solidBlocksBelow = 0;
         int blocksBelow = 0;
@@ -249,7 +249,7 @@ public class BuildingApi {
             Material bmWorld = MC.level.getBlockState(bp).getMaterial();
 
             if ((bmWorld.isSolid() || bmWorld.isLiquid()) && (bm.isSolid() || bm.isLiquid())) {
-                System.out.println("Skipping location due to clipping at " + bp.toShortString());
+                //System.out.println("Skipping location due to clipping at " + bp.toShortString());
                 return true; // clipping
             }
 
@@ -260,8 +260,6 @@ public class BuildingApi {
                     if (bsBelow.getMaterial().isSolid() && !(bsBelow.getBlock() instanceof LeavesBlock)) {
                         solidBlocksBelow += 1;
                     }
-                } else {
-                    System.err.println("fuck " + bs.getBlock().getName());
                 }
             }
 
@@ -274,12 +272,12 @@ public class BuildingApi {
         }
 
         if (blocksBelow == 0 || ((float) solidBlocksBelow / (float) blocksBelow) < MIN_SUPPORTED_BLOCKS_PERCENT) {
-            System.out.println("Skipping location due to being too uneven (" + solidBlocksBelow + "/" + blocksBelow + ")");
+            //System.out.println("Skipping location due to being too uneven (" + solidBlocksBelow + "/" + blocksBelow + ")");
             return true; // too many empty blocks
         }
 
         if (checkNeverTerrain && (nbBlocksBelow == 0 || ((float) netherBlocksBelow / (float) blocksBelow) < MIN_NETHER_BLOCKS_PERCENT)) {
-            System.out.println("Skipping location due to not being nether terrain (" + netherBlocksBelow + "/" + blocksBelow + ")");
+            //System.out.println("Skipping location due to not being nether terrain (" + netherBlocksBelow + "/" + blocksBelow + ")");
             return true; // too many non-nether blocks
         }
 
@@ -292,7 +290,7 @@ public class BuildingApi {
         var buildings = WorldApi.getSingleton().buildings.values();
         for (IBuilding building : buildings) {
             if (boundingBox.intersects(building.getBoundingBox())) {
-                System.out.println("Skipping location due to colliding with another building");
+                //System.out.println("Skipping location due to colliding with another building");
                 return true; // clipping at least one building
             }
         }
@@ -304,7 +302,7 @@ public class BuildingApi {
         var aabbCenter = boundingBox.getCenter();
         var aabbSize = boundingBox.getSize();
         if (MC.level.getWorldBorder().getDistanceToBorder(aabbCenter.x, aabbCenter.z) < aabbSize) {
-            System.out.println("Skipping location due to being out of bounds");
+            //System.out.println("Skipping location due to being out of bounds");
             return false;
         }
 

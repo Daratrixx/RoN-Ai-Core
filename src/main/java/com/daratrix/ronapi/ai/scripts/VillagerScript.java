@@ -59,11 +59,11 @@ public class VillagerScript implements IAiLogic {
                 + player.countDone(TypeIds.Villagers.Castle) * 6;
         var popCap = player.getPopCap();
         var popUsed = player.getPopUsed();
-        System.out.println("productionPower: " + productionPower + "(" + popUsed + "/" + popCap + ")");
+        priorities.logger.log("productionPower: " + productionPower + "(" + popUsed + "/" + popCap + ")");
         if (popCap < player.getMaxPop() && popCap - popUsed < productionPower) {
             var existing = player.countDone(TypeIds.Villagers.House);
             var target = 1 + (int) (productionPower / 10) + existing;
-            System.out.println("more houses: " + existing + "=>" + target);
+            priorities.logger.log("more houses: " + existing + "=>" + target);
             priorities.addPriority(TypeIds.Villagers.House, target);
             if (popCap - popUsed < 3) {
                 return;

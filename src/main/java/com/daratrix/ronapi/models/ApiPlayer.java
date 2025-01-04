@@ -118,16 +118,17 @@ public class ApiPlayer implements IPlayer {
             return true;
         }
 
-        System.err.println("Can't afford " + TypeIds.toItemName(typeId));
+        //System.err.println("Can't afford " + TypeIds.toItemName(typeId));
         return false;
     }
 
     @Override
     public boolean canAfford(ResourceCost cost) {
         if (cost == null) {
-            System.err.println("No cost");
+            //System.err.println("No cost");
             return true;
         }
+
         if (this.resources == null) {
             this.resources = ResourcesServerEvents.resourcesList.stream().filter(r -> r.ownerName.equals(this.name)).findFirst().orElse(null);
             if (this.resources == null) {
