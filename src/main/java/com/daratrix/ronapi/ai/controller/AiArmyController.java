@@ -3,6 +3,7 @@ package com.daratrix.ronapi.ai.controller;
 import com.daratrix.ronapi.ai.controller.interfaces.IAiLogic;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.ai.priorities.AiArmyPriorities;
+import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.models.interfaces.ILocated;
 import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.utils.FileLogger;
@@ -51,18 +52,6 @@ public class AiArmyController {
                 });
     }
 
-    public void runAiAttack() {
-
-    }
-
-    public void runAiDefence() {
-
-    }
-
-    public void runAiHarass() {
-
-    }
-
     public void assignArmy(AiArmyPriorities priorities) {
         // for now use every single units to attack
         this.attackGroup.clear();
@@ -92,16 +81,21 @@ public class AiArmyController {
         float x = target.getX();
         float y = target.getY();
         float z = target.getZ();
-        int strictDistance = 10 * 10; // squared
-        int softDistance = 5 * 5; // squared
+        int strictDistance = 16 * 16; // squared
+        int softDistance = 8 * 8; // squared
 
         for (IUnit u : group) {
+            if (u.getCurrentOrderId() == TypeIds.Orders.Return) {
+                continue; // keep returning
+            }
             var d = GeometryUtils.distanceSquared(u, target);
             // if very far force move, if kinda close attack move, if close do nothing
             if (d > strictDistance) {
                 u.issueMoveOrder(x, y, z);
             } else if (d > softDistance) {
                 u.issueAttackOrder(x, y, z);
+            } else if(u.isCarryingItems()) {
+                u.issueOrder(TypeIds.Orders.Return); // while idling with resources, return them
             }
         }
     }
