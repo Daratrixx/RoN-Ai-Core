@@ -53,6 +53,8 @@ public class FileLogger {
                 }
 
                 fr.close();
+                
+                this.buffer.clear();
             } catch (Exception e) {
                 e.printStackTrace(System.err);
             }
