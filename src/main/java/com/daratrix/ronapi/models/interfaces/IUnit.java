@@ -22,6 +22,7 @@ public interface IUnit extends IPlayerWidget, ILocated {
 
     public boolean isMaxCarryCapacityReached();
     public boolean isCarryCapacityOver(int capacity);
+    boolean isCarryingItems();
 
     // mutations
     boolean issueBuildOrder(BlockPos pos, int typeId);

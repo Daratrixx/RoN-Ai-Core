@@ -384,4 +384,9 @@ public class ApiUnit implements IUnit {
     public boolean isCarryCapacityOver(int capacity) {
         return Resources.getTotalResourcesFromItems(this.unit.getItems()).getTotalValue() >= capacity;
     }
+
+    @Override
+    public boolean isCarryingItems() {
+        return !this.unit.getItems().isEmpty();
+    }
 }

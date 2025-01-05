@@ -23,10 +23,15 @@ public class VillagerScript implements IAiLogic {
 
     private void setHarvestPriorities(IAiPlayer player, AiHarvestPriorities harvestingPriorities) {
         var farmCount = player.countDone(this.getFarmTypeId());
+        var villagerCount = player.countDone(this.getWorkerTypeId());
 
-        harvestingPriorities.addPriority(TypeIds.Resources.FoodEntity, 2);
+        if (farmCount < 6) {
+            harvestingPriorities.addPriority(TypeIds.Resources.FoodEntity, 2);
+        }
         harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 4);
-        harvestingPriorities.addPriority(TypeIds.Resources.FoodBlock, 3);
+        if (farmCount < 3) {
+            harvestingPriorities.addPriority(TypeIds.Resources.FoodBlock, 3);
+        }
 
         for (int i = 0; i < farmCount; ++i) {
             harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, i + 1); // each farm need a wood worker
@@ -34,13 +39,13 @@ public class VillagerScript implements IAiLogic {
             harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, i / 3); // for every 3 farms, add an ore worker
         }
 
-        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 14);
-        harvestingPriorities.addPriority(TypeIds.Resources.FoodFarm, 10);
-        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 5);
+        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 12);
+        harvestingPriorities.addPriority(TypeIds.Resources.FoodFarm, 12);
+        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 9);
 
         // in case of excessive workers, we assign to non-food resources
         harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 20);
-        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 10);
+        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 15);
     }
 
     public void setBuildingPriorities(IAiPlayer player, AiProductionPriorities priorities) {
@@ -49,6 +54,10 @@ public class VillagerScript implements IAiLogic {
         if (player.countDone(TypeIds.Villagers.TownCentre) == 0) {
             priorities.addPriority(TypeIds.Villagers.TownCentre, 1);
             return;
+        }
+
+        if (player.count(TypeIds.Villagers.Villager) < 8) {
+            return; // wait to have a few villagers before making the first house/building
         }
 
         // dynamically add houses any time we have less than 5 pop space to spare
@@ -83,15 +92,18 @@ public class VillagerScript implements IAiLogic {
 
         //priorities.addPriority(TypeIds.Villagers.Stockpile, 1);
         priorities.addPriority(TypeIds.Villagers.House, 1); // at least one house before farm
-        priorities.addPriority(TypeIds.Villagers.Farm, 3);
+        priorities.addPriority(TypeIds.Villagers.Farm, 1);
         //priorities.addPriority(TypeIds.Villagers.House, 2);
         priorities.addPriority(TypeIds.Villagers.Barracks, 1);
-        priorities.addPriority(TypeIds.Villagers.Farm, 6);
+        priorities.addPriority(TypeIds.Villagers.Farm, 3);
         priorities.addPriority(TypeIds.Villagers.Barracks, 2);
+        priorities.addPriority(TypeIds.Villagers.Farm, 6);
         priorities.addPriority(TypeIds.Villagers.Blacksmith, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 3);
+        priorities.addPriority(TypeIds.Villagers.Farm, 9);
         priorities.addPriority(TypeIds.Villagers.ArcaneTower, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 4);
+        priorities.addPriority(TypeIds.Villagers.Farm, 12);
         priorities.addPriority(TypeIds.Villagers.Castle, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 5);
         priorities.addPriority(TypeIds.Villagers.Library, 1);
@@ -138,11 +150,11 @@ public class VillagerScript implements IAiLogic {
 
     @Override
     public boolean useWarpten() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean useGreedisgood() {
-        return true;
+        return false;
     }
 }
