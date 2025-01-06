@@ -109,9 +109,9 @@ public class AiWorkerController {
         var maxFarmers = this.player.countDone(this.logic.getFarmTypeId());
         var maxHunters = availableAnimals;
 
-        var excessPullPriority = this.farmWorkers.size() > 2
-                ? new int[]{0, TypeIds.Resources.FoodFarm, TypeIds.Resources.WoodBlock, TypeIds.Resources.OreBlock, TypeIds.Resources.FoodBlock}
-                : new int[]{0, TypeIds.Resources.WoodBlock, TypeIds.Resources.OreBlock, TypeIds.Resources.FoodBlock};
+        var excessPullPriority = maxFarmers > 3
+                ? new int[]{0, TypeIds.Resources.FoodBlock, TypeIds.Resources.FoodEntity, TypeIds.Resources.FoodFarm, TypeIds.Resources.WoodBlock, TypeIds.Resources.OreBlock}
+                : new int[]{0, TypeIds.Resources.FoodBlock, TypeIds.Resources.FoodEntity, TypeIds.Resources.WoodBlock, TypeIds.Resources.OreBlock};
         var it = priorities.iterator();
         if (this.player.getWood() == 0) {
             // if we ran out of wood, send all farmers to wood and don't allow reassigning farm workers
@@ -179,10 +179,32 @@ public class AiWorkerController {
         }
     }
 
+    private ArrayList<Building> assignedFarms = new ArrayList<>();
+
+    public void spreadFarmWorkers(List<IUnit> workers, List<Building> idleFarms) {
+        this.assignedFarms.clear();
+        for (IUnit worker : workers) {
+            var targetFarm = worker.getWorkerUnit().getGatherResourceGoal().data.targetFarm;
+            if (targetFarm != null) {
+                if (this.assignedFarms.contains(targetFarm)) {
+                    if (!idleFarms.isEmpty()) {
+                        worker.issueHarvestOrder(idleFarms.remove(0)); // TypeIds.Resources.[...] are properly converted to unit actions
+                    } else {
+                        worker.issueOrder(TypeIds.Orders.Stop);
+                    }
+                } else {
+                    this.assignedFarms.add(targetFarm);
+                }
+            }
+        }
+    }
+
     public void orderFarmWorkers(List<IUnit> workers, List<Building> idleFarms) {
         if (workers.isEmpty() || idleFarms.isEmpty()) {
             return;
         }
+
+        this.spreadFarmWorkers(workers, idleFarms);
 
         var workerIterator = workers.iterator();
 

@@ -63,6 +63,10 @@ public class GeometryUtils {
                 && getSpanOverlap(a.minZ, a.maxZ, b.minZ, b.maxZ) > 0;
     }
 
+    public static boolean contains(AABB a, Vec3i pos) {
+        return a.contains(pos.getX(), pos.getY(), pos.getZ());
+    }
+
     public static float distanceX(IBoxed b, Vec3i v) {
         return Math.min(Math.abs(v.getX() - b.getMinX()), Math.abs(v.getX() - b.getMaxX()));
     }
@@ -119,7 +123,7 @@ public class GeometryUtils {
     public static float distanceSquared(ILocated l, Vec3i p) {
         var x = p.getX() - l.getX();
         var z = p.getZ() - l.getZ();
-        return (float) (x * x + z * z);
+        return x * x + z * z;
     }
 
     public static boolean isWithinDistance(IBoxed b1, IBoxed b2, float distance) {

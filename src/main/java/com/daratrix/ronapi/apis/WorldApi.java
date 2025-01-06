@@ -2,6 +2,7 @@ package com.daratrix.ronapi.apis;
 
 import com.daratrix.ronapi.models.ApiWorld;
 import com.daratrix.ronapi.models.interfaces.IPlayer;
+import com.daratrix.ronapi.models.interfaces.IPlayerWidget;
 import com.daratrix.ronapi.models.interfaces.IResource;
 import com.daratrix.ronapi.models.interfaces.IStructure;
 import com.daratrix.ronapi.timer.Timer;
@@ -9,12 +10,19 @@ import com.daratrix.ronapi.timer.TimerServerEvents;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.alliance.AllianceSystem;
 import com.solegendary.reignofnether.resources.ResourceCost;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.phys.AABB;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class WorldApi {
@@ -147,5 +155,26 @@ public class WorldApi {
 
     public static Stream<IPlayer> getPlayerEnemies(IPlayer p) {
         return singleton.players.values().stream().filter(x -> x != p && !AllianceSystem.isAllied(x.getName(), p.getName())).map(x -> (IPlayer) x);
+    }
+
+    public static Stream<IPlayer> getPlayerEnemies(String playerName) {
+        return singleton.players.values().stream().filter(x -> x.getName() != playerName && !AllianceSystem.isAllied(x.getName(), playerName)).map(x -> (IPlayer) x);
+    }
+
+    private static String getThreatsPlayerName = null;
+
+    private static boolean getThreatsPredicate(LivingEntity e) {
+        if (e instanceof Unit u) {
+            var owner = u.getOwnerName();
+            return !Objects.equals(owner, getThreatsPlayerName) && !AllianceSystem.isAllied(getThreatsPlayerName, u.getOwnerName());
+        }
+        return false;
+    }
+
+    public static void getThreats(AABB boundingBox, String playerName, Collection<IPlayerWidget> threats) {
+        var enemies = getPlayerEnemies(playerName);
+        enemies.forEach(p -> {
+            p.getUnitsFiltered(u -> !u.isWorker()).filter(u -> GeometryUtils.contains(boundingBox, u.getPos())).collect(Collectors.toCollection(() -> threats));
+        });
     }
 }

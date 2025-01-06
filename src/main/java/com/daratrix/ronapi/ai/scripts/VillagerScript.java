@@ -25,11 +25,11 @@ public class VillagerScript implements IAiLogic {
         var farmCount = player.countDone(this.getFarmTypeId());
         var villagerCount = player.countDone(this.getWorkerTypeId());
 
-        if (farmCount < 6) {
+        if (player.getFood() < 300) {
             harvestingPriorities.addPriority(TypeIds.Resources.FoodEntity, 2);
         }
         harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 4);
-        if (farmCount < 3) {
+        if (player.getFood() < 200) {
             harvestingPriorities.addPriority(TypeIds.Resources.FoodBlock, 3);
         }
 
@@ -39,13 +39,13 @@ public class VillagerScript implements IAiLogic {
             harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, i / 3); // for every 3 farms, add an ore worker
         }
 
-        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 12);
+        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 18);
         harvestingPriorities.addPriority(TypeIds.Resources.FoodFarm, 12);
-        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 9);
+        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 6);
 
         // in case of excessive workers, we assign to non-food resources
-        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 20);
-        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 15);
+        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 24);
+        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 12);
     }
 
     public void setBuildingPriorities(IAiPlayer player, AiProductionPriorities priorities) {
@@ -56,20 +56,21 @@ public class VillagerScript implements IAiLogic {
             return;
         }
 
-        if (player.count(TypeIds.Villagers.Villager) < 8) {
+        if (player.count(TypeIds.Villagers.Villager) < 7) {
             return; // wait to have a few villagers before making the first house/building
         }
 
         // dynamically add houses any time we have less than 5 pop space to spare
-        int productionPower = 3 // TC buffer
-                + player.countDone(TypeIds.Villagers.Barracks) * 3
-                + player.countDone(TypeIds.Villagers.Blacksmith) * 4
-                + player.countDone(TypeIds.Villagers.ArcaneTower) * 3
-                + player.countDone(TypeIds.Villagers.Castle) * 6;
+        int productionPower = 4 // TC buffer
+                + player.count(TypeIds.Villagers.Barracks) * 3
+                + player.count(TypeIds.Villagers.Blacksmith) * 4
+                + player.count(TypeIds.Villagers.ArcaneTower) * 3
+                + player.count(TypeIds.Villagers.Castle) * 6;
         var popCap = player.getPopCap();
         var popUsed = player.getPopUsed();
+        var popFree = popCap - popUsed;
         priorities.logger.log("productionPower: " + productionPower + "(" + popUsed + "/" + popCap + ")");
-        if (popCap < player.getMaxPop() && popCap - popUsed < productionPower) {
+        if (popCap < player.getMaxPop() && popFree < productionPower) {
             var existing = player.countDone(TypeIds.Villagers.House);
             var target = 1 + (int) (productionPower / 10) + existing;
             priorities.logger.log("more houses: " + existing + "=>" + target);

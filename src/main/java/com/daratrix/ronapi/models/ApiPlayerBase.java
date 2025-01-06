@@ -1,8 +1,10 @@
 package com.daratrix.ronapi.models;
 
+import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.interfaces.IBoxed;
 import com.daratrix.ronapi.models.interfaces.IBuilding;
 import com.daratrix.ronapi.models.interfaces.ILocated;
+import com.daratrix.ronapi.models.interfaces.IPlayerWidget;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 
@@ -18,6 +20,7 @@ public class ApiPlayerBase implements ILocated, IBoxed {
     private final BlockPos.MutableBlockPos centerPos = new BlockPos.MutableBlockPos();
     private final BlockPos.MutableBlockPos minPos = new BlockPos.MutableBlockPos();
     private final BlockPos.MutableBlockPos maxPos = new BlockPos.MutableBlockPos();
+    private final ArrayList<IPlayerWidget> threats = new ArrayList<>();
 
     private int capitols = 0;
 
@@ -104,8 +107,9 @@ public class ApiPlayerBase implements ILocated, IBoxed {
             }
 
             this.centerPos.setX((this.minPos.getX() + this.maxPos.getX())/2);
-            this.centerPos.setX((this.minPos.getY() + this.maxPos.getY())/2);
+            this.centerPos.setY((this.minPos.getY() + this.maxPos.getY())/2);
             this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ())/2);
+
             this.boundingBox = new AABB(this.minPos, this.maxPos);
         }
 
@@ -180,5 +184,10 @@ public class ApiPlayerBase implements ILocated, IBoxed {
 
     public boolean hasCapitol() {
         return this.capitols > 0;
+    }
+
+    public void updateThreats() {
+        this.threats.clear();
+        WorldApi.getThreats(this.boundingBox, this.playerName, this.threats);
     }
 }

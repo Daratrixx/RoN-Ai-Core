@@ -102,8 +102,8 @@ public class ApiBuilding implements IBuilding {
     @Override
     public int countBuilders() {
         countBuildersCollection.clear();
-        WorldApi.getSingleton().players.get(this.building.ownerName).units.stream()
-                .filter(u -> u.isWorker() && u.isAlive())
+        WorldApi.getSingleton().players.get(this.building.ownerName)
+                .getUnitsFiltered(u -> u.isWorker() && u.isAlive())
                 .map(IUnit::getWorkerUnit)
                 .collect(Collectors.toCollection(() -> countBuildersCollection));
 

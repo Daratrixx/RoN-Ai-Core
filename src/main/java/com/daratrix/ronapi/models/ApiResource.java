@@ -145,7 +145,7 @@ public class ApiResource implements IResource {
         }
 
         this.centerPos.setX((this.minPos.getX() + this.maxPos.getX()) / 2);
-        this.centerPos.setX((this.minPos.getY() + this.maxPos.getY()) / 2);
+        this.centerPos.setY((this.minPos.getY() + this.maxPos.getY()) / 2);
         this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ()) / 2);
 
         this.boundingBox = GeometryUtils.getBoundingBox(this.minPos, this.maxPos.offset(1, 1, 1));

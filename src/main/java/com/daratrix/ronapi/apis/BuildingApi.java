@@ -6,6 +6,7 @@
 package com.daratrix.ronapi.apis;
 
 import com.daratrix.ronapi.models.interfaces.IBuilding;
+import com.daratrix.ronapi.models.interfaces.IResource;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.daratrix.ronapi.utils.SpiralCounter;
 import com.solegendary.reignofnether.building.*;
@@ -210,6 +211,7 @@ public class BuildingApi {
             var boundingBox = GeometryUtils.getBoundingBox(min, max, 1);
 
             if (isBuildingPlacementWithinWorldBorder(boundingBox)
+                    && !isOverlappingResources(boundingBox)
                     && !isOverlappingAnyOtherBuilding(boundingBox)
                     && !isBuildingPlacementInvalid(testingBlocks, foundationBlocks, checkNeverTerrain)) {
                 //System.out.println("Found location for " + TypeIds.toItemName(typeId));
@@ -279,6 +281,22 @@ public class BuildingApi {
         if (checkNeverTerrain && (nbBlocksBelow == 0 || ((float) netherBlocksBelow / (float) blocksBelow) < MIN_NETHER_BLOCKS_PERCENT)) {
             //System.out.println("Skipping location due to not being nether terrain (" + netherBlocksBelow + "/" + blocksBelow + ")");
             return true; // too many non-nether blocks
+        }
+
+        return false;
+    }
+
+    private static final ArrayList<IResource> resources = new ArrayList<>();
+
+    // don't allow building inside/on top of resources
+    private static boolean isOverlappingResources(AABB boundingBox) {
+        resources.clear();
+        WorldApi.getSingleton().resources.values().stream().distinct().collect(Collectors.toCollection(() -> resources));
+        for (IResource r : resources) {
+            if (GeometryUtils.colliding(boundingBox, r.getBoundingBox())) {
+                //System.out.println("Skipping location due to colliding with resources");
+                return true; // clipping at least one building
+            }
         }
 
         return false;

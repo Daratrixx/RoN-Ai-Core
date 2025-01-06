@@ -234,6 +234,7 @@ public class TypeIds {
         public final static int HarvestBlock = add(UnitAction.MOVE);
         public final static int Move = add(UnitAction.MOVE);
         public final static int Return = add(UnitAction.RETURN_RESOURCES);
+        public final static int Stop = add(UnitAction.STOP);
     }
 
     public static String toItemName(int typeId) {
