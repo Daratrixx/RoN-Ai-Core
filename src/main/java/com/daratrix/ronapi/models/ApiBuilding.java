@@ -7,20 +7,25 @@ package com.daratrix.ronapi.models;
 
 import com.daratrix.ronapi.apis.BuildingApi;
 import com.daratrix.ronapi.apis.TypeIds;
+import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.interfaces.IBuilding;
 import com.daratrix.ronapi.models.interfaces.IOrder;
+import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.models.interfaces.IWidget;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.ProductionBuilding;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
+import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -92,9 +97,27 @@ public class ApiBuilding implements IBuilding {
         return null;
     }
 
+    private static final ArrayList<WorkerUnit> countBuildersCollection = new ArrayList<>();
+
     @Override
     public int countBuilders() {
-        return this.building.getBuilders(Minecraft.getInstance().level).size();
+        countBuildersCollection.clear();
+        WorldApi.getSingleton().players.get(this.building.ownerName).units.stream()
+                .filter(u -> u.isWorker() && u.isAlive())
+                .map(IUnit::getWorkerUnit)
+                .collect(Collectors.toCollection(() -> countBuildersCollection));
+
+        var count = 0;
+
+        for (WorkerUnit w : countBuildersCollection) {
+            var repair = w.getBuildRepairGoal();
+            var target = repair.getBuildingTarget();
+            if (target == this.building) {
+                ++count;
+            }
+        }
+
+        return count;
     }
 
     @Override

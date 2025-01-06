@@ -15,6 +15,7 @@ public class ApiPlayerBase implements ILocated, IBoxed {
     public AABB boundingBox;
     public final ArrayList<IBuilding> buildings = new ArrayList<>();
 
+    private final BlockPos.MutableBlockPos centerPos = new BlockPos.MutableBlockPos();
     private final BlockPos.MutableBlockPos minPos = new BlockPos.MutableBlockPos();
     private final BlockPos.MutableBlockPos maxPos = new BlockPos.MutableBlockPos();
 
@@ -32,6 +33,7 @@ public class ApiPlayerBase implements ILocated, IBoxed {
         this.minPos.move(-20, -10, -20);
         this.maxPos.set(building.getMaxPos());
         this.maxPos.move(20, 10, 20);
+        this.centerPos.set(building.getPos());
         this.boundingBox = new AABB(this.minPos, this.maxPos);
     }
 
@@ -57,6 +59,9 @@ public class ApiPlayerBase implements ILocated, IBoxed {
             this.buildings.add(building);
             adjust(this.minPos, building.getMinPos(), -20, Math::min);
             adjust(this.maxPos, building.getMaxPos(), 20, Math::max);
+            this.centerPos.setX((this.minPos.getX() + this.maxPos.getX())/2);
+            this.centerPos.setX((this.minPos.getY() + this.maxPos.getY())/2);
+            this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ())/2);
             this.boundingBox = new AABB(this.minPos, this.maxPos);
             if(building.isCapitol()) {
                 ++this.capitols;
@@ -98,6 +103,9 @@ public class ApiPlayerBase implements ILocated, IBoxed {
                 adjust(this.maxPos, building.getMaxPos(), 20, Math::max);
             }
 
+            this.centerPos.setX((this.minPos.getX() + this.maxPos.getX())/2);
+            this.centerPos.setX((this.minPos.getY() + this.maxPos.getY())/2);
+            this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ())/2);
             this.boundingBox = new AABB(this.minPos, this.maxPos);
         }
 
@@ -106,17 +114,22 @@ public class ApiPlayerBase implements ILocated, IBoxed {
 
     @Override
     public float getX() {
-        return (this.minPos.getX() + this.maxPos.getX()) * 0.5f;
+        return this.centerPos.getX();
     }
 
     @Override
     public float getY() {
-        return (this.minPos.getY());
+        return this.centerPos.getY();
     }
 
     @Override
     public float getZ() {
-        return (this.minPos.getZ() + this.maxPos.getZ()) * 0.5f;
+        return this.centerPos.getZ();
+    }
+
+    @Override
+    public BlockPos getPos() {
+        return this.centerPos.immutable();
     }
 
     @Override

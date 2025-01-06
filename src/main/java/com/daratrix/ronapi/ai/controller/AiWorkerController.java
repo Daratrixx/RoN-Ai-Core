@@ -33,6 +33,7 @@ public class AiWorkerController {
         this.player = player;
         this.logic = logic;
 
+        this.workerTracker.put(0, this.idleWorkers);
         this.workerTracker.put(TypeIds.Resources.FoodEntity, this.huntWorkers);
         this.workerTracker.put(TypeIds.Resources.FoodFarm, this.farmWorkers);
         this.workerTracker.put(TypeIds.Resources.FoodBlock, this.foodBlockWorkers);
@@ -99,27 +100,34 @@ public class AiWorkerController {
 
     private final HashMap<Integer, Integer> excessTracker = new HashMap<Integer, Integer>();
 
-    public void assignWorkers(AiHarvestPriorities priorities, boolean hasIdleFarms) {
+    public void assignWorkers(AiHarvestPriorities priorities, int availableAnimals) {
         // count excess units compared to processed priorities, so we know where to pull workers from
         this.workerTracker.forEach((k, v) -> {
             this.excessTracker.put(k, v.size());
         });
 
         var maxFarmers = this.player.countDone(this.logic.getFarmTypeId());
+        var maxHunters = availableAnimals;
 
         var excessPullPriority = this.farmWorkers.size() > 2
-                ? new int[]{TypeIds.Resources.FoodFarm, TypeIds.Resources.WoodBlock, TypeIds.Resources.OreBlock, TypeIds.Resources.FoodBlock}
-                : new int[]{TypeIds.Resources.WoodBlock, TypeIds.Resources.OreBlock, TypeIds.Resources.FoodBlock};
+                ? new int[]{0, TypeIds.Resources.FoodFarm, TypeIds.Resources.WoodBlock, TypeIds.Resources.OreBlock, TypeIds.Resources.FoodBlock}
+                : new int[]{0, TypeIds.Resources.WoodBlock, TypeIds.Resources.OreBlock, TypeIds.Resources.FoodBlock};
         var it = priorities.iterator();
         if (this.player.getWood() == 0) {
             // if we ran out of wood, send all farmers to wood and don't allow reassigning farm workers
             this.transferWorkerAssignment(this.farmWorkers, this.woodWorkers, this.farmWorkers.size());
             maxFarmers = 0;
         }
+
         var excessFarmers = this.farmWorkers.size() - maxFarmers;
         if (excessFarmers > 0) {
             // if we have more farmers assigned than we have farms, we set them as idle so we can reassign them
             this.transferWorkerAssignment(this.farmWorkers, this.idleWorkers, excessFarmers);
+        }
+
+        var excessHunters = this.huntWorkers.size() - maxHunters;
+        if (excessHunters > 0) {
+            this.transferWorkerAssignment(this.huntWorkers, this.idleWorkers, excessHunters);
         }
 
         while (it.hasNext()) {
@@ -128,6 +136,10 @@ public class AiWorkerController {
             var targetCount = p.count;
             if (p.typeId == TypeIds.Resources.FoodFarm && targetCount > maxFarmers) {
                 targetCount = maxFarmers;
+            }
+
+            if (p.typeId == TypeIds.Resources.FoodEntity && targetCount > maxHunters) {
+                targetCount = maxHunters;
             }
 
             var taskWorkers = this.workerTracker.get(p.typeId);
@@ -174,7 +186,7 @@ public class AiWorkerController {
 
         var workerIterator = workers.iterator();
 
-        idleFarms.forEach(t -> {
+        idleFarms.forEach(targetFarm -> {
             while (workerIterator.hasNext()) {
                 var worker = workerIterator.next();
                 if (worker.isCarryCapacityOver(50)) {
@@ -183,7 +195,7 @@ public class AiWorkerController {
                 }
 
                 if (worker.isIdle() || worker.getCurrentOrderId() != TypeIds.Resources.FoodFarm) {
-                    worker.issueHarvestOrder(t); // TypeIds.Resources.[...] are properly converted to unit actions
+                    worker.issueHarvestOrder(targetFarm); // TypeIds.Resources.[...] are properly converted to unit actions
                     return;
                 }
             }
@@ -197,7 +209,7 @@ public class AiWorkerController {
 
         var workerIterator = workers.iterator();
 
-        idleAnimals.forEach(t -> {
+        idleAnimals.forEach(targetAnimal -> {
             while (workerIterator.hasNext()) {
                 var worker = workerIterator.next();
                 if (worker.isCarryCapacityOver(50)) {
@@ -206,7 +218,7 @@ public class AiWorkerController {
                 }
 
                 if (worker.isIdle() || worker.getCurrentOrderId() != TypeIds.Resources.FoodEntity) {
-                    worker.issueAttackOrder(t); // workers attack animals to hunt
+                    worker.issueAttackOrder(targetAnimal); // workers attack animals to hunt
                     return;
                 }
             }

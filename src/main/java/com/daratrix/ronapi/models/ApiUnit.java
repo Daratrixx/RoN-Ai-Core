@@ -13,18 +13,15 @@ import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.models.interfaces.IWidget;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
-import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.resources.*;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
-import com.solegendary.reignofnether.unit.goals.*;
 import com.solegendary.reignofnether.unit.interfaces.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.Rotation;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 /**
@@ -46,6 +43,16 @@ public class ApiUnit implements IUnit {
         this.mob = unit instanceof Mob m ? m : null;
 
         this.typeId = TypeIds.get(unit);
+    }
+
+    @Override
+    public Unit getUnit() {
+        return this.unit;
+    }
+
+    @Override
+    public WorkerUnit getWorkerUnit() {
+        return this.worker;
     }
 
     @Override
@@ -71,13 +78,16 @@ public class ApiUnit implements IUnit {
     public int getCurrentOrderId() {
         if (this.worker != null) {
             var repairing = this.worker.getBuildRepairGoal();
-            if (repairing.getBuildingTarget() != null && repairing.isBuilding()) {
+            if (repairing.getBuildingTarget() != null) {
                 return TypeIds.Orders.Repair;
             }
 
             var returning = this.unit.getReturnResourcesGoal();
-            if (returning != null && returning.canContinueToUse()) {
-                return TypeIds.Orders.Return; // most likely hunter
+            if (returning != null) {
+                var returnTarget = returning.getBuildingTarget();
+                if (returnTarget != null) {
+                    return TypeIds.Orders.Return;
+                }
             }
 
             var gathering = this.worker.getGatherResourceGoal();
@@ -125,7 +135,7 @@ public class ApiUnit implements IUnit {
     public Object getCurrentOrderTarget() {
         if (this.worker != null) {
             var repairing = this.worker.getBuildRepairGoal();
-            if (repairing != null && repairing.isBuilding()) {
+            if (repairing != null) {
                 return repairing.getBuildingTarget();
             }
 
@@ -332,6 +342,11 @@ public class ApiUnit implements IUnit {
     @Override
     public float getZ() {
         return (float) this.entity.getZ();
+    }
+
+    @Override
+    public BlockPos getPos() {
+        return this.entity.getOnPos();
     }
 
     @Override

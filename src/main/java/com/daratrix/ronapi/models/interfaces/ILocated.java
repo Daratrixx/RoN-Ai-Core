@@ -5,6 +5,8 @@
  */
 package com.daratrix.ronapi.models.interfaces;
 
+import net.minecraft.core.BlockPos;
+
 /**
  *
  * @author Daratrix
@@ -13,4 +15,5 @@ public interface ILocated {
     public float getX();
     public float getY();
     public float getZ();
+    public BlockPos getPos();
 }

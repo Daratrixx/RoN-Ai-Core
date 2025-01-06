@@ -139,7 +139,7 @@ public class AiController {
         this.logger.log("- idle: " + this.workerController.idleWorkers.size());
 
         // first we assign workers to task groups
-        this.workerController.assignWorkers(priorities, !idleFarms.isEmpty());
+        this.workerController.assignWorkers(priorities, animals.size());
 
         // then we ensure workers are working on their tasks
         this.workerController.orderFarmWorkers(this.workerController.farmWorkers, idleFarms);
@@ -171,8 +171,14 @@ public class AiController {
     }
 
     public void runAiProduceBuildings(float elapsed) {
-        this.updateCapitol();
         this.workerController.refreshWorkerTracker();
+
+        if (this.workerController.workers.isEmpty()) {
+            this.logger.log("No workers alive to build, skipping building priorities");
+            return;
+        }
+
+        this.updateCapitol();
         this.player.checkCompletedBuildings();
         this.logger.log("Constructing buildings: " + String.join(", ", this.player.getBuildingsFiltered(b -> b.isUnderConstruction()).map(b -> b.getName()).toList()));
         this.logger.log("Completed buildings: " + String.join(", ", this.player.getBuildingsFiltered(b -> b.isDone()).map(b -> b.getName()).toList()));
@@ -187,16 +193,21 @@ public class AiController {
         this.logger.log("Processing building priorities (concurrent: " + builderCount + "/" + builderLimit + ")");
 
         var resourcePullPriority = player.countDone(this.logic.getFarmTypeId()) > 2
-                ? new int[]{TypeIds.Resources.WoodBlock, TypeIds.Resources.FoodBlock, TypeIds.Resources.OreBlock}
-                : new int[]{TypeIds.Resources.WoodBlock, TypeIds.Resources.FoodBlock, TypeIds.Resources.FoodFarm, TypeIds.Resources.OreBlock};
+                ? new int[]{0, TypeIds.Resources.WoodBlock, TypeIds.Resources.FoodBlock, TypeIds.Resources.OreBlock}
+                : new int[]{0, TypeIds.Resources.WoodBlock, TypeIds.Resources.FoodBlock, TypeIds.Resources.FoodFarm, TypeIds.Resources.OreBlock};
         var priorities = this.priorities.getBuildingPriorities();
         var it = priorities.iterator();
+
+        ArrayList<IUnit> availableWorkers = new ArrayList<>();
+
+        mainLoop:
         while (it.hasNext()) {
             var p = it.next();
             var existingCount = this.player.count(p.typeId/*, p.location*/);
             var doneCount = this.player.countDone(p.typeId);
             var missing = p.count - doneCount;
             var toStart = p.count - existingCount;
+            var toFinish = existingCount - doneCount;
 
             if (missing <= 0) {
                 this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count + ")");
@@ -204,17 +215,13 @@ public class AiController {
             }
 
             var constructing = this.player.getConstrutingBuildings().filter(b -> b.getTypeId() == p.typeId).toList();
-            List<IUnit> availableWorkers = this.workerController.idleWorkers.stream()
-                    //.filter(u -> u.getCurrentOrderId() != TypeIds.Orders.Repair) // ignore workers that are already building/repairing
-                    //.sorted(this.getBuilderPriorityComparator())
-                    //.limit(Math.min(p.count - existingCount, builderLimit - builderCount))
-                    //.limit(p.count - existingCount)
-                    .limit(Math.max(0, Math.min(p.count - existingCount, builderLimit - builderCount)))
-                    .collect(Collectors.toCollection(ArrayList::new));
+            availableWorkers.removeAll(this.workerController.builders);
+            this.workerController.idleWorkers.addAll(availableWorkers);
+            availableWorkers.clear();
 
-            this.logger.log(availableWorkers.size() + " available IDLE workers for " + TypeIds.toItemName(p.typeId));
+            //this.logger.log(availableWorkers.size() + " available IDLE workers for " + TypeIds.toItemName(p.typeId));
 
-            if (toStart > 0 && !constructing.isEmpty()) {
+            if (toFinish > 0 && !constructing.isEmpty()) {
                 // priority started, make sure we are still working on the priority with at least one worker
                 for (IBuilding b : constructing) {
                     var currentBuilders = b.countBuilders();
@@ -222,33 +229,35 @@ public class AiController {
                         continue; // all good
                     }
 
-                    // if there are not enough idle workers, we try to pull workers from other resources with excess workers according to priorities that are already processed
-                    if (availableWorkers.size() < 1) {
-                        for (int pullPriority : resourcePullPriority) {
-                            var pulling = this.workerController.workerTracker.get(pullPriority);
-                            if (!pulling.isEmpty()) {
-                                this.logger.log("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to continue building  " + TypeIds.toItemName(p.typeId));
-                                this.workerController.transferWorkerAssignment(pulling, availableWorkers, 1);
-                                break;
-                            }
+                    // we pull workers from other resources with excess workers according to priorities that are already processed
+                    for (int pullPriority : resourcePullPriority) {
+                        var pulling = this.workerController.workerTracker.get(pullPriority);
+                        if (!pulling.isEmpty()) {
+                            this.logger.log("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to continue building  " + TypeIds.toItemName(p.typeId));
+                            this.workerController.transferWorkerAssignment(pulling, availableWorkers, 1);
+                            break;
                         }
+                    }
+
+                    if (availableWorkers.isEmpty()) {
+                        this.logger.log("Skipping remaining priorities as no new builders can be found.");
+                        break mainLoop;
                     }
 
                     // find a new builder and assign it
                     var builder = availableWorkers.get(0);
                     builder.issueRepairOrder(b);
                     availableWorkers.remove(0);
-                    this.workerController.idleWorkers.remove(builder);
                     this.workerController.builders.add(builder);
                     ++builderCount;
 
                     if (builderCount >= builderLimit) {
                         this.logger.log("Skipping remaining priorities as builder limit is reached (" + builderCount + "/" + builderLimit + ")");
-                        return;
+                        break mainLoop;
                     }
                 }
 
-                return;
+                continue mainLoop;
             }
 
             if (toStart <= 0) {
@@ -270,8 +279,8 @@ public class AiController {
 
             this.logger.log("Processing " + TypeIds.toItemName(p.typeId) + " as " + p.typeId + " (" + doneCount + "/" + existingCount + "/" + p.count + ")");
 
-            // if there are not enough idle workers, we try to pull workers from other resources with excess workers according to priorities that are already processed
-            if (availableWorkers.size() < 1) {
+            // we pull workers from other resources with excess workers according to priorities that are already processed
+            if (availableWorkers.size() == 0) {
                 for (int pullPriority : resourcePullPriority) {
                     var pulling = this.workerController.workerTracker.get(pullPriority);
                     if (!pulling.isEmpty()) {
@@ -290,18 +299,18 @@ public class AiController {
                 if (buildingLocation != null && builder.issueBuildOrder(buildingLocation, p.typeId)) {
                     ++builderCount;
                     this.workerController.builders.add(builder);
-                    this.workerController.idleWorkers.remove(builder);
-                    //WorldApi.queueWorldUpdate();
-                    return;
+                    break mainLoop;
                 } else {
                     this.workerController.builders.remove(builder);
                     this.workerController.idleWorkers.add(builder);
                     this.logger.log("Failed to issue build order");
-                    return;
+                    break mainLoop;
                 }
             }
         }
 
+        availableWorkers.removeAll(workerController.builders);
+        this.workerController.idleWorkers.addAll(availableWorkers);
         this.logger.log("Completed all priorities");
     }
 

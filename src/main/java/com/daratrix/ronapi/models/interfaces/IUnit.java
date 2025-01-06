@@ -7,6 +7,8 @@ package com.daratrix.ronapi.models.interfaces;
 
 import com.daratrix.ronapi.apis.TypeIds;
 import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -23,6 +25,9 @@ public interface IUnit extends IPlayerWidget, ILocated {
     public boolean isMaxCarryCapacityReached();
     public boolean isCarryCapacityOver(int capacity);
     boolean isCarryingItems();
+
+    Unit getUnit();
+    WorkerUnit getWorkerUnit();
 
     // mutations
     boolean issueBuildOrder(BlockPos pos, int typeId);
@@ -90,5 +95,4 @@ public interface IUnit extends IPlayerWidget, ILocated {
     public default boolean issueMoveOrder(float x, float y, float z) {
         return this.issuePointOrder((int)x, (int)y, (int)z, TypeIds.Orders.Move);
     }
-
 }

@@ -27,6 +27,7 @@ public class ApiResource implements IResource {
     private ResourceName resourceName;
     private ArrayList<BlockPos> blocks = new ArrayList<>();
 
+    private BlockPos.MutableBlockPos centerPos = new BlockPos.MutableBlockPos(0, 0, 0);
     private BlockPos.MutableBlockPos minPos = new BlockPos.MutableBlockPos(0, 0, 0);
     private BlockPos.MutableBlockPos maxPos = new BlockPos.MutableBlockPos(0, 0, 0);
     private int resourceAmount;
@@ -143,21 +144,30 @@ public class ApiResource implements IResource {
             this.resourceAmount += resourceSource.resourceValue;
         }
 
+        this.centerPos.setX((this.minPos.getX() + this.maxPos.getX()) / 2);
+        this.centerPos.setX((this.minPos.getY() + this.maxPos.getY()) / 2);
+        this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ()) / 2);
+
         this.boundingBox = GeometryUtils.getBoundingBox(this.minPos, this.maxPos.offset(1, 1, 1));
     }
 
     @Override
     public float getX() {
-        return (minPos.getX() + maxPos.getX()) * 0.5f;
+        return centerPos.getX();
     }
 
     @Override
     public float getY() {
-        return (minPos.getY());
+        return centerPos.getY();
     }
 
     @Override
     public float getZ() {
-        return (minPos.getZ() + maxPos.getZ()) * 0.5f;
+        return centerPos.getZ();
+    }
+
+    @Override
+    public BlockPos getPos() {
+        return this.centerPos;
     }
 }
