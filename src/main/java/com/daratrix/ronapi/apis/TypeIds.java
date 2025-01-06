@@ -131,8 +131,8 @@ public class TypeIds {
         public final static int FoodBlock = add(ResourceName.FOOD);
         public final static int WoodBlock = add(ResourceName.WOOD);
         public final static int OreBlock = add(ResourceName.ORE);
-        public final static int FoodEntity = add("animal");
-        public final static int FoodFarm = add("farm");
+        public final static int FoodEntity = add("HUNT");
+        public final static int FoodFarm = add("FARM");
     }
 
     public static class Villagers {

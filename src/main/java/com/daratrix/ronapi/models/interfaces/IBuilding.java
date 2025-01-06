@@ -28,6 +28,7 @@ public interface IBuilding extends IPlayerWidget, IStructure {
     public int countBuilders();
 
     boolean isCapitol();
+    boolean canBeGarrisoned();
 
     // mutations
 

@@ -76,18 +76,18 @@ public class ApiUnit implements IUnit {
 
     @Override
     public int getCurrentOrderId() {
+        var returning = this.unit.getReturnResourcesGoal();
+        if (returning != null) {
+            var returnTarget = returning.getBuildingTarget();
+            if (returnTarget != null) {
+                return TypeIds.Orders.Return;
+            }
+        }
+
         if (this.worker != null) {
             var repairing = this.worker.getBuildRepairGoal();
             if (repairing.getBuildingTarget() != null) {
                 return TypeIds.Orders.Repair;
-            }
-
-            var returning = this.unit.getReturnResourcesGoal();
-            if (returning != null) {
-                var returnTarget = returning.getBuildingTarget();
-                if (returnTarget != null) {
-                    return TypeIds.Orders.Return;
-                }
             }
 
             var gathering = this.worker.getGatherResourceGoal();

@@ -7,11 +7,8 @@ import com.daratrix.ronapi.ai.priorities.AiArmyPriorities;
 import com.daratrix.ronapi.ai.priorities.AiHarvestPriorities;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
-import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.solegendary.reignofnether.util.Faction;
-
-import java.util.stream.Stream;
 
 public class VillagerScript implements IAiLogic {
 
@@ -127,8 +124,12 @@ public class VillagerScript implements IAiLogic {
     }
 
     private void setArmyPriorities(IAiPlayer player, AiArmyPriorities armyPriorities) {
-        armyPriorities.setDefaultGatherPoint(player);
-        armyPriorities.setAttackTarget(player);
+        armyPriorities.pickDefaultGatherPoint(player);
+        if(armyPriorities.pickDefenseTarget(player)) {
+            armyPriorities.attackTarget = null; // don't attack while bases are threatened
+        } else {
+            armyPriorities.pickAttackTarget(player);
+        }
     }
 
     @Override

@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.AABB;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -171,10 +170,14 @@ public class WorldApi {
         return false;
     }
 
-    public static void getThreats(AABB boundingBox, String playerName, Collection<IPlayerWidget> threats) {
+    public static void findThreats(AABB boundingBox, String playerName, Collection<IPlayerWidget> outputThreats) {
         var enemies = getPlayerEnemies(playerName);
         enemies.forEach(p -> {
-            p.getUnitsFiltered(u -> !u.isWorker()).filter(u -> GeometryUtils.contains(boundingBox, u.getPos())).collect(Collectors.toCollection(() -> threats));
+            p.getUnitsFiltered(u -> !u.isWorker()).filter(u -> GeometryUtils.contains(boundingBox, u.getPos())).collect(Collectors.toCollection(() -> outputThreats));
         });
+    }
+
+    public static boolean isNearPlayerBases(IPlayerWidget defenseTarget, IPlayer player, float distance) {
+        return player.getUnitsFiltered(b -> GeometryUtils.isWithinDistance(b, defenseTarget, distance)).findAny().isPresent();
     }
 }

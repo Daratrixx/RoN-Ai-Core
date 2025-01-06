@@ -111,7 +111,15 @@ public class AiHudClientEvents {
         //}
 
         for (IPlayer p : WorldApi.getSingleton().players.values()) {
-            p.getBasesFiltered(b -> true).forEach(b -> MyRenderer.drawLineBoxOutlineOnly(poseStack, b.getBoundingBox(), 1, 1, 1, 1, false));
+            p.getBasesFiltered(b -> true).forEach(b -> {
+                if (b.getThreatPower() > 10) {
+                    MyRenderer.drawLineBoxOutlineOnly(poseStack, b.getBoundingBox(), 1, 0, 0, 1, false);
+                } else if (b.getThreatPower() > 0) {
+                    MyRenderer.drawLineBoxOutlineOnly(poseStack, b.getBoundingBox(), 1, 1, 0, 0.66f, false);
+                } else {
+                    MyRenderer.drawLineBoxOutlineOnly(poseStack, b.getBoundingBox(), 1, 1, 1, 0.33f, false);
+                }
+            });
         }
     }
 

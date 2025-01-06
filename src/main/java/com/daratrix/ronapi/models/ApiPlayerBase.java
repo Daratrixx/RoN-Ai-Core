@@ -1,26 +1,25 @@
 package com.daratrix.ronapi.models;
 
 import com.daratrix.ronapi.apis.WorldApi;
-import com.daratrix.ronapi.models.interfaces.IBoxed;
-import com.daratrix.ronapi.models.interfaces.IBuilding;
-import com.daratrix.ronapi.models.interfaces.ILocated;
-import com.daratrix.ronapi.models.interfaces.IPlayerWidget;
+import com.daratrix.ronapi.models.interfaces.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
+import java.util.stream.Stream;
 
 public class ApiPlayerBase implements ILocated, IBoxed {
     public final String playerName;
     public AABB boundingBox;
     public final ArrayList<IBuilding> buildings = new ArrayList<>();
+    private final ArrayList<IPlayerWidget> threats = new ArrayList<>();
+    private int threatPower = 0;
 
     private final BlockPos.MutableBlockPos centerPos = new BlockPos.MutableBlockPos();
     private final BlockPos.MutableBlockPos minPos = new BlockPos.MutableBlockPos();
     private final BlockPos.MutableBlockPos maxPos = new BlockPos.MutableBlockPos();
-    private final ArrayList<IPlayerWidget> threats = new ArrayList<>();
 
     private int capitols = 0;
 
@@ -62,11 +61,11 @@ public class ApiPlayerBase implements ILocated, IBoxed {
             this.buildings.add(building);
             adjust(this.minPos, building.getMinPos(), -20, Math::min);
             adjust(this.maxPos, building.getMaxPos(), 20, Math::max);
-            this.centerPos.setX((this.minPos.getX() + this.maxPos.getX())/2);
-            this.centerPos.setX((this.minPos.getY() + this.maxPos.getY())/2);
-            this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ())/2);
+            this.centerPos.setX((this.minPos.getX() + this.maxPos.getX()) / 2);
+            this.centerPos.setX((this.minPos.getY() + this.maxPos.getY()) / 2);
+            this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ()) / 2);
             this.boundingBox = new AABB(this.minPos, this.maxPos);
-            if(building.isCapitol()) {
+            if (building.isCapitol()) {
                 ++this.capitols;
             }
         }
@@ -85,7 +84,7 @@ public class ApiPlayerBase implements ILocated, IBoxed {
         if (this.buildings.contains(building)) {
             this.buildings.remove(building);
 
-            if(building.isCapitol()) {
+            if (building.isCapitol()) {
                 ++this.capitols;
             }
 
@@ -106,9 +105,9 @@ public class ApiPlayerBase implements ILocated, IBoxed {
                 adjust(this.maxPos, building.getMaxPos(), 20, Math::max);
             }
 
-            this.centerPos.setX((this.minPos.getX() + this.maxPos.getX())/2);
-            this.centerPos.setY((this.minPos.getY() + this.maxPos.getY())/2);
-            this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ())/2);
+            this.centerPos.setX((this.minPos.getX() + this.maxPos.getX()) / 2);
+            this.centerPos.setY((this.minPos.getY() + this.maxPos.getY()) / 2);
+            this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ()) / 2);
 
             this.boundingBox = new AABB(this.minPos, this.maxPos);
         }
@@ -186,8 +185,31 @@ public class ApiPlayerBase implements ILocated, IBoxed {
         return this.capitols > 0;
     }
 
-    public void updateThreats() {
+    public int updateThreats() {
         this.threats.clear();
-        WorldApi.getThreats(this.boundingBox, this.playerName, this.threats);
+        WorldApi.findThreats(this.boundingBox, this.playerName, this.threats);
+        this.threatPower = 0;
+        for (IPlayerWidget threat : this.threats) {
+            if (threat instanceof IUnit u) {
+                this.threatPower += u.getPopUsed();
+            }
+            if (threat instanceof IBuilding b) {
+                this.threatPower += b.canBeGarrisoned() ? 10 : 5;
+            }
+        }
+        
+        return this.threatPower;
+    }
+
+    public boolean hasThreats() {
+        return !this.threats.isEmpty();
+    }
+
+    public Stream<IPlayerWidget> getThreats() {
+        return this.threats.stream();
+    }
+
+    public int getThreatPower() {
+        return this.threatPower;
     }
 }

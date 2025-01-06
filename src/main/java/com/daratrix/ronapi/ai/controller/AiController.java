@@ -66,6 +66,7 @@ public class AiController {
     }
 
     public void runAiArmy(float elapsed) {
+        this.armyController.refreshThreats();
         this.armyController.refreshArmyTracker();
         if (this.armyController.army.isEmpty()) {
             return; // nothing to control
@@ -74,13 +75,18 @@ public class AiController {
         var priorities = this.priorities.getArmyPriorities();
         this.armyController.assignArmy(priorities);
 
-        if (priorities.armyTarget != null) {
-            this.armyController.groupAttackToward(this.armyController.attackGroup, priorities.armyTarget);
+        if (priorities.defenseTarget != null) {
+            this.armyController.groupAttackToward(this.armyController.defenseGroup, priorities.defenseTarget);
+        } else {
+            this.armyController.groupRetreatToward(this.armyController.defenseGroup, priorities.defaultGatherPoint);
+        }
+        if (priorities.attackTarget != null) {
+            this.armyController.groupAttackToward(this.armyController.attackGroup, priorities.attackTarget);
         } else {
             this.armyController.groupRetreatToward(this.armyController.attackGroup, priorities.defaultGatherPoint);
-            //} else {
-            //    this.armyController.gatherToward(priorities.defaultGatherPoint);
         }
+
+        this.armyController.groupRetreatToward(this.armyController.idleArmy, priorities.defaultGatherPoint);
     }
 
     public void runAiHarvesting(float elapsed) {

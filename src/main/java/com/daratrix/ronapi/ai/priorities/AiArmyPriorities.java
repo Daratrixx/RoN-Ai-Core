@@ -1,8 +1,9 @@
 package com.daratrix.ronapi.ai.priorities;
 
 import com.daratrix.ronapi.apis.WorldApi;
-import com.daratrix.ronapi.models.interfaces.ILocated;
+import com.daratrix.ronapi.models.ApiPlayerBase;
 import com.daratrix.ronapi.models.interfaces.IPlayer;
+import com.daratrix.ronapi.models.interfaces.IPlayerWidget;
 import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import net.minecraft.core.BlockPos;
@@ -11,11 +12,12 @@ import net.minecraft.core.Vec3i;
 public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiArmyPriority> {
 
     public final FileLogger logger;
+    public IPlayerWidget defenseTarget = null;
     public BlockPos.MutableBlockPos defaultGatherPoint = new BlockPos.MutableBlockPos();
 
-    public ILocated armyTarget = null;
-    public BlockPos.MutableBlockPos armyGatherPoint = new BlockPos.MutableBlockPos();
-    public ILocated harassTarget = null;
+    public IPlayerWidget attackTarget = null;
+    public BlockPos.MutableBlockPos attackGatherPoint = new BlockPos.MutableBlockPos();
+    public IPlayerWidget harassTarget = null;
     public BlockPos.MutableBlockPos harassGatherPoint = new BlockPos.MutableBlockPos();
 
     public AiArmyPriorities(FileLogger logger) {
@@ -28,14 +30,29 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
         this.priorities.add(new AiArmyPriority(typeId, count));
     }
 
+    public boolean pickDefenseTarget(IPlayer player) {
+        if (this.defenseTarget != null && this.defenseTarget.isAlive() && WorldApi.isNearPlayerBases(this.defenseTarget, player, 8)) {
+            return true;
+        }
+
+        var threatenedBase = player.getBasesFiltered(ApiPlayerBase::hasThreats).findFirst().orElse(null);
+        if (threatenedBase == null) {
+            this.defenseTarget = null;
+            return false;
+        }
+
+        this.defenseTarget = threatenedBase.getThreats().findFirst().orElse(null);
+        return this.defenseTarget != null;
+    }
+
     /**
      * Set where units will gather while they are not used
      *
      * @param player
      */
-    public void setDefaultGatherPoint(IPlayer player) {
+    public void pickDefaultGatherPoint(IPlayer player) {
         // we try to find a base, either a base with a Capitol, or any base
-        var base = player.getBasesFiltered(b -> b.hasCapitol()).findFirst().orElse(null);
+        var base = player.getBasesFiltered(ApiPlayerBase::hasCapitol).findFirst().orElse(null);
 
         if (base == null) {
             base = player.getBasesFiltered(b -> true).findFirst().orElse(null);
@@ -88,12 +105,16 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
     public void setAttackGatherPoint(IPlayer player) {
     }
 
-    public void setAttackTarget(IPlayer player) {
+    public void pickAttackTarget(IPlayer player) {
         var armyPop = player.getArmyPop();
         var workerPop = player.getWorkerPop();
         if (armyPop * 2 < workerPop) {
-            this.armyTarget = null;
+            this.attackTarget = null;
             return; // army is too small, shouldn't try to attack
+        }
+
+        if(attackTarget != null && attackTarget.isAlive()) {
+            return; // keep attacking the same target
         }
 
         var enemies = WorldApi.getPlayerEnemies(player).toList();
@@ -102,7 +123,7 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
                 .sorted((a, b) -> GeometryUtils.distanceComparator(a, b, this.defaultGatherPoint))
                 .toList();
         if (!enemyBases.isEmpty()) {
-            this.armyTarget = enemyBases.get(0).buildings.get(0);
+            this.attackTarget = enemyBases.get(0).buildings.get(0);
             return;
         }
 
@@ -111,11 +132,11 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
                 .sorted((a, b) -> GeometryUtils.distanceComparator(a, b, this.defaultGatherPoint))
                 .toList();
         if (!enemyUnits.isEmpty()) {
-            this.armyTarget = enemyUnits.get(0);
+            this.attackTarget = enemyUnits.get(0);
             return;
         }
 
-        this.armyTarget = null;
+        this.attackTarget = null;
     }
 
     /**

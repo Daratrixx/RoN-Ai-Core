@@ -4,6 +4,7 @@ import com.daratrix.ronapi.ai.controller.interfaces.IAiLogic;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.ai.priorities.AiArmyPriorities;
 import com.daratrix.ronapi.apis.TypeIds;
+import com.daratrix.ronapi.models.ApiPlayerBase;
 import com.daratrix.ronapi.models.interfaces.ILocated;
 import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.utils.FileLogger;
@@ -21,8 +22,10 @@ public class AiArmyController {
     public final ArrayList<IUnit> army = new ArrayList<>();
     public final ArrayList<IUnit> idleArmy = new ArrayList<>();
 
+    public final ArrayList<IUnit> defenseGroup = new ArrayList<>();
     public final ArrayList<IUnit> attackGroup = new ArrayList<>();
     public final ArrayList<IUnit> harassGroup = new ArrayList<>();
+    private int totalThreatPower;
 
     public AiArmyController(IAiPlayer player, IAiLogic logic, FileLogger logger) {
         this.player = player;
@@ -32,6 +35,7 @@ public class AiArmyController {
 
     public String getArmyListName(IUnit unit) {
         if (this.idleArmy.contains(unit)) return "idleArmy";
+        if (this.defenseGroup.contains(unit)) return "defenseGroup";
         if (this.attackGroup.contains(unit)) return "attackGroup";
         if (this.harassGroup.contains(unit)) return "harassGroup";
         return null;
@@ -41,6 +45,7 @@ public class AiArmyController {
         // reset state
         this.army.removeIf(u -> !u.isAlive());
         this.idleArmy.removeIf(u -> !u.isAlive());
+        this.defenseGroup.removeIf(u -> !u.isAlive());
         this.attackGroup.removeIf(u -> !u.isAlive());
         this.harassGroup.removeIf(u -> !u.isAlive());
 
@@ -52,11 +57,30 @@ public class AiArmyController {
                 });
     }
 
+    public void refreshThreats() {
+        this.totalThreatPower = this.player.getBasesFiltered(b -> true).map(ApiPlayerBase::updateThreats).reduce(0, Integer::sum);
+    }
+
     public void assignArmy(AiArmyPriorities priorities) {
-        // for now use every single units to attack
-        this.attackGroup.clear();
-        this.attackGroup.addAll(this.army);
-        this.idleArmy.clear();
+        if (priorities.defenseTarget != null) {
+            this.defenseGroup.addAll(this.idleArmy);
+            this.idleArmy.clear();
+            //var defensePower = this.defenseGroup.stream().map(IUnit::getPopUsed).reduce(0, Integer::sum);
+            //while (!this.attackGroup.isEmpty() && defensePower < this.totalThreatPower) {
+            //
+            //}
+        } else {
+            this.idleArmy.addAll(this.defenseGroup);
+            this.defenseGroup.clear();
+        }
+
+        if (priorities.attackTarget != null) {
+            this.attackGroup.addAll(this.idleArmy);
+            this.idleArmy.clear();
+        } else {
+            this.idleArmy.addAll(this.attackGroup);
+            this.attackGroup.clear();
+        }
     }
 
     public void groupAttackToward(Collection<IUnit> group, ILocated target) {
@@ -94,7 +118,7 @@ public class AiArmyController {
                 u.issueMoveOrder(x, y, z);
             } else if (d > softDistance) {
                 u.issueAttackOrder(x, y, z);
-            } else if(u.isCarryingItems()) {
+            } else if (u.isCarryingItems()) {
                 u.issueOrder(TypeIds.Orders.Return); // while idling with resources, return them
             }
         }

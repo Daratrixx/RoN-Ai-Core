@@ -14,6 +14,7 @@ import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.models.interfaces.IWidget;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.building.GarrisonableBuilding;
 import com.solegendary.reignofnether.building.ProductionBuilding;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
@@ -123,6 +124,11 @@ public class ApiBuilding implements IBuilding {
     @Override
     public boolean isCapitol() {
         return this.isCapitol;
+    }
+
+    @Override
+    public boolean canBeGarrisoned() {
+        return this.building instanceof GarrisonableBuilding;
     }
 
     @Override
