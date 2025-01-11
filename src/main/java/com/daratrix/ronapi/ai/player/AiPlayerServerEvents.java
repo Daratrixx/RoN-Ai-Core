@@ -3,8 +3,8 @@ package com.daratrix.ronapi.ai.player;
 import com.daratrix.ronapi.ai.controller.AiController;
 import com.daratrix.ronapi.ai.controller.AiLogics;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
+import com.daratrix.ronapi.ai.registers.AiGameRuleRegister;
 import com.daratrix.ronapi.apis.WorldApi;
-import com.daratrix.ronapi.timer.TimerServerEvents;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.player.RTSPlayer;
 import com.solegendary.reignofnether.research.ResearchClientboundPacket;
@@ -12,9 +12,7 @@ import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 import com.solegendary.reignofnether.util.Faction;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Collections;
@@ -32,9 +30,9 @@ public class AiPlayerServerEvents {
         var controller = createAiPlayer(rtsPlayer, name);
         WorldApi.getSingleton().track((AiPlayer) controller.player);
 
-        if (controller.logic.useGreedisgood()) {
+        if (AiGameRuleRegister.forceGreedisgood(Minecraft.getInstance().level) || controller.logic.useGreedisgood()) {
             // extra resources for faster development
-            ResourcesServerEvents.addSubtractResources(new Resources(rtsPlayer.name, 25000, 25000, 25000));
+            ResourcesServerEvents.addSubtractResources(new Resources(rtsPlayer.name, 50000, 50000, 50000));
         }
     }
 
@@ -48,7 +46,7 @@ public class AiPlayerServerEvents {
         var aiPlayer = new AiPlayer(rtsPlayer);
         var controller = startAiController(aiPlayer, logicName);
 
-        if (controller.logic.useWarpten()) {
+        if (AiGameRuleRegister.forceWarpten(Minecraft.getInstance().level) || controller.logic.useWarpten()) {
             // warpten for faster development
             ResearchServerEvents.addCheat(rtsPlayer.name, "warpten");
             ResearchClientboundPacket.addCheat(rtsPlayer.name, "warpten");
@@ -75,21 +73,6 @@ public class AiPlayerServerEvents {
             return -1;
         } else {
             return minId - 1;
-        }
-    }
-
-    public static void sendMessageToAllPlayers(String msg) {
-        sendMessageToAllPlayers(msg, false);
-    }
-
-    public static void sendMessageToAllPlayers(String msg, boolean bold) {
-        for (ServerPlayer player : players) {
-            player.sendSystemMessage(Component.literal(""));
-            if (bold)
-                player.sendSystemMessage(Component.literal(msg).withStyle(Style.EMPTY.withBold(true)));
-            else
-                player.sendSystemMessage(Component.literal(msg));
-            player.sendSystemMessage(Component.literal(""));
         }
     }
 }

@@ -13,6 +13,7 @@ import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -62,7 +63,11 @@ public class WorldApi {
 
     public static void gridScanStep(float elasped) {
         if (gridScanProgress == gridScanTarget) {
-            System.out.println("Grid scan completed!");
+            System.out.println("Grid scan completed! (size: " + gridScanSize + ")");
+            var server = MC.getSingleplayerServer();
+            if (server != null) {
+                server.getPlayerList().broadcastSystemMessage(Component.literal("Grid scan completed! (size: " + gridScanSize + ")"), false);
+            }
             gridScanRunning = false;
             gridScanTimer.pause();
             return;

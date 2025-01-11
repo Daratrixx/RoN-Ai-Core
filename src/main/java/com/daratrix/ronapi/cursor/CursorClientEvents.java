@@ -1,30 +1,20 @@
 package com.daratrix.ronapi.cursor;
 
-import com.daratrix.ronapi.RonApi;
-import com.daratrix.ronapi.apis.TypeIds;
-import com.daratrix.ronapi.apis.UnitApi;
+import com.daratrix.ronapi.ai.registers.AiGameRuleRegister;
 import com.daratrix.ronapi.apis.WorldApi;
-import com.daratrix.ronapi.ai.player.AiPlayerServerboundPacket;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.daratrix.ronapi.registers.GameRuleRegister;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3d;
 import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
-import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.resources.ResourceSources;
-import com.solegendary.reignofnether.unit.UnitAction;
-import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
-import com.solegendary.reignofnether.util.Faction;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.phys.*;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
@@ -51,6 +41,10 @@ public class CursorClientEvents {
 
         if (MC.player == null || MC.level == null)
             return;
+
+        if (!GameRuleRegister.showDebug(MC.level)) {
+            return;
+        }
 
         PoseStack poseStack = evt.getPoseStack();
         var highlightedPos = com.solegendary.reignofnether.cursor.CursorClientEvents.getPreselectedBlockPos();
@@ -94,6 +88,11 @@ public class CursorClientEvents {
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent evt) {
+
+        if (!GameRuleRegister.showDebug(MC.level)) {
+            return;
+        }
+
         PoseStack poseStack = evt.getPoseStack();
         var highlightedPos = com.solegendary.reignofnether.cursor.CursorClientEvents.getPreselectedBlockPos();
         var highligthedResource = WorldApi.getResourceAt(highlightedPos);

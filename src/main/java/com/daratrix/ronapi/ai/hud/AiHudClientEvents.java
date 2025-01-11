@@ -1,5 +1,6 @@
 package com.daratrix.ronapi.ai.hud;
 
+import com.daratrix.ronapi.ai.registers.AiGameRuleRegister;
 import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.ApiPlayerBase;
 import com.daratrix.ronapi.models.ApiResource;
@@ -67,13 +68,13 @@ public class AiHudClientEvents {
                         mouseX, mouseY);
                 renderedButtons.add(AiStartButtons.monsterStartButton);
             }
-            if (!AiStartButtons.piglinStartButton.isHidden.get()) {
+            /*if (!AiStartButtons.piglinStartButton.isHidden.get()) {
                 AiStartButtons.piglinStartButton.render(evt.getPoseStack(),
                         screenWidth - (AiStartButtons.ICON_SIZE * 2),
                         AiStartButtons.ICON_SIZE * 2 + AiStartButtons.ICON_SIZE / 2,
                         mouseX, mouseY);
                 renderedButtons.add(AiStartButtons.piglinStartButton);
-            }
+            }*/
         }
 
         // ------------------------------------------------------
@@ -91,6 +92,10 @@ public class AiHudClientEvents {
             return;
         if (MC.level == null || MC.noRender)
             return;
+
+        if (!AiGameRuleRegister.showDebug(MC.level)) {
+            return;
+        }
 
         PoseStack poseStack = evt.getPoseStack();
         var highlightedPos = CursorClientEvents.getPreselectedBlockPos();

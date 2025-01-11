@@ -63,6 +63,10 @@ public class ApiWorld {
 
 
     public void updateTracking() {
+        if(MC.level == null) {
+            return; // wait for the server to be ready...
+        }
+
         synchronized (this) {
             for (var p : PlayerServerEvents.rtsPlayers) {
                 track(p);
@@ -71,20 +75,14 @@ public class ApiWorld {
             var allUnits = UnitServerEvents.getAllUnits();
             for (var u : allUnits) {
                 if (u.isAlive() && u instanceof Unit unit) {
-                    var apiUnit = track(unit);
-                    //if (apiUnit != null && apiUnit.isDead()) {
-                    //    untrack(unit);
-                    //}
+                    track(unit);
                 }
             }
 
             var allBuildings = BuildingServerEvents.getBuildings();
             for (var b : allBuildings) {
                 if (b.getHealth() > 0) {
-                    var apiBuilding = track(b);
-                    //if (apiBuilding != null && apiBuilding.isDead()) {
-                    //    untrack(b);
-                    //}
+                    track(b);
                 }
             }
 

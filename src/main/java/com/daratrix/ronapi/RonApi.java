@@ -1,8 +1,10 @@
 package com.daratrix.ronapi;;
 
+import com.daratrix.ronapi.ai.registers.AiGameRuleRegister;
 import com.daratrix.ronapi.ai.scripts.MonsterScript;
 import com.daratrix.ronapi.ai.scripts.VillagerScript;
 import com.daratrix.ronapi.registers.ClientEventRegister;
+import com.daratrix.ronapi.registers.GameRuleRegister;
 import com.daratrix.ronapi.registers.ServerEventRegister;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.api.distmarker.Dist;
@@ -20,6 +22,9 @@ public class RonApi {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public RonApi() {
+        GameRuleRegister.init();
+        AiGameRuleRegister.init();
+
         final ClientEventRegister clientRegister = new ClientEventRegister();
         DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> clientRegister::registerClientEvents);
 

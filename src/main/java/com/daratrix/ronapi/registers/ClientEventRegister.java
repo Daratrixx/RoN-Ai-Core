@@ -6,7 +6,6 @@ import com.daratrix.ronapi.ai.AiServerEvent;
 import com.daratrix.ronapi.ai.cursor.AiCursorClientEvents;
 import com.daratrix.ronapi.ai.player.AiPlayerServerEvents;
 import com.daratrix.ronapi.apis.ApiServerEvent;
-import com.daratrix.ronapi.commands.ApiCommand;
 import com.daratrix.ronapi.cursor.CursorClientEvents;
 import com.daratrix.ronapi.ai.hud.AiHudClientEvents;
 import com.daratrix.ronapi.timer.TimerServerEvents;
@@ -35,7 +34,6 @@ public class ClientEventRegister {
         System.out.println(RonApi.MOD_ID + ">ClientEventRegister.registerClientEvents SERVER");
         vanillaEventBus.register(ApiServerEvent.class);
         vanillaEventBus.register(TimerServerEvents.class);
-        vanillaEventBus.register(ApiCommand.class);
         vanillaEventBus.register(AiServerEvent.class);
     }
 }

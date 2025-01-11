@@ -1,6 +1,7 @@
 package com.daratrix.ronapi.apis;
 
 import com.daratrix.ronapi.models.ApiWorld;
+import com.daratrix.ronapi.registers.GameRuleRegister;
 import com.daratrix.ronapi.timer.Timer;
 import com.daratrix.ronapi.timer.TimerServerEvents;
 import net.minecraftforge.event.server.ServerStartedEvent;
@@ -26,8 +27,8 @@ public class ApiServerEvent {
         world = WorldApi.getSingleton();
         worldTrackerTimer = TimerServerEvents.queueTimerLooping(5, WorldApi::updateWorld);
         System.out.println("Created 5 seconds period timer for ApiWorld tracking updates");
-        //chunkScannerTimer = TimerServerEvents.queueTimerLooping(0.5f, WorldApi::scanChunks);
-        //System.out.println("Created 0.5 seconds period timer for ApiWorld chunk scan");
+        var scanSize = GameRuleRegister.scanSize(evt.getServer());
+        WorldApi.startGridScan(scanSize);
     }
 
     @SubscribeEvent

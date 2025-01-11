@@ -4,31 +4,26 @@ import com.daratrix.ronapi.RonApi;
 import com.daratrix.ronapi.ai.controller.AiController;
 import com.daratrix.ronapi.ai.hud.buttons.AiStartButtons;
 import com.daratrix.ronapi.ai.player.AiPlayerServerboundPacket;
+import com.daratrix.ronapi.ai.registers.AiGameRuleRegister;
 import com.daratrix.ronapi.ai.scripts.MonsterScript;
 import com.daratrix.ronapi.ai.scripts.VillagerScript;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.apis.WorldApi;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3d;
-import com.solegendary.reignofnether.ReignOfNether;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.hud.HudClientEvents;
 import com.solegendary.reignofnether.minimap.MinimapClientEvents;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
-import com.solegendary.reignofnether.resources.ResourceName;
-import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.util.Faction;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.ScreenEvent;
@@ -36,7 +31,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class AiCursorClientEvents {
 
@@ -89,6 +83,10 @@ public class AiCursorClientEvents {
             MyRenderer.renderIcon(poseStack, getFactionIcon(leftClickAction), iconX, iconY, iconSize);
         }
 
+        if (!AiGameRuleRegister.showDebug(MC.level)) {
+            return;
+        }
+
         if (HudClientEvents.hudSelectedEntity != null) {
             var unit = WorldApi.getSingleton().units.getOrDefault(HudClientEvents.hudSelectedEntity, null);
             if (unit != null) {
@@ -116,6 +114,10 @@ public class AiCursorClientEvents {
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent evt) {
+        if (MC.level == null || !AiGameRuleRegister.showDebug(MC.level)) {
+            return;
+        }
+
         if (leftClickAction != null) {
             PoseStack poseStack = evt.getPoseStack();
             var highlightedPos = CursorClientEvents.getPreselectedBlockPos();
