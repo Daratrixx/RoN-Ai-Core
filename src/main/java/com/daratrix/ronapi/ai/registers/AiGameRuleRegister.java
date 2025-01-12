@@ -57,6 +57,4 @@ public class AiGameRuleRegister {
     public static boolean forceGreedisgood(Level level) {
         return getValue(getRule(level, FORCE_GREEDISGOOD));
     }
-
-
 }

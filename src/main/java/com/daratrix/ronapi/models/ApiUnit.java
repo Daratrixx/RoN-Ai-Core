@@ -114,12 +114,16 @@ public class ApiUnit implements IUnit {
                 return TypeIds.Orders.AttackMove;
             }
 
-            if (target != null && !this.unit.isCheckpointGreen()) {
-                if (ResourceSources.isHuntableAnimal(target)) {
-                    return TypeIds.Resources.FoodEntity;
-                }
+            if (target != null) {
+                var checkpoints = this.unit.getCheckpoints();
+                if(!checkpoints.isEmpty()) {
+                    var checkpoint = checkpoints.get(0);
+                    if (!checkpoint.isGreen && ResourceSources.isHuntableAnimal(target)) {
+                        return TypeIds.Resources.FoodEntity;
+                    }
 
-                return TypeIds.Orders.AttackUnit;
+                    return !checkpoint.isGreen ? TypeIds.Orders.AttackUnit : TypeIds.Orders.Follow;
+                }
             }
         }
         /*

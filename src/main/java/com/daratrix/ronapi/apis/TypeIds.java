@@ -233,6 +233,7 @@ public class TypeIds {
         public final static int HarvestFarm = add(UnitAction.FARM);
         public final static int HarvestBlock = add(UnitAction.MOVE);
         public final static int Move = add(UnitAction.MOVE);
+        public final static int Follow = add(UnitAction.FOLLOW);
         public final static int Return = add(UnitAction.RETURN_RESOURCES);
         public final static int Stop = add(UnitAction.STOP);
     }
