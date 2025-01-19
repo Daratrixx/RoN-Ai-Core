@@ -15,6 +15,7 @@ import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.resources.ResourceSources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 
@@ -57,7 +58,7 @@ public class AiController {
         return this.armyController.getArmyListName(unit);
     }
 
-    public void runAiMicro(float elapsed) {
+    public void runAiMicro(MinecraftServer server) {
         this.armyController.refreshArmyTracker();
         if (this.armyController.army.isEmpty()) {
             return; // nothing to control
@@ -65,7 +66,7 @@ public class AiController {
 
     }
 
-    public void runAiArmy(float elapsed) {
+    public void runAiArmy(MinecraftServer server) {
         this.armyController.refreshThreats();
         this.armyController.refreshArmyTracker();
         if (this.armyController.army.isEmpty()) {
@@ -89,7 +90,7 @@ public class AiController {
         this.armyController.groupRetreatToward(this.armyController.idleArmy, priorities.defaultGatherPoint);
     }
 
-    public void runAiHarvesting(float elapsed) {
+    public void runAiHarvesting(MinecraftServer server) {
         this.updateCapitol();
         if (this.capitol == null) {
             return;
@@ -179,7 +180,7 @@ public class AiController {
         }
     }
 
-    public void runAiProduceBuildings(float elapsed) {
+    public void runAiProduceBuildings(MinecraftServer server) {
         this.workerController.refreshWorkerTracker();
 
         if (this.workerController.workers.isEmpty()) {
@@ -323,7 +324,7 @@ public class AiController {
         this.logger.log("Completed all priorities");
     }
 
-    public void runAiProduceUnits(float elapsed) {
+    public void runAiProduceUnits(MinecraftServer server) {
         var priorities = this.priorities.getUnitPriorities();
         var it = priorities.iterator();
         while (it.hasNext()) {
@@ -367,11 +368,11 @@ public class AiController {
 
     }
 
-    public void runAiProduceResearches(float elapsed) {
+    public void runAiProduceResearches(MinecraftServer server) {
 
     }
 
-    public void runAiUpdatePriorities(float elapsed) {
+    public void runAiUpdatePriorities(MinecraftServer server) {
         this.player.checkCompletedBuildings();
         this.priorities.reset();
         this.logic.setPriorities(this.player, this.priorities);

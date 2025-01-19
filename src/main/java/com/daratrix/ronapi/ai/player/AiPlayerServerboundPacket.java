@@ -72,9 +72,9 @@ public class AiPlayerServerboundPacket {
         //this.aiName = this.action.name();
         ((NetworkEvent.Context)ctx.get()).enqueueWork(() -> {
             switch (this.action) {
-                case START_RTS_VILLAGERS -> AiPlayerServerEvents.startRTSBot(this.aiName, new Vec3(this.x, this.y, this.z), Faction.VILLAGERS);
-                case START_RTS_MONSTERS -> AiPlayerServerEvents.startRTSBot(this.aiName, new Vec3(this.x, this.y, this.z), Faction.MONSTERS);
-                case START_RTS_PIGLINS -> AiPlayerServerEvents.startRTSBot(this.aiName, new Vec3(this.x, this.y, this.z), Faction.PIGLINS);
+                case START_RTS_VILLAGERS -> AiPlayerServerEvents.startRTSBot(ctx.get().getSender().server, this.aiName, new Vec3(this.x, this.y, this.z), Faction.VILLAGERS);
+                case START_RTS_MONSTERS -> AiPlayerServerEvents.startRTSBot(ctx.get().getSender().server, this.aiName, new Vec3(this.x, this.y, this.z), Faction.MONSTERS);
+                case START_RTS_PIGLINS -> AiPlayerServerEvents.startRTSBot(ctx.get().getSender().server, this.aiName, new Vec3(this.x, this.y, this.z), Faction.PIGLINS);
             }
 
             success.set(true);

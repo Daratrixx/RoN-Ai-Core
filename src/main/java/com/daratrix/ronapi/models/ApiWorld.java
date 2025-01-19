@@ -13,6 +13,7 @@ import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
@@ -62,46 +63,46 @@ public class ApiWorld {
     }
 
 
-    public void updateTracking() {
+    public void updateTracking(MinecraftServer server) {
         if(MC.level == null) {
             return; // wait for the server to be ready...
         }
 
         synchronized (this) {
             for (var p : PlayerServerEvents.rtsPlayers) {
-                track(p);
+                track(server, p);
             }
 
             var allUnits = UnitServerEvents.getAllUnits();
             for (var u : allUnits) {
                 if (u.isAlive() && u instanceof Unit unit) {
-                    track(unit);
+                    track(server, unit);
                 }
             }
 
             var allBuildings = BuildingServerEvents.getBuildings();
             for (var b : allBuildings) {
                 if (b.getHealth() > 0) {
-                    track(b);
+                    track(server, b);
                 }
             }
 
             // cleanup tracked units/buildings
-            this.cleanupDead();
+            this.cleanupDead(server);
         }
     }
 
     private static final ArrayList<Map.Entry<Unit, ApiUnit>> tempUnits = new ArrayList<>(1000);
     private static final ArrayList<Map.Entry<Building, ApiBuilding>> tempBuildings = new ArrayList<>(1000);
 
-    private void cleanupDead() {
+    private void cleanupDead(MinecraftServer server) {
         var deadUnits = this.units.entrySet();
         for (Map.Entry<Unit, ApiUnit> x : deadUnits) {
             if (x.getValue().isDead()) {
                 tempUnits.add(x);
             }
         }
-        tempUnits.forEach(x -> this.untrack(x.getKey()));
+        tempUnits.forEach(x -> this.untrack(server, x.getKey()));
 
         var deadBuildings = this.buildings.entrySet();
         for (Map.Entry<Building, ApiBuilding> x : deadBuildings) {
@@ -109,7 +110,7 @@ public class ApiWorld {
                 tempBuildings.add(x);
             }
         }
-        tempBuildings.forEach(x -> this.untrack(x.getKey()));
+        tempBuildings.forEach(x -> this.untrack(server, x.getKey()));
 
         if (MC.level == null) {
             return;
@@ -124,24 +125,24 @@ public class ApiWorld {
         }
     }
 
-    public ApiPlayer track(String playerName) {
+    public ApiPlayer track(MinecraftServer server, String playerName) {
         var apiPlayer = players.getOrDefault(playerName, null);
         if (apiPlayer != null) {
             return apiPlayer; // already tracked
         }
 
         var rtsPlayer = PlayerServerEvents.rtsPlayers.stream().filter(x -> x.name == playerName).findFirst();
-        return rtsPlayer.map(this::track).orElse(null);
+        return rtsPlayer.map(p -> this.track(server, p)).orElse(null);
     }
 
-    private ApiPlayer track(RTSPlayer rtsPlayer) {
+    private ApiPlayer track(MinecraftServer server, RTSPlayer rtsPlayer) {
         var apiPlayer = players.getOrDefault(rtsPlayer.name, null);
         if (apiPlayer != null) {
             return apiPlayer;
         }
 
         if (rtsPlayer.isBot()) {
-            apiPlayer = AiPlayerServerEvents.restoreAiPlayer(rtsPlayer);
+            apiPlayer = AiPlayerServerEvents.restoreAiPlayer(server, rtsPlayer);
             players.put(rtsPlayer.name, apiPlayer);
             return apiPlayer;
         }
@@ -152,13 +153,13 @@ public class ApiWorld {
         return apiPlayer;
     }
 
-    public ApiPlayer track(ApiPlayer apiPlayer) {
+    public ApiPlayer track(MinecraftServer server, ApiPlayer apiPlayer) {
         players.put(apiPlayer.name, apiPlayer);
 
         return apiPlayer;
     }
 
-    public ApiUnit track(Unit unit) {
+    public ApiUnit track(MinecraftServer server, Unit unit) {
         var apiUnit = units.getOrDefault(unit, null);
         if (apiUnit != null) {
             return apiUnit; // already tracked
@@ -168,7 +169,7 @@ public class ApiWorld {
         units.put(unit, apiUnit);
         //System.out.println("Tracking unit " + apiUnit.getName() + " (" + apiUnit.getOwnerName() + ")");
 
-        var apiPlayer = track(unit.getOwnerName());
+        var apiPlayer = track(server, unit.getOwnerName());
         if (apiPlayer != null) {
             apiPlayer.track(apiUnit);
         }
@@ -176,7 +177,7 @@ public class ApiWorld {
         return apiUnit;
     }
 
-    public ApiBuilding track(Building building) {
+    public ApiBuilding track(MinecraftServer server, Building building) {
         var apiBuilding = buildings.getOrDefault(building, null);
         if (apiBuilding != null) {
             return apiBuilding; // already tracked
@@ -186,7 +187,7 @@ public class ApiWorld {
         buildings.put(building, apiBuilding);
         //System.out.println("Tracking building " + apiBuilding.getName() + " (" + apiBuilding.getOwnerName() + ")");
 
-        var apiPlayer = track(building.ownerName);
+        var apiPlayer = track(server, building.ownerName);
         if (apiPlayer != null) {
             apiPlayer.track(apiBuilding);
         }
@@ -194,13 +195,13 @@ public class ApiWorld {
         return apiBuilding;
     }
 
-    private void untrack(Unit unit) {
+    private void untrack(MinecraftServer server, Unit unit) {
         var tracked = units.getOrDefault(unit, null);
         if (tracked == null) {
             return; // not tracked
         }
 
-        ApiPlayer player = track(unit.getOwnerName());
+        ApiPlayer player = track(server, unit.getOwnerName());
         if (player != null) {
             player.untrack(tracked);
         }
@@ -208,13 +209,13 @@ public class ApiWorld {
         units.remove(unit);
     }
 
-    private void untrack(Building building) {
+    private void untrack(MinecraftServer server, Building building) {
         var tracked = buildings.getOrDefault(building, null);
         if (tracked == null) {
             return; // not tracked
         }
 
-        ApiPlayer player = track(building.ownerName);
+        ApiPlayer player = track(server, building.ownerName);
         if (player != null) {
             player.untrack(tracked);
         }

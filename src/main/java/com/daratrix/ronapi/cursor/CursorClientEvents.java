@@ -42,7 +42,7 @@ public class CursorClientEvents {
         if (MC.player == null || MC.level == null)
             return;
 
-        if (!GameRuleRegister.showDebug(MC.level)) {
+        if (!GameRuleRegister.showDebug(MC.getSingleplayerServer())) {
             return;
         }
 
@@ -89,7 +89,7 @@ public class CursorClientEvents {
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent evt) {
 
-        if (!GameRuleRegister.showDebug(MC.level)) {
+        if (!GameRuleRegister.showDebug(MC.getSingleplayerServer())) {
             return;
         }
 

@@ -83,7 +83,7 @@ public class AiCursorClientEvents {
             MyRenderer.renderIcon(poseStack, getFactionIcon(leftClickAction), iconX, iconY, iconSize);
         }
 
-        if (!AiGameRuleRegister.showDebug(MC.level)) {
+        if (!AiGameRuleRegister.showDebug(MC.getSingleplayerServer())) {
             return;
         }
 
@@ -114,7 +114,7 @@ public class AiCursorClientEvents {
 
     @SubscribeEvent
     public static void onRenderLevel(RenderLevelStageEvent evt) {
-        if (MC.level == null || !AiGameRuleRegister.showDebug(MC.level)) {
+        if (MC.level == null || !AiGameRuleRegister.showDebug(MC.getSingleplayerServer())) {
             return;
         }
 

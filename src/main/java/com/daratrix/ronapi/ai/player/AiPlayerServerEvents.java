@@ -13,40 +13,39 @@ import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 import com.solegendary.reignofnether.util.Faction;
 import net.minecraft.client.Minecraft;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Collections;
 
-import static com.solegendary.reignofnether.player.PlayerServerEvents.players;
-
 public class AiPlayerServerEvents {
 
-    public static void startRTSBot(String name, Vec3 pos, Faction faction) {
+    public static void startRTSBot(MinecraftServer server, String name, Vec3 pos, Faction faction) {
         var id = getNextBotId();
         var aiPlayerName = name + id;
         PlayerServerEvents.startRTSBot(aiPlayerName, pos, faction);
         var rtsPlayer = PlayerServerEvents.rtsPlayers.stream().filter(p -> p.id == id).findFirst().get();
         System.out.println("Creating new AI agent " + rtsPlayer.name);
-        var controller = createAiPlayer(rtsPlayer, name);
-        WorldApi.getSingleton().track((AiPlayer) controller.player);
+        var controller = createAiPlayer(server, rtsPlayer, name);
+        WorldApi.getSingleton().track(server, (AiPlayer) controller.player);
 
-        if (AiGameRuleRegister.forceGreedisgood(Minecraft.getInstance().level) || controller.logic.useGreedisgood()) {
+        if (AiGameRuleRegister.forceGreedisgood(server) || controller.logic.useGreedisgood()) {
             // extra resources for faster development
             ResourcesServerEvents.addSubtractResources(new Resources(rtsPlayer.name, 50000, 50000, 50000));
         }
     }
 
-    public static AiPlayer restoreAiPlayer(RTSPlayer rtsPlayer) {
+    public static AiPlayer restoreAiPlayer(MinecraftServer server, RTSPlayer rtsPlayer) {
         System.out.println("Restoring AI agent " + rtsPlayer.name);
         var logicName = rtsPlayer.name.substring(0, rtsPlayer.name.lastIndexOf("-"));
-        return (AiPlayer) createAiPlayer(rtsPlayer, logicName).player;
+        return (AiPlayer) createAiPlayer(server, rtsPlayer, logicName).player;
     }
 
-    public static AiController createAiPlayer(RTSPlayer rtsPlayer, String logicName) {
+    public static AiController createAiPlayer(MinecraftServer server, RTSPlayer rtsPlayer, String logicName) {
         var aiPlayer = new AiPlayer(rtsPlayer);
         var controller = startAiController(aiPlayer, logicName);
 
-        if (AiGameRuleRegister.forceWarpten(Minecraft.getInstance().level) || controller.logic.useWarpten()) {
+        if (AiGameRuleRegister.forceWarpten(server) || controller.logic.useWarpten()) {
             // warpten for faster development
             ResearchServerEvents.addCheat(rtsPlayer.name, "warpten");
             ResearchClientboundPacket.addCheat(rtsPlayer.name, "warpten");

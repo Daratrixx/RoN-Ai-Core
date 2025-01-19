@@ -2,48 +2,53 @@ package com.daratrix.ronapi.ai;
 
 import com.daratrix.ronapi.RonApi;
 import com.daratrix.ronapi.ai.controller.AiController;
+import com.daratrix.ronapi.ai.registers.AiGameRuleRegister;
 import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.ApiWorld;
+import com.daratrix.ronapi.registers.GameRuleRegister;
 import com.daratrix.ronapi.timer.Timer;
 import com.daratrix.ronapi.timer.TimerServerEvents;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+
+import java.util.function.Consumer;
 
 public class AiServerEvent {
 
     private static Timer aiTickTimer;
     private static int aiTickIndex;
 
-    public static void aiTick(float t) {
+    public static void aiTick(MinecraftServer server) {
         var controllers = AiController.controllers.values();
         switch (aiTickIndex) {
             case 0:
-                WorldApi.updateWorld(t);
+                WorldApi.updateWorld(server);
                 for (AiController c : controllers) {
-                    c.runAiUpdatePriorities(t);
-                    c.runAiMicro(t);
+                    c.runAiUpdatePriorities(server);
+                    c.runAiMicro(server);
                 }
                 break;
             case 1:
-                WorldApi.updateWorld(t);
+                WorldApi.updateWorld(server);
                 for (AiController c : controllers) {
-                    c.runAiHarvesting(t);
-                    c.runAiProduceUnits(t);
-                    c.runAiProduceResearches(t);
+                    c.runAiHarvesting(server);
+                    c.runAiProduceUnits(server);
+                    c.runAiProduceResearches(server);
                 }
                 break;
             case 2:
-                WorldApi.updateWorld(t);
+                WorldApi.updateWorld(server);
                 for (AiController c : controllers) {
-                    c.runAiArmy(t);
-                    c.runAiMicro(t);
+                    c.runAiArmy(server);
+                    c.runAiMicro(server);
                 }
                 break;
             case 3:
-                WorldApi.updateWorld(t);
+                WorldApi.updateWorld(server);
                 for (AiController c : controllers) {
-                    c.runAiProduceBuildings(t);
+                    c.runAiProduceBuildings(server);
                     c.logger.flush();
                 }
                 break;
@@ -57,6 +62,9 @@ public class AiServerEvent {
         aiTickIndex = 0;
         aiTickTimer = TimerServerEvents.queueTimerLooping(1, AiServerEvent::aiTick);
         System.out.println("Created 1 seconds period timer for aiTick callback");
+        System.out.println("AI Force warpten: " + AiGameRuleRegister.forceWarpten(evt.getServer()));
+        System.out.println("AI Force greedisgood: " + AiGameRuleRegister.forceGreedisgood(evt.getServer()));
+        System.out.println("AI Show debug: " + AiGameRuleRegister.showDebug(evt.getServer()));
     }
 
     @SubscribeEvent

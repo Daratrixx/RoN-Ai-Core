@@ -1,11 +1,13 @@
 package com.daratrix.ronapi.timer;
 
 import it.unimi.dsi.fastutil.floats.FloatConsumer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class TimerServerEvents {
 
@@ -27,7 +29,7 @@ public class TimerServerEvents {
 
         var expiredTimers = new ArrayList<Timer>();
         for (Timer timer : timers) {
-            timer.tick();
+            timer.tick(evt.getServer());
             if (timer.shouldDelete()) {
                 expiredTimers.add(timer);
             }
@@ -38,7 +40,7 @@ public class TimerServerEvents {
         }
     }
 
-    public static Timer queueTimer(float interval, FloatConsumer callback) {
+    public static Timer queueTimer(float interval, Consumer<MinecraftServer> callback) {
         Timer t = new Timer(interval, callback, false);
         synchronized (queuedTimers) {
             queuedTimers.add(t);
@@ -47,7 +49,7 @@ public class TimerServerEvents {
         return t;
     }
 
-    public static Timer queueTimerLooping(float interval, FloatConsumer callback) {
+    public static Timer queueTimerLooping(float interval, Consumer<MinecraftServer> callback) {
         Timer t = new Timer(interval, callback, true);
         synchronized (queuedTimers) {
             queuedTimers.add(t);

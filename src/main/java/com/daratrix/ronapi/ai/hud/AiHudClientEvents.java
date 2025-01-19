@@ -93,7 +93,7 @@ public class AiHudClientEvents {
         if (MC.level == null || MC.noRender)
             return;
 
-        if (!AiGameRuleRegister.showDebug(MC.level)) {
+        if (!AiGameRuleRegister.showDebug(MC.getSingleplayerServer())) {
             return;
         }
 

@@ -29,6 +29,8 @@ public class ApiServerEvent {
         System.out.println("Created 5 seconds period timer for ApiWorld tracking updates");
         var scanSize = GameRuleRegister.scanSize(evt.getServer());
         WorldApi.startGridScan(scanSize);
+        System.out.println("API Scan size: " + GameRuleRegister.scanSize(evt.getServer()));
+        System.out.println("API Show debug: " + GameRuleRegister.showDebug(evt.getServer()));
     }
 
     @SubscribeEvent

@@ -1,6 +1,9 @@
 package com.daratrix.ronapi.timer;
 
 import it.unimi.dsi.fastutil.floats.FloatConsumer;
+import net.minecraft.server.MinecraftServer;
+
+import java.util.function.Consumer;
 
 public class Timer {
 
@@ -8,11 +11,11 @@ public class Timer {
 
     private final int interval;
     private int elapsed;
-    private final FloatConsumer callback;
+    private final Consumer<MinecraftServer> callback;
     private final boolean looping;
     private boolean paused;
 
-    public Timer(float interval, FloatConsumer callback) {
+    public Timer(float interval, Consumer<MinecraftServer> callback) {
         this.interval = Math.round(interval * ticksPerSecond);
         this.elapsed = 0;
         this.callback = callback;
@@ -20,7 +23,7 @@ public class Timer {
         System.out.println("started timer with tick interval: " + this.interval);
     }
 
-    public Timer(float interval, FloatConsumer callback, boolean looping) {
+    public Timer(float interval, Consumer<MinecraftServer> callback, boolean looping) {
         this.interval = Math.max(1, Math.round(interval * ticksPerSecond));
         this.elapsed = 0;
         this.callback = callback;
@@ -28,14 +31,14 @@ public class Timer {
         System.out.println("started timer with tick interval: " + this.interval);
     }
 
-    public boolean tick() {
+    public boolean tick(MinecraftServer server) {
         if (this.paused) {
             return false; // don't progress timer when paused
         }
 
         ++this.elapsed;
         if (this.elapsed % this.interval == 0) {
-            this.callback.accept(this.elapsed / ticksPerSecond);
+            this.callback.accept(server);
             if (!this.looping) {
                 this.paused = true;
             }
