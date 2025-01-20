@@ -250,34 +250,6 @@ public class ApiWorld {
                 return tracked; // already tracked
             }
 
-            /*var adjacentPos = Stream.of(pos.above(), pos.below(), pos.east(), pos.west(), pos.south(), pos.north()).toList();
-            var adjacentResources = resources.entrySet().stream()
-                    .filter(x -> x.getValue().getResourceType() == resource)
-                    .filter(x -> adjacentPos.stream().anyMatch(y -> y.equals(x.getKey())))
-                    .map(Map.Entry::getValue)
-                    .distinct()
-                    .toList();
-            if (!adjacentResources.isEmpty()) {
-                //System.out.println("Added to existing resource");
-                var existing = adjacentResources.get(0);
-                existing.track(MC.level, pos);
-                resources.put(pos, existing);
-
-                for (var merging : adjacentResources) {
-                    if (merging != existing) {
-                        //System.out.println("Merging adjacent resources");
-                        var blocksToMerge = merging.getBlocks().toList();
-                        for (var mergingPos : blocksToMerge) {
-                            existing.track(MC.level, mergingPos);
-                            resources.put(mergingPos, existing);
-                        }
-                    }
-                }
-
-                return existing;
-            }
-            */
-            //System.out.println("Tracking new resource");
             var output = new ApiResource(resource);
             output.track(MC.level, pos);
             resources.put(pos, output);

@@ -158,11 +158,11 @@ public class GeometryUtils {
         return distanceSquared(l, p) <= distance * distance;
     }
 
-    public static int distanceComparator(IBoxed l1, IBoxed l2, BlockPos from) {
+    public static int distanceComparator(IBoxed l1, IBoxed l2, Vec3i from) {
         return Float.compare(distanceSquared(l1, from), distanceSquared(l2, from));
     }
 
-    public static int distanceComparator(ILocated l1, ILocated l2, BlockPos from) {
+    public static int distanceComparator(ILocated l1, ILocated l2, Vec3i from) {
         return Float.compare(distanceSquared(l1, from), distanceSquared(l2, from));
     }
 
@@ -172,6 +172,14 @@ public class GeometryUtils {
 
     public static int distanceComparator(Entity l1, Entity l2, ILocated from) {
         return Float.compare(distanceSquared(from, l1), distanceSquared(from, l2));
+    }
+
+    public static int distanceComparator(Vec3i v1, Vec3i v2, ILocated from) {
+        return Float.compare(distanceSquared(from, v1), distanceSquared(from, v2));
+    }
+
+    public static int distanceComparator(Vec3i v1, Vec3i v2, Vec3i from) {
+        return Double.compare(v1.distSqr(from), v2.distSqr(from));
     }
 
 }

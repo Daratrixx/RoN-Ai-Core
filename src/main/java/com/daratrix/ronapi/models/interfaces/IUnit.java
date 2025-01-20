@@ -53,7 +53,7 @@ public interface IUnit extends IPlayerWidget, ILocated {
     }
 
     public default boolean issueHarvestOrder(IResource resource) {
-        return this.issuePointOrder(resource.getBlocks().findFirst().get(), TypeIds.Orders.HarvestBlock);
+        return this.issuePointOrder(resource.getNearestBlock(this), TypeIds.Orders.HarvestBlock);
     }
 
     public default boolean issueAttackOrder(IUnit unit) {

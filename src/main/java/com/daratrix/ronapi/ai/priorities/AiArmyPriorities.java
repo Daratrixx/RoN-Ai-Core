@@ -69,7 +69,7 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
         var dX = GeometryUtils.distanceX(base, Vec3i.ZERO);
         var dZ = GeometryUtils.distanceZ(base, Vec3i.ZERO);
 
-        if (dX > 0) {
+        if (dX != 0) {
             var x = base.getX();
             if (x > 0) {
                 this.defaultGatherPoint.setX(base.getMinX() + 15);
@@ -80,7 +80,7 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
             this.defaultGatherPoint.setX(Math.min(Math.max(0, base.getMinX() + 15), base.getMaxX() - 15));
         }
 
-        if (dZ > 0) {
+        if (dZ != 0) {
             var z = base.getZ();
             if (z > 0) {
                 this.defaultGatherPoint.setZ(base.getMinZ() + 15);

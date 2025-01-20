@@ -5,7 +5,10 @@
  */
 package com.daratrix.ronapi.models.interfaces;
 
+import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.resources.ResourceName;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 
 /**
  *
@@ -16,4 +19,7 @@ public interface IResource extends IStructure {
     public ResourceName getResourceType();
 
     int getTypeId();
+
+    BlockPos getNearestBlock(ILocated from);
+    BlockPos getNearestBlock(Vec3i from);
 }

@@ -6,11 +6,13 @@
 package com.daratrix.ronapi.models;
 
 import com.daratrix.ronapi.apis.TypeIds;
+import com.daratrix.ronapi.models.interfaces.ILocated;
 import com.daratrix.ronapi.models.interfaces.IResource;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.resources.ResourceSources;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
@@ -111,6 +113,16 @@ public class ApiResource implements IResource {
     @Override
     public int getTypeId() {
         return this.resourceTypeId;
+    }
+
+    @Override
+    public BlockPos getNearestBlock(ILocated from) {
+        return this.blocks.stream().min((a, b) -> GeometryUtils.distanceComparator(a, b, from)).stream().findFirst().orElse(this.blocks.get(0));
+    }
+
+    @Override
+    public BlockPos getNearestBlock(Vec3i from) {
+        return this.blocks.stream().min((a, b) -> GeometryUtils.distanceComparator(a, b, from)).stream().findFirst().orElse(this.blocks.get(0));
     }
 
     public void track(Level level, BlockPos pos) {

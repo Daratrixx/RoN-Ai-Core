@@ -7,6 +7,7 @@ import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.models.ApiResource;
 import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.utils.FileLogger;
+import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.building.Building;
 import net.minecraft.world.entity.LivingEntity;
 
