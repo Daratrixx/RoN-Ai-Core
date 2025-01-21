@@ -185,7 +185,15 @@ public class BuildingApi {
     private static final SpiralCounter spiral = new SpiralCounter();
 
     public static BlockPos getBuildingLocation(BlockPos lookupOrigin, int typeId, String playerName) {
+        return getBuildingLocation(lookupOrigin, typeId, playerName, 0, 10, 10, 2);
+    }
+
+    public static BlockPos getBuildingLocation(BlockPos lookupOrigin, int typeId, String playerName, int spiralMin, int spiralMax, int boxOffset, int offset) {
         spiral.reset();
+        if (spiralMin > 0) {
+            spiral.skipS(spiralMin);
+        }
+
         var buildingBlocks = getBuildingBlocks(typeId);
         var checkNeverTerrain = mustCheckNeverTerrain(typeId, playerName);
         var testingBlocks = getTestingBlocks(typeId);
@@ -198,17 +206,20 @@ public class BuildingApi {
         var w = Math.abs(max.getX() - min.getX());
         var l = Math.abs(max.getZ() - min.getZ());
         var foundationBlocks = getFoundationBlocks(typeId);
-        while (spiral.getS() < 15) {
+        while (spiral.getS() < spiralMax * 2) {
             var spiralX = spiral.getX();
+            var signX = Math.signum(spiralX);
             var spiralZ = spiral.getZ();
-            pos.set(lookupOrigin.getX() + (spiralX * 2) + (spiralX * w), 0, lookupOrigin.getZ() + (spiralZ * 2) + (spiralZ * l));
-            pos.setY(WorldApi.getTerrainHeight(pos));
-            //System.out.println("Scanning " + pos.toShortString());
+            var signZ = Math.signum(spiralZ);
+            pos.set(lookupOrigin.getX() + boxOffset * signX + (spiralX * offset) + (spiralX * w / 2.),
+                    0,
+                    lookupOrigin.getZ() + boxOffset * signZ + (spiralZ * offset) + (spiralZ * l / 2.));
+            WorldApi.getTerrainHeight(pos); // also updates pos.setY()
             // offset buildingBlocks by pos and store the results in testingBlocks
             offsetBuildingBlocks(buildingBlocks, pos, testingBlocks);
             GeometryUtils.setMinMaxFromBlocks(min, max, testingBlocks.stream().map(BuildingBlock::getBlockPos));
             max.move(1, 1, 1);
-            var boundingBox = GeometryUtils.getBoundingBox(min, max, 1);
+            var boundingBox = GeometryUtils.getBoundingBox(min, max, offset);
 
             if (isBuildingPlacementWithinWorldBorder(boundingBox)
                     && !isOverlappingResources(boundingBox)

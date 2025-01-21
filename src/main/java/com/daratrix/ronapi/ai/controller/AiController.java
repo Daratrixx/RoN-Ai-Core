@@ -4,6 +4,7 @@ import com.daratrix.ronapi.ai.AiDependencies;
 import com.daratrix.ronapi.ai.controller.interfaces.IAiControllerPriorities;
 import com.daratrix.ronapi.ai.controller.interfaces.IAiLogic;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
+import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.apis.BuildingApi;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.apis.WorldApi;
@@ -294,7 +295,7 @@ public class AiController {
                 for (int pullPriority : resourcePullPriority) {
                     var pulling = this.workerController.workerTracker.get(pullPriority);
                     if (!pulling.isEmpty()) {
-                        this.logger.log("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to start building  " + TypeIds.toItemName(p.typeId));
+                        this.logger.log("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to start building " + TypeIds.toItemName(p.typeId));
                         this.workerController.transferWorkerAssignment(pulling, availableWorkers, 1);
                         break;
                     }
@@ -302,9 +303,7 @@ public class AiController {
             }
 
             for (var builder : availableWorkers) {
-                this.logger.log(this.capitol != null ? "Building from Capitol" : "Building from Builder");
-                var lookupOrigin = this.capitol != null ? this.capitol.getPos() : new BlockPos(builder.getX(), 0, builder.getZ());
-                var buildingLocation = BuildingApi.getBuildingLocation(lookupOrigin, p.typeId, player.getName());
+                var buildingLocation = this.getBuildingLocation(builder, p.typeId, p.location);
 
                 if (buildingLocation != null && builder.issueBuildOrder(buildingLocation, p.typeId)) {
                     ++builderCount;
@@ -322,6 +321,36 @@ public class AiController {
         availableWorkers.removeAll(workerController.builders);
         this.workerController.idleWorkers.addAll(availableWorkers);
         this.logger.log("Completed all priorities");
+    }
+
+    public BlockPos getBuildingLocation(IUnit builder, int typeId, AiProductionPriorities.Location location) {
+        int farmRange = 6;
+        int maxRange = 12;
+        int capitolBoxOffset = 5;
+        if (this.capitol == null) {
+            this.logger.log("Building around Builder at ANY(0-" + maxRange + ") range");
+            return BuildingApi.getBuildingLocation(builder.getPos(), typeId, player.getName(), 0, maxRange, 0, 1);
+        }
+
+        if (location == AiProductionPriorities.Location.FARM) {
+            var output = BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), 1, farmRange, capitolBoxOffset, 0);
+            if (output != null) {
+                this.logger.log("Building around Capitol at FARM(1-" + farmRange + ") range");
+                return output;
+            }
+
+            this.logger.log("Building around Capitol at MAIN(" + farmRange + "-" + maxRange + ") range");
+            output = BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), farmRange, maxRange, capitolBoxOffset, 1);
+            return output;
+        }
+
+        if (location == AiProductionPriorities.Location.MAIN) {
+            this.logger.log("Building around Capitol at MAIN(" + farmRange + "-" + maxRange + ") range");
+            return BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), farmRange, maxRange, capitolBoxOffset, 1);
+        }
+
+        this.logger.log("Building around Capitol at ANY(0-" + maxRange + ") range");
+        return BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), 0, maxRange, capitolBoxOffset, 1);
     }
 
     public void runAiProduceUnits(MinecraftServer server) {

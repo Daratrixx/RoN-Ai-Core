@@ -47,6 +47,8 @@ public class VillagerScript implements IAiLogic {
 
     public void setBuildingPriorities(IAiPlayer player, AiProductionPriorities priorities) {
 
+        priorities.setDefaultLocation(AiProductionPriorities.Location.MAIN);
+
         // until the Town Centre is done, it should be the only priority
         if (player.countDone(TypeIds.Villagers.TownCentre) == 0) {
             priorities.addPriority(TypeIds.Villagers.TownCentre, 1);
@@ -90,18 +92,18 @@ public class VillagerScript implements IAiLogic {
 
         //priorities.addPriority(TypeIds.Villagers.Stockpile, 1);
         priorities.addPriority(TypeIds.Villagers.House, 1); // at least one house before farm
-        priorities.addPriority(TypeIds.Villagers.Farm, 1);
+        priorities.addPriority(TypeIds.Villagers.Farm, 1, AiProductionPriorities.Location.FARM);
         //priorities.addPriority(TypeIds.Villagers.House, 2);
         priorities.addPriority(TypeIds.Villagers.Barracks, 1);
-        priorities.addPriority(TypeIds.Villagers.Farm, 3);
+        priorities.addPriority(TypeIds.Villagers.Farm, 3, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Villagers.Barracks, 2);
-        priorities.addPriority(TypeIds.Villagers.Farm, 6);
+        priorities.addPriority(TypeIds.Villagers.Farm, 6, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Villagers.Blacksmith, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 3);
-        priorities.addPriority(TypeIds.Villagers.Farm, 9);
+        priorities.addPriority(TypeIds.Villagers.Farm, 9, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Villagers.ArcaneTower, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 4);
-        priorities.addPriority(TypeIds.Villagers.Farm, 12);
+        priorities.addPriority(TypeIds.Villagers.Farm, 12, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Villagers.Castle, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 5);
         priorities.addPriority(TypeIds.Villagers.Library, 1);
@@ -125,7 +127,7 @@ public class VillagerScript implements IAiLogic {
 
     private void setArmyPriorities(IAiPlayer player, AiArmyPriorities armyPriorities) {
         armyPriorities.pickDefaultGatherPoint(player);
-        if(armyPriorities.pickDefenseTarget(player)) {
+        if (armyPriorities.pickDefenseTarget(player)) {
             armyPriorities.attackTarget = null; // don't attack while bases are threatened
         } else {
             armyPriorities.pickAttackTarget(player);

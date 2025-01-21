@@ -23,6 +23,10 @@ public class SpiralCounter {
         this.updateZ();
     }
 
+    /**
+     * Skip rings of the spiral
+     * @param skip
+     */
     public void skipS(int skip) {
         this.s += 2 * skip;
         this.n = (s - 2) * (s - 2);
@@ -30,6 +34,10 @@ public class SpiralCounter {
         this.updateZ();
     }
 
+    /**
+     * Skip positions of the spiral
+     * @param skip
+     */
     public void skipN(int skip) {
         this.n += skip;
         while (this.n >= this.s * this.s) {

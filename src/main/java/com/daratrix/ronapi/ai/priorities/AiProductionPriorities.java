@@ -7,29 +7,22 @@ public class AiProductionPriorities extends AiAbstractPriorities<AiProductionPri
     public final FileLogger logger;
     public boolean allowHunting = true;
     public boolean onlyNetherBlocks = false;
+    private Location defaultLocation = Location.ANY;
+
+    public void setDefaultLocation(Location defaultLocation) {
+        this.defaultLocation = defaultLocation;
+    }
 
     public AiProductionPriorities(FileLogger logger) {
         this.logger = logger;
     }
 
     public void addPriority(int typeId, int count) {
-        priorities.add(new AiProductionPriority(typeId, count));
+        priorities.add(new AiProductionPriority(typeId, count, this.defaultLocation));
     }
 
     public void addPriority(int typeId, int count, Location location) {
         priorities.add(new AiProductionPriority(typeId, count, location));
-    }
-
-    public void addPriorityAtMain(int typeId, int count) {
-        priorities.add(new AiProductionPriority(typeId, count, Location.MAIN));
-    }
-
-    public void addPriorityAtWood(int typeId, int count) {
-        priorities.add(new AiProductionPriority(typeId, count, Location.WOOD));
-    }
-
-    public void addPriorityAtOre(int typeId, int count) {
-        priorities.add(new AiProductionPriority(typeId, count, Location.ORE));
     }
 
     public static class AiProductionPriority extends AiAbstractPriorities.AiAbstractPriority {
@@ -58,8 +51,6 @@ public class AiProductionPriorities extends AiAbstractPriorities<AiProductionPri
     public enum Location {
         ANY,
         MAIN,
-        FARM,
-        WOOD,
-        ORE,
+        FARM
     }
 }
