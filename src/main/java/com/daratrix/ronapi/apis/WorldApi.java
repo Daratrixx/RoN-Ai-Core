@@ -9,10 +9,12 @@ import com.daratrix.ronapi.timer.Timer;
 import com.daratrix.ronapi.timer.TimerServerEvents;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.alliance.AllianceSystem;
+import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,6 +24,7 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,7 +42,7 @@ public class WorldApi {
         return singleton;
     }
 
-    private static final Timer gridScanTimer = TimerServerEvents.queueTimerLooping(0, WorldApi::gridScanStep).pause();
+    private static final Timer gridScanTimer = TimerServerEvents.queueTimerLooping(0, WorldApi::doGridScan).pause();
     private static boolean gridScanRunning = false;
     private static int gridScanSize;
     private static int gridScanProgress;
@@ -58,11 +61,23 @@ public class WorldApi {
             gridScanTarget = (gridScanSize * 2) * (gridScanSize * 2);
             gridScanProgress = 0;
             System.out.println("Starting grid scan with size: " + gridScanSize + "(" + gridScanTarget + " chunks to scan)");
+            terrainHeightCache.clear();
             gridScanTimer.unpause();
         }
     }
 
-    public static void gridScanStep(MinecraftServer server) {
+    public static void doGridScan(MinecraftServer server) {
+        if(server.getPlayerCount() == 0) {
+            return; // can't scan yet
+        }
+
+        int steps = 5;
+        while (steps > 0 && !gridScanStep(server)) {
+            --steps;
+        }
+    }
+
+    public static boolean gridScanStep(MinecraftServer server) {
         if (gridScanProgress == gridScanTarget) {
             System.out.println("Grid scan completed! (size: " + gridScanSize + ")");
             //var server = MC.getSingleplayerServer();
@@ -71,7 +86,7 @@ public class WorldApi {
             }
             gridScanRunning = false;
             gridScanTimer.pause();
-            return;
+            return true; // stop running
         }
 
         if (gridScanProgress % 10 == 0) {
@@ -83,8 +98,12 @@ public class WorldApi {
         x -= gridScanSize;
         z -= gridScanSize;
 
-        getSingleton().scanChunk(x, z);
+        if(!getSingleton().scanChunk(x, z)) {
+            return true; // stop running for now
+        }
+
         ++gridScanProgress;
+        return false;
     }
 
     public static void scanChunks(float elaspedTime) {
@@ -130,16 +149,45 @@ public class WorldApi {
         return getTerrainHeight(MC.level.getChunkAt(pos), pos);
     }
 
-    public static int getTerrainHeight(ChunkAccess chunk, BlockPos.MutableBlockPos pos) {
-        int y = 96;
+    private static HashMap<Vec3i, Integer> terrainHeightCache = new HashMap<Vec3i, Integer>();
 
-        while (y >= 64) {
+    public static int getTerrainHeight(ChunkAccess chunk, BlockPos.MutableBlockPos pos) {
+        // from cache, dig down in case blocks are destroyed
+        if (terrainHeightCache.containsKey(pos)) {
+            var maxY = terrainHeightCache.get(pos);
+            var y = getTerrainHeight(chunk, pos, maxY, maxY - 20);
+            if (y != maxY) {
+                terrainHeightCache.put(pos, y);
+            }
+
+            return y;
+        }
+
+        // from yLevel
+        var yLevelRule = MC.getSingleplayerServer().getGameRules().getRule(GameRuleRegistrar.GROUND_Y_LEVEL);
+        if (yLevelRule != null) {
+            int maxY = yLevelRule.get() + 10;
+            int minY = yLevelRule.get() - 10;
+            var y = getTerrainHeight(chunk, pos, maxY, minY);
+            terrainHeightCache.put(pos, y);
+
+            return y;
+        }
+
+        // default large scan
+        var y = getTerrainHeight(chunk, pos, 96, 64);
+        terrainHeightCache.put(pos, y);
+
+        return y;
+    }
+
+    public static int getTerrainHeight(ChunkAccess chunk, BlockPos.MutableBlockPos pos, int maxY, int minY) {
+        int y = maxY;
+
+        while (y >= minY) {
             pos.setY(y);
             var block = chunk.getBlockState(pos);
             if (!block.isAir() && block.getMaterial().isSolidBlocking()) {
-                if (!block.is(Blocks.SAND) && !block.is(Blocks.GRASS_BLOCK)) {
-                    //System.out.println(block.getBlock().getName().toString() + " at " + (pos.getX()) + ", " + (y) + ", " + (pos.getZ()));
-                }
                 break;
             }
             --y;

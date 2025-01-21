@@ -350,7 +350,7 @@ public class ApiWorld {
         try {
             this.lastChunkX = x;
             this.lastChunkZ = z;
-            //System.out.println("scanChunk " + x + ", " + z + "(" + this.scannedChunks + ")");
+
             assert MC.level != null;
             var chunk = MC.level.getChunk(x, z);
 
