@@ -66,29 +66,29 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
         }
 
         // if we have a base, choose which side of the base to gather at
-        var dX = GeometryUtils.distanceX(base, Vec3i.ZERO);
-        var dZ = GeometryUtils.distanceZ(base, Vec3i.ZERO);
+        var zeroOverlapX = GeometryUtils.isOverlapping(base.getMinX(), base.getMaxX(), 0, 0);
+        var zeroOverlapZ = GeometryUtils.isOverlapping(base.getMinZ(), base.getMaxZ(), 0, 0);
 
-        if (dX != 0) {
+        if (zeroOverlapX) {
+            this.defaultGatherPoint.setX(0);
+        } else {
             var x = base.getX();
             if (x > 0) {
                 this.defaultGatherPoint.setX(base.getMinX() + 15);
             } else {
                 this.defaultGatherPoint.setX(base.getMaxX() - 15);
             }
-        } else {
-            this.defaultGatherPoint.setX(Math.min(Math.max(0, base.getMinX() + 15), base.getMaxX() - 15));
         }
 
-        if (dZ != 0) {
+        if (zeroOverlapZ) {
+            this.defaultGatherPoint.setZ(0);
+        } else {
             var z = base.getZ();
             if (z > 0) {
                 this.defaultGatherPoint.setZ(base.getMinZ() + 15);
             } else {
                 this.defaultGatherPoint.setZ(base.getMaxZ() - 15);
             }
-        } else {
-            this.defaultGatherPoint.setZ(Math.min(Math.max(0, base.getMinZ() + 15), base.getMaxZ() - 15));
         }
 
         // adjust to terrain height
