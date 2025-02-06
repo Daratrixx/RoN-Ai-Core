@@ -63,12 +63,20 @@ public class AiArmyController {
 
     public void assignArmy(AiArmyPriorities priorities) {
         if (priorities.defenseTarget != null) {
+            // use all idle army for defence
             this.defenseGroup.addAll(this.idleArmy);
             this.idleArmy.clear();
-            //var defensePower = this.defenseGroup.stream().map(IUnit::getPopUsed).reduce(0, Integer::sum);
-            //while (!this.attackGroup.isEmpty() && defensePower < this.totalThreatPower) {
-            //
-            //}
+            var defensePower = this.defenseGroup.stream().map(IUnit::getPopUsed).reduce(0, Integer::sum);
+
+            // check if we need to pull defenders from attacking army as well
+            if(defensePower < this.totalThreatPower) {
+                this.attackGroup.sort((a, b) -> GeometryUtils.distanceComparator(a, b, priorities.defenseTarget));
+                while (!this.attackGroup.isEmpty() && defensePower < this.totalThreatPower) {
+                    var defender = this.attackGroup.get(0);
+                    this.defenseGroup.add(defender);
+                    defensePower += defender.getPopUsed();
+                }
+            }
         } else {
             this.idleArmy.addAll(this.defenseGroup);
             this.defenseGroup.clear();
@@ -114,12 +122,12 @@ public class AiArmyController {
             }
             var d = GeometryUtils.distanceSquared(u, target);
             // if very far force move, if kinda close attack move, if close do nothing
-            if (d > strictDistance) {
+            if (u.isCarryingItems()) {
+                u.issueOrder(TypeIds.Orders.Return); // while idling with resources, return them
+            } else if (d > strictDistance) {
                 u.issueMoveOrder(x, y, z);
             } else if (d > softDistance) {
                 u.issueAttackOrder(x, y, z);
-            } else if (u.isCarryingItems()) {
-                u.issueOrder(TypeIds.Orders.Return); // while idling with resources, return them
             }
         }
     }
