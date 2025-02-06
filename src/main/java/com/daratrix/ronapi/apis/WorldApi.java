@@ -210,7 +210,7 @@ public class WorldApi {
     }
 
     public static Stream<IPlayer> getPlayerEnemies(String playerName) {
-        return singleton.players.values().stream().filter(x -> x.getName() != playerName && !AllianceSystem.isAllied(x.getName(), playerName)).map(x -> (IPlayer) x);
+        return singleton.players.values().stream().filter(x -> !Objects.equals(x.getName(), playerName) && !AllianceSystem.isAllied(x.getName(), playerName)).map(x -> x);
     }
 
     private static String getThreatsPlayerName = null;
