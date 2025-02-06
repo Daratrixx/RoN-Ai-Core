@@ -11,6 +11,7 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
 public class ApiPlayerBase implements ILocated, IBoxed {
+    public final int BoundingBoxOffset = 16;
     public final String playerName;
     public AABB boundingBox;
     public final ArrayList<IBuilding> buildings = new ArrayList<>();
@@ -32,9 +33,9 @@ public class ApiPlayerBase implements ILocated, IBoxed {
         this.playerName = building.getOwnerName();
         this.buildings.add(building);
         this.minPos.set(building.getMinPos());
-        this.minPos.move(-20, -10, -20);
+        this.minPos.move(-BoundingBoxOffset, -BoundingBoxOffset / 2, -BoundingBoxOffset);
         this.maxPos.set(building.getMaxPos());
-        this.maxPos.move(20, 10, 20);
+        this.maxPos.move(BoundingBoxOffset, BoundingBoxOffset / 2, BoundingBoxOffset);
         this.centerPos.set(building.getPos());
         this.boundingBox = new AABB(this.minPos, this.maxPos);
     }
@@ -59,10 +60,10 @@ public class ApiPlayerBase implements ILocated, IBoxed {
 
         if (!this.buildings.contains(building)) {
             this.buildings.add(building);
-            adjust(this.minPos, building.getMinPos(), -20, Math::min);
-            adjust(this.maxPos, building.getMaxPos(), 20, Math::max);
+            adjust(this.minPos, building.getMinPos(), -BoundingBoxOffset, Math::min);
+            adjust(this.maxPos, building.getMaxPos(), BoundingBoxOffset, Math::max);
             this.centerPos.setX((this.minPos.getX() + this.maxPos.getX()) / 2);
-            this.centerPos.setX((this.minPos.getY() + this.maxPos.getY()) / 2);
+            this.centerPos.setY((this.minPos.getY() + this.maxPos.getY()) / 2);
             this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ()) / 2);
             this.boundingBox = new AABB(this.minPos, this.maxPos);
             if (building.isCapitol()) {
@@ -81,37 +82,38 @@ public class ApiPlayerBase implements ILocated, IBoxed {
      * @return false is the base is empty (should be deleted), true otherwise (should be kept)
      */
     public boolean untrack(IBuilding building) {
-        if (this.buildings.contains(building)) {
-            this.buildings.remove(building);
-
-            if (building.isCapitol()) {
-                ++this.capitols;
-            }
-
-            var buildingIterator = this.buildings.iterator();
-            if (!buildingIterator.hasNext()) {
-                return false; // removed and empty
-            }
-
-            building = buildingIterator.next();
-            this.minPos.set(building.getMinPos());
-            this.minPos.move(-20, -10, -20);
-            this.maxPos.set(building.getMaxPos());
-            this.maxPos.move(20, 10, 20);
-
-            while (buildingIterator.hasNext()) {
-                building = buildingIterator.next();
-                adjust(this.minPos, building.getMinPos(), -20, Math::min);
-                adjust(this.maxPos, building.getMaxPos(), 20, Math::max);
-            }
-
-            this.centerPos.setX((this.minPos.getX() + this.maxPos.getX()) / 2);
-            this.centerPos.setY((this.minPos.getY() + this.maxPos.getY()) / 2);
-            this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ()) / 2);
-
-            this.boundingBox = new AABB(this.minPos, this.maxPos);
+        if (!this.buildings.contains(building)) {
+            return !this.buildings.isEmpty();
         }
 
+        this.buildings.remove(building);
+
+        if (building.isCapitol()) {
+            --this.capitols;
+        }
+
+        var buildingIterator = this.buildings.iterator();
+        if (!buildingIterator.hasNext()) {
+            return false; // removed and empty
+        }
+
+        building = buildingIterator.next();
+        this.minPos.set(building.getMinPos());
+        this.minPos.move(-20, -10, -20);
+        this.maxPos.set(building.getMaxPos());
+        this.maxPos.move(20, 10, 20);
+
+        while (buildingIterator.hasNext()) {
+            building = buildingIterator.next();
+            adjust(this.minPos, building.getMinPos(), -20, Math::min);
+            adjust(this.maxPos, building.getMaxPos(), 20, Math::max);
+        }
+
+        this.centerPos.setX((this.minPos.getX() + this.maxPos.getX()) / 2);
+        this.centerPos.setY((this.minPos.getY() + this.maxPos.getY()) / 2);
+        this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ()) / 2);
+
+        this.boundingBox = new AABB(this.minPos, this.maxPos);
         return true; // not empty
     }
 
@@ -197,7 +199,7 @@ public class ApiPlayerBase implements ILocated, IBoxed {
                 this.threatPower += b.canBeGarrisoned() ? 10 : 5;
             }
         }
-        
+
         return this.threatPower;
     }
 
