@@ -4,6 +4,7 @@ import com.daratrix.ronapi.ai.controller.AiLogics;
 import com.daratrix.ronapi.ai.controller.interfaces.IAiControllerPriorities;
 import com.daratrix.ronapi.ai.controller.interfaces.IAiLogic;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
+import com.daratrix.ronapi.ai.priorities.AiArmyPriorities;
 import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.solegendary.reignofnether.util.Faction;
@@ -90,6 +91,15 @@ public class MonsterScript implements IAiLogic {
         priorities.addPriority(TypeIds.Monsters.Warden, 5);
     }
 
+    private void setArmyPriorities(IAiPlayer player, AiArmyPriorities armyPriorities) {
+        armyPriorities.pickDefaultGatherPoint(player);
+        if (armyPriorities.pickDefenseTarget(player)) {
+            armyPriorities.attackTarget = null; // don't attack while bases are threatened
+        } else {
+            armyPriorities.pickAttackTarget(player);
+        }
+    }
+
     @Override
     public String getName() {
         return name;
@@ -104,6 +114,6 @@ public class MonsterScript implements IAiLogic {
     public void setPriorities(IAiPlayer player, IAiControllerPriorities priorities) {
         this.setBuildingPriorities(player, priorities.getBuildingPriorities());
         this.setUnitPriorities(player, priorities.getUnitPriorities());
-
+        this.setArmyPriorities(player, priorities.getArmyPriorities());
     }
 }
