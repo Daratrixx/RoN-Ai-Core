@@ -16,6 +16,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,27 +33,8 @@ public class ApiWorld {
     public final Map<Unit, ApiUnit> units = new HashMap<>();
     public final Map<Building, ApiBuilding> buildings = new HashMap<>();
     public final Map<BlockPos, ApiResource> resources = new HashMap<>();
-    private int lastChunkX = 0;
-    private int lastChunkZ = 0;
-    private int scannedChunks = 0;
-
-    public int getScannedChunksCount() {
-        return this.scannedChunks;
-    }
-
-    public int getLastChunkX() {
-        return this.lastChunkX;
-    }
-
-    public int getLastChunkZ() {
-        return this.lastChunkZ;
-    }
 
     public void reset() {
-        this.lastChunkX = 0;
-        this.lastChunkZ = 0;
-        this.scannedChunks = 0;
-
         for (ApiPlayer p : players.values()) {
             p.reset();
         }
@@ -59,12 +42,12 @@ public class ApiWorld {
         players.clear();
         units.clear();
         buildings.clear();
-        resources.clear();
+        //resources.clear();
     }
 
 
     public void updateTracking(MinecraftServer server) {
-        if(MC.level == null) {
+        if (MC.level == null) {
             return; // wait for the server to be ready...
         }
 
@@ -103,6 +86,7 @@ public class ApiWorld {
             }
         }
         tempUnits.forEach(x -> this.untrack(server, x.getKey()));
+        tempUnits.clear();
 
         var deadBuildings = this.buildings.entrySet();
         for (Map.Entry<Building, ApiBuilding> x : deadBuildings) {
@@ -111,14 +95,13 @@ public class ApiWorld {
             }
         }
         tempBuildings.forEach(x -> this.untrack(server, x.getKey()));
+        tempBuildings.clear();
 
-        if (MC.level == null) {
-            return;
-        }
+        var level = server.overworld();
 
         try {
             // make sure the resources amount are accurate, and remove depleted resource nodes
-            var depletedResourceBlocks = this.resources.keySet().stream().distinct().filter(b -> ResourceSources.getFromBlockPos(b, MC.level) == null).collect(Collectors.toCollection(ArrayList::new));
+            var depletedResourceBlocks = this.resources.keySet().stream().distinct().filter(b -> ResourceSources.getFromBlockPos(b, level) == null).collect(Collectors.toCollection(ArrayList::new));
             depletedResourceBlocks.forEach(this::untrack);
         } catch (Exception e) {
             // no clue how to not run code when the level is not ready to be scanned...
@@ -286,96 +269,40 @@ public class ApiWorld {
         trackAdjacentTo(pos, resource);
     }
 
-    public boolean scanNextChunk() {
-        if (this.scanChunk(this.scannedChunks)) {
-            this.scannedChunks++;
-            //System.out.println("scanNextChunk success, next chunk is " + scannedChunks);
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean scanChunk(int n) {
-        if (n < this.scannedChunks) {
-            //System.out.println("scanChunk skipped, already scanned " + scannedChunks);
-            return false; // already scanned
-        }
-
-        if (n == 0) {
-            return this.scanChunk(0, 0);
-        }
-
-        int s = getChunkS(n);
-        n = getChunkN(n, s);
-        return scanChunk(getChunkX(n, s), getChunkZ(n, s));
-    }
-
-    public static int getChunkS(int n) {
-        int s = 1;
-        while (n >= s * s) {
-            s += 2;
-        }
-
-        return s;
-    }
-
-    public static int getChunkN(int n, int s) {
-        return n - (s - 2) * (s - 2);
-    }
-
-    public static int getChunkX(int n, int s) {
-        var s2 = s / 2;
-        int side = n / (s - 1);
-        return switch (side) {
-            case 0 -> (n % (s - 1)) - s2;
-            case 1 -> s2;
-            case 2 -> s2 - (n % (s - 1));
-            default -> -s2;
-        };
-    }
-
-    public static int getChunkZ(int n, int s) {
-        var s2 = s / 2;
-        int side = n / (s - 1);
-        return switch (side) {
-            case 0 -> s2;
-            case 1 -> s2 - (n % (s - 1));
-            case 2 -> -s2;
-            default -> (n % (s - 1)) - s2;
-        };
-    }
-
-    public boolean scanChunk(int x, int z) {
+    public boolean scanChunk(MinecraftServer server, int x, int z) {
         try {
-            this.lastChunkX = x;
-            this.lastChunkZ = z;
+            assert server != null;
+            var overworld = server.overworld();
+            var chunk = server.overworld().getChunk(x, z);
 
-            assert MC.level != null;
-            var chunk = MC.level.getChunk(x, z);
-
+            //var status = chunk.getStatus();
             if (chunk.isEmpty()) {
-                return false;
+                overworld.setChunkForced(x, z, true);
+                return false; // stop scanning for this tick
+            }
+
+            if (!overworld.hasChunk(x, z)) {
+                return false; // stop scanning for this tick
             }
 
             for (int i = 0; i < 16 * 16; ++i) {
                 var pos = new BlockPos.MutableBlockPos();
                 var x0 = i % 16;
                 var z0 = i / 16;
-                pos.setX(x0);
-                pos.setZ(z0);
-                var y = getTerrainHeight(chunk, pos);
-
-                // for resource tracking, account for chunk offset, otherwise we always read in the 0,0 chunk
+                //pos.setX(x0);
+                //pos.setZ(z0);
+                //var y = getTerrainHeight(chunk, pos);
                 pos.setX(x0 + x * 16);
                 pos.setZ(z0 + z * 16);
+                var y = getTerrainHeight(server, pos, true);
+                var topBlocKState = overworld.getBlockState(pos);
+                if (y > -64 && topBlocKState.isAir()) {
+                    return false; // no loaded
+                }
 
                 ResourceSource resourceSource;
-                while ((resourceSource = ResourceSources.getFromBlockPos(pos, MC.level)) != null) {
+                while ((resourceSource = ResourceSources.getFromBlockPos(pos, overworld)) != null) {
                     var resourceName = resourceSource.resourceName;
-                    //if(resourceSource.resourceValue == 1) {
-                    //    System.out.println("found " + resourceName.name() + " resource at " + (pos.getX()) + ", " + (y) + ", " + (pos.getZ()));
-                    //}
                     track(pos.immutable(), resourceName);
 
                     // we repeat the process downward to find entire stacks of resources, not just the tip
@@ -383,12 +310,21 @@ public class ApiWorld {
                 }
             }
 
+            overworld.setChunkForced(x, z, false);
+
             return true;
         } catch (Exception e) {
             //System.err.println(e.getMessage());
             //e.printStackTrace(System.err);
             return false;
         }
+    }
+
+    public int getTerrainHeight(MinecraftServer server, BlockPos.MutableBlockPos pos, boolean allowLeaves) {
+        var type = allowLeaves ? Heightmap.Types.MOTION_BLOCKING : Heightmap.Types.MOTION_BLOCKING_NO_LEAVES;
+        var y = server.overworld().getHeight(type, pos.getX(), pos.getZ()) - 1;
+        pos.setY(y);
+        return y;
     }
 
     public int getTerrainHeight(ChunkAccess chunk, BlockPos.MutableBlockPos pos) {

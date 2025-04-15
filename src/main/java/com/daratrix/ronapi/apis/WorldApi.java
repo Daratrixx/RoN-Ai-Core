@@ -5,6 +5,7 @@ import com.daratrix.ronapi.models.interfaces.IPlayer;
 import com.daratrix.ronapi.models.interfaces.IPlayerWidget;
 import com.daratrix.ronapi.models.interfaces.IResource;
 import com.daratrix.ronapi.models.interfaces.IStructure;
+import com.daratrix.ronapi.models.savedata.WorldApiResourceSaveData;
 import com.daratrix.ronapi.timer.Timer;
 import com.daratrix.ronapi.timer.TimerServerEvents;
 import com.daratrix.ronapi.utils.GeometryUtils;
@@ -80,17 +81,17 @@ public class WorldApi {
     public static boolean gridScanStep(MinecraftServer server) {
         if (gridScanProgress == gridScanTarget) {
             System.out.println("Grid scan completed! (size: " + gridScanSize + ")");
-            //var server = MC.getSingleplayerServer();
+
             if (server != null) {
                 server.getPlayerList().broadcastSystemMessage(Component.literal("Grid scan completed! (size: " + gridScanSize + ")"), false);
             }
+
             gridScanRunning = false;
             gridScanTimer.pause();
-            return true; // stop running
-        }
 
-        if (gridScanProgress % 10 == 0) {
-            System.out.printf("%d %% scanned...\r\n", (100 * gridScanProgress / gridScanTarget));
+            WorldApiResourceSaveData.getInstance(server.overworld()).save();
+
+            return true; // stop running
         }
 
         var x = gridScanProgress % (gridScanSize * 2);
@@ -98,17 +99,17 @@ public class WorldApi {
         x -= gridScanSize;
         z -= gridScanSize;
 
-        if(!getSingleton().scanChunk(x, z)) {
+        if(!getSingleton().scanChunk(server, x, z)) {
             return true; // stop running for now
         }
 
-        ++gridScanProgress;
-        return false;
-    }
+        // display progress
+        if (gridScanProgress % 50 == 0) {
+            System.out.printf("%d %% scanned...\r\n", (100 * gridScanProgress / gridScanTarget));
+        }
 
-    public static void scanChunks(float elaspedTime) {
-        //System.out.println("scanChunks (s" + elaspedTime + ")");
-        getSingleton().scanNextChunk();
+        ++gridScanProgress;
+        return false; // keep going!
     }
 
     private static Timer queuedWorldUpdate = null;
@@ -146,7 +147,8 @@ public class WorldApi {
             return 0;
         }
 
-        return getTerrainHeight(MC.level.getChunkAt(pos), pos);
+        var chunk = MC.level.getChunkAt(pos);
+        return getTerrainHeight(chunk, pos);
     }
 
     private static HashMap<Vec3i, Integer> terrainHeightCache = new HashMap<Vec3i, Integer>();
@@ -180,6 +182,7 @@ public class WorldApi {
 
         return y;
     }
+
 
     public static int getTerrainHeight(ChunkAccess chunk, BlockPos.MutableBlockPos pos, int maxY, int minY) {
         int y = maxY;

@@ -100,16 +100,6 @@ public class AiHudClientEvents {
         PoseStack poseStack = evt.getPoseStack();
         var highlightedPos = CursorClientEvents.getPreselectedBlockPos();
         var world = WorldApi.getSingleton();
-        var scannedChunks = world.getScannedChunksCount();
-        if (scannedChunks > 0) {
-            var x = world.getLastChunkX() * 16;
-            var z = world.getLastChunkZ() * 16;
-            AABB aabb = new AABB(
-                    x, 64, z,
-                    x + 16, 64 + 8, z + 16
-            );
-            MyRenderer.drawLineBox(poseStack, aabb, 1.0f, 1.0f, 1.0f, 1.0f);
-        }
 
         //for (IBuilding b : WorldApi.getSingleton().buildings.values()) {
         //    MyRenderer.drawLineBoxOutlineOnly(poseStack, b.getBoundingBox(), 1, 1, 1, 1, false);

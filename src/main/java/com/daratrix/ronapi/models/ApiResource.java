@@ -17,7 +17,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -38,6 +37,18 @@ public class ApiResource implements IResource {
     public ApiResource(ResourceName resourceName) {
         this.resourceTypeId = TypeIds.get(resourceName);
         this.resourceName = resourceName;
+    }
+
+    public static ApiResource fromFileData(ResourceName resource, long[] blocks, int amount) {
+        var output = new ApiResource(resource);
+        output.resourceAmount = amount;
+        for (var block : blocks) {
+            output.blocks.add(new BlockPos(BlockPos.getX(block), BlockPos.getY(block), BlockPos.getZ(block)));
+        }
+
+        output.updateBoundingBox();
+
+        return output;
     }
 
     @Override
@@ -154,6 +165,26 @@ public class ApiResource implements IResource {
             this.maxPos.setZ(Math.max(this.maxPos.getZ(), pos.getZ()));
 
             this.resourceAmount += resourceSource.resourceValue;
+        }
+
+        this.centerPos.setX((this.minPos.getX() + this.maxPos.getX()) / 2);
+        this.centerPos.setY((this.minPos.getY() + this.maxPos.getY()) / 2);
+        this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ()) / 2);
+
+        this.boundingBox = GeometryUtils.getBoundingBox(this.minPos, this.maxPos.offset(1, 1, 1));
+    }
+
+    public void updateBoundingBox() {
+        this.minPos.set(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+        this.maxPos.set(Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+        for (BlockPos pos : this.blocks) {
+            this.minPos.setX(Math.min(this.minPos.getX(), pos.getX()));
+            this.minPos.setY(Math.min(this.minPos.getY(), pos.getY()));
+            this.minPos.setZ(Math.min(this.minPos.getZ(), pos.getZ()));
+
+            this.maxPos.setX(Math.max(this.maxPos.getX(), pos.getX()));
+            this.maxPos.setY(Math.max(this.maxPos.getY(), pos.getY()));
+            this.maxPos.setZ(Math.max(this.maxPos.getZ(), pos.getZ()));
         }
 
         this.centerPos.setX((this.minPos.getX() + this.maxPos.getX()) / 2);
