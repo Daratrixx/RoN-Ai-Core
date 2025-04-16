@@ -333,7 +333,7 @@ public class ApiWorld {
         while (y >= 64) {
             pos.setY(y);
             var block = chunk.getBlockState(pos);
-            if (!block.isAir() && (block.getMaterial().isSolidBlocking() || block.getBlock() instanceof LeavesBlock)) {
+            if (!block.isAir() && (block.isSolid() || block.getBlock() instanceof LeavesBlock)) {
                 //if (!block.is(Blocks.SAND) && !block.is(Blocks.GRASS_BLOCK)) {
                 //System.out.println(block.getBlock().getName().toString() + " at " + (pos.getX()) + ", " + (y) + ", " + (pos.getZ()));
                 //}

@@ -21,7 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.IceBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.*;
 import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
@@ -258,25 +258,24 @@ public class BuildingApi {
         for (BuildingBlock block : blocksToDraw) {
             BlockPos bp = block.getBlockPos().above();
             BlockState bs = block.getBlockState(); // building block
-            Material bm = bs.getMaterial();
-            Material bmWorld = MC.level.getBlockState(bp).getMaterial();
+            BlockState bsWorld = MC.level.getBlockState(bp);
 
-            if ((bmWorld.isSolid() || bmWorld.isLiquid()) && (bm.isSolid() || bm.isLiquid())) {
+            if ((bsWorld.isSolid() || !bsWorld.getFluidState().isEmpty()) && (bs.isSolid() || !bs.getFluidState().isEmpty())) {
                 //System.out.println("Skipping location due to clipping at " + bp.toShortString());
                 return true; // clipping
             }
 
             if (MC.level != null && foundation.contains(block)) {
                 BlockState bsBelow = MC.level.getBlockState(bp.below()); // world block
-                if (bs.getMaterial().isSolid() && !(bsBelow.getBlock() instanceof IceBlock)) {
+                if (bs.isSolid() && !(bsBelow.getBlock() instanceof IceBlock)) {
                     blocksBelow += 1;
-                    if (bsBelow.getMaterial().isSolid() && !(bsBelow.getBlock() instanceof LeavesBlock)) {
+                    if (bsBelow.isSolid() && !(bsBelow.getBlock() instanceof LeavesBlock)) {
                         solidBlocksBelow += 1;
                     }
                 }
             }
 
-            if (checkNeverTerrain && MC.level != null && foundation.contains(block) && bs.getMaterial().isSolid()) {
+            if (checkNeverTerrain && MC.level != null && foundation.contains(block) && bs.isSolid()) {
                 nbBlocksBelow += 1;
                 if (NetherBlocks.isNetherBlock(MC.level, bp.below())) {
                     netherBlocksBelow += 1;

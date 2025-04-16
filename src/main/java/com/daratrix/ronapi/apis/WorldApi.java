@@ -9,7 +9,7 @@ import com.daratrix.ronapi.models.savedata.WorldApiResourceSaveData;
 import com.daratrix.ronapi.timer.Timer;
 import com.daratrix.ronapi.timer.TimerServerEvents;
 import com.daratrix.ronapi.utils.GeometryUtils;
-import com.solegendary.reignofnether.alliance.AllianceSystem;
+import com.solegendary.reignofnether.alliance.AlliancesClient;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
@@ -165,11 +165,11 @@ public class WorldApi {
             return y;
         }
 
-        // from yLevel
+        // from yLevel - yLevel is expected to be the lowest level units can reach
         var yLevelRule = MC.getSingleplayerServer().getGameRules().getRule(GameRuleRegistrar.GROUND_Y_LEVEL);
         if (yLevelRule != null) {
-            int maxY = yLevelRule.get() + 10;
-            int minY = yLevelRule.get() - 10;
+            int maxY = yLevelRule.get() + 30;
+            int minY = yLevelRule.get() - 2;
             var y = getTerrainHeight(chunk, pos, maxY, minY);
             terrainHeightCache.put(pos, y);
 
@@ -190,7 +190,7 @@ public class WorldApi {
         while (y >= minY) {
             pos.setY(y);
             var block = chunk.getBlockState(pos);
-            if (!block.isAir() && block.getMaterial().isSolidBlocking()) {
+            if (!block.isAir() && block.isSolid()) {
                 break;
             }
             --y;
@@ -209,11 +209,11 @@ public class WorldApi {
     }
 
     public static Stream<IPlayer> getPlayerEnemies(IPlayer p) {
-        return singleton.players.values().stream().filter(x -> x != p && !AllianceSystem.isAllied(x.getName(), p.getName())).map(x -> (IPlayer) x);
+        return singleton.players.values().stream().filter(x -> x != p && !AlliancesClient.isAllied(x.getName(), p.getName())).map(x -> (IPlayer) x);
     }
 
     public static Stream<IPlayer> getPlayerEnemies(String playerName) {
-        return singleton.players.values().stream().filter(x -> !Objects.equals(x.getName(), playerName) && !AllianceSystem.isAllied(x.getName(), playerName)).map(x -> x);
+        return singleton.players.values().stream().filter(x -> !Objects.equals(x.getName(), playerName) && !AlliancesClient.isAllied(x.getName(), playerName)).map(x -> x);
     }
 
     private static String getThreatsPlayerName = null;
@@ -221,7 +221,7 @@ public class WorldApi {
     private static boolean getThreatsPredicate(LivingEntity e) {
         if (e instanceof Unit u) {
             var owner = u.getOwnerName();
-            return !Objects.equals(owner, getThreatsPlayerName) && !AllianceSystem.isAllied(getThreatsPlayerName, u.getOwnerName());
+            return !Objects.equals(owner, getThreatsPlayerName) && !AlliancesClient.isAllied(getThreatsPlayerName, u.getOwnerName());
         }
         return false;
     }

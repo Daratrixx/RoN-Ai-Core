@@ -12,6 +12,7 @@ import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.orthoview.OrthoviewClientEvents;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -46,7 +47,7 @@ public class CursorClientEvents {
             return;
         }
 
-        PoseStack poseStack = evt.getPoseStack();
+        GuiGraphics guiGraphics = evt.getGuiGraphics();
         var highlightedPos = com.solegendary.reignofnether.cursor.CursorClientEvents.getPreselectedBlockPos();
         var mouseX = evt.getMouseX();
         var mouseY = evt.getMouseY();
@@ -56,21 +57,21 @@ public class CursorClientEvents {
 
         if (resourceNode != null) {
             //AABB box = new AABB(resourceNode.getMinPos(), resourceNode.getMaxPos());
-            //MyRenderer.drawLineBox(poseStack, box, 1, 1, 0, 1);
+            //MyRenderer.drawLineBox(guiGraphics, box, 1, 1, 0, 1);
             var lines = List.of(
                     //FormattedCharSequence.forward(resourceNode.getResourceType().name() + " node", Style.EMPTY),
                     FormattedCharSequence.forward("      " + resourceNode.getAmount(), Style.EMPTY));
-            MyRenderer.renderTooltip(poseStack, lines, mouseX, mouseY);
-            MyRenderer.renderIcon(poseStack, getResourceIcon(resourceNode.getResourceType()), iconX, iconY, iconSize);
+            MyRenderer.renderTooltip(guiGraphics, lines, mouseX, mouseY);
+            MyRenderer.renderIcon(guiGraphics, getResourceIcon(resourceNode.getResourceType()), iconX, iconY, iconSize);
         } else {
             var resourceBlock = ResourceSources.getFromBlockPos(highlightedPos, MC.level);
             if (resourceBlock != null && resourceBlock.resourceValue > 1 && !BuildingUtils.isPosInsideAnyBuilding(true, highlightedPos)) {
-                //MyRenderer.drawBlockOutline(poseStack, highlightedPos, 1);
+                //MyRenderer.drawBlockOutline(guiGraphics, highlightedPos, 1);
                 var lines = List.of(
                         //FormattedCharSequence.forward(resourceBlock.resourceName.name() + " block", Style.EMPTY),
                         FormattedCharSequence.forward("      " + resourceBlock.resourceValue, Style.EMPTY));
-                MyRenderer.renderTooltip(poseStack, lines, mouseX, mouseY);
-                MyRenderer.renderIcon(poseStack, getResourceIcon(resourceBlock.resourceName), iconX, iconY, iconSize);
+                MyRenderer.renderTooltip(guiGraphics, lines, mouseX, mouseY);
+                MyRenderer.renderIcon(guiGraphics, getResourceIcon(resourceBlock.resourceName), iconX, iconY, iconSize);
             }
         }
 
@@ -81,7 +82,7 @@ public class CursorClientEvents {
                 var lines = List.of(
                         FormattedCharSequence.forward(unit.getX() + "x, " + unit.getZ() + "y", Style.EMPTY),
                         FormattedCharSequence.forward(TypeIds.toItemName(orderId) + "(" + orderId + ")", Style.EMPTY));
-                MyRenderer.renderTooltip(poseStack, lines, mouseX, mouseY);
+                MyRenderer.renderTooltip(guiGraphics, lines, mouseX, mouseY);
             }
         }*/
     }

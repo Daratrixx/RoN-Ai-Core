@@ -9,7 +9,7 @@ import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.solegendary.reignofnether.util.Faction;
 
-public class MonsterScript implements IAiLogic {
+public class MonsterScript extends IAiLogic.AbstractAiLogic {
 
     public static void register() {
         AiLogics.registerAiLogic(new MonsterScript());
@@ -32,7 +32,7 @@ public class MonsterScript implements IAiLogic {
                 + player.countDone(TypeIds.Monsters.Dungeon) * 3
                 + player.countDone(TypeIds.Monsters.SpiderLair) * 3
                 + player.countDone(TypeIds.Monsters.Stronghold) * 4;
-        if (player.getPopCap() < player.getMaxPop() && player.getPopCap() - player.getPopUsed() < productionPower) {
+        if (player.getPopCap() < this.getMaxPopulation() && player.getPopCap() - player.getPopUsed() < productionPower) {
             priorities.addPriority(TypeIds.Monsters.House, 1 + (int) (productionPower / 10) + player.countDone(TypeIds.Monsters.House));
         }
 

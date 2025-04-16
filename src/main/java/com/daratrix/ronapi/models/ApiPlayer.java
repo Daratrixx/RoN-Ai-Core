@@ -98,11 +98,6 @@ public class ApiPlayer implements IPlayer {
     }
 
     @Override
-    public int getMaxPop() {
-        return UnitClientEvents.maxPopulation;
-    }
-
-    @Override
     public int getArmyPop() {
         return this.units.stream().filter(u -> !u.isWorker()).map(IUnit::getPopUsed).reduce(0, Integer::sum);
     }

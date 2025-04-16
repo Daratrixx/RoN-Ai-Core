@@ -2,7 +2,6 @@ package com.daratrix.ronapi.ai.controller.interfaces;
 
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.apis.TypeIds;
-import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.solegendary.reignofnether.util.Faction;
 
 public interface IAiLogic {
@@ -65,7 +64,7 @@ public interface IAiLogic {
     // indicate how many workers can be pulled away from tasks to build new structures
     default int getConcurrentBuilderLimit(IAiPlayer player) {
         if (player.countDone(this.getCapitolTypeId()) == 0) {
-            return player.getMaxPop(); // allow all available workers to build the TC
+            return this.getMaxPopulation(); // allow all available workers to build the TC
         }
 
         return (int) 1 + player.countDone(this.getWorkerTypeId()) / 8;
@@ -77,5 +76,21 @@ public interface IAiLogic {
 
     default boolean useGreedisgood() {
         return true;
+    }
+
+    void setMaxPopulation(int maxPopulation);
+    int getMaxPopulation();
+
+
+    public abstract class AbstractAiLogic implements IAiLogic {
+        protected int maxPopulation = 150;
+
+        public void setMaxPopulation(int maxPopulation) {
+            this.maxPopulation = maxPopulation;
+        }
+
+        public int getMaxPopulation() {
+            return this.maxPopulation;
+        }
     }
 }

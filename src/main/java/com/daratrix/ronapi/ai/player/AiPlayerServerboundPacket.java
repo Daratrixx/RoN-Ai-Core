@@ -16,16 +16,16 @@ import java.util.function.Supplier;
 
 public class AiPlayerServerboundPacket {
     PlayerAction action;
-    public double x;
-    public double y;
-    public double z;
+    public int x;
+    public int y;
+    public int z;
     public String aiName;
 
-    public static void startRTSBot(Faction faction, String aiName, Double x, Double y, Double z) {
+    public static void startRTSBot(Faction faction, String aiName, Integer x, Integer y, Integer z) {
         Minecraft MC = Minecraft.getInstance();
         if (MC.player != null && MC.level != null) {
-            BlockState bs = MC.level.getBlockState(new BlockPos(x,y,z));
-            if (bs.getMaterial().isLiquid()) {
+            BlockState bs = MC.level.getBlockState(new BlockPos(x, y, z));
+            if (!bs.getFluidState().isEmpty()) {
                 HudClientEvents.showTemporaryMessage("Invalid starting location");
                 return;
             }
@@ -43,7 +43,7 @@ public class AiPlayerServerboundPacket {
     }
 
     // packet-handler functions
-    public AiPlayerServerboundPacket(PlayerAction action, Double x, Double y, Double z, String aiName) {
+    public AiPlayerServerboundPacket(PlayerAction action, Integer x, Integer y, Integer z, String aiName) {
         this.action = action;
         this.x = x;
         this.y = y;
@@ -53,17 +53,17 @@ public class AiPlayerServerboundPacket {
 
     public AiPlayerServerboundPacket(FriendlyByteBuf buffer) {
         this.action = buffer.readEnum(PlayerAction.class);
-        this.x = buffer.readDouble();
-        this.y = buffer.readDouble();
-        this.z = buffer.readDouble();
+        this.x = buffer.readInt();
+        this.y = buffer.readInt();
+        this.z = buffer.readInt();
         this.aiName = buffer.readUtf();
     }
 
     public void encode(FriendlyByteBuf buffer) {
         buffer.writeEnum(this.action);
-        buffer.writeDouble(this.x);
-        buffer.writeDouble(this.y);
-        buffer.writeDouble(this.z);
+        buffer.writeInt(this.x);
+        buffer.writeInt(this.y);
+        buffer.writeInt(this.z);
         buffer.writeUtf(this.aiName);
     }
 

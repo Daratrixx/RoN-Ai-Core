@@ -381,7 +381,7 @@ public class ApiUnit implements IUnit {
 
     @Override
     public int getPopUsed() {
-        return this.unit.getPopCost();
+        return this.unit.getCost().population;
     }
 
     @Override

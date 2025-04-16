@@ -17,12 +17,12 @@ public class AiPacketHandler {
             PROTOCOL_VERSION::equals);
 
     public static void init() {
-        int index = 22; // hard-coded, not ideal...
+        int index = 40700; // hard-coded, not ideal...
 
         INSTANCE.messageBuilder(AiPlayerServerboundPacket.class, index++, NetworkDirection.PLAY_TO_SERVER)
                 .encoder(AiPlayerServerboundPacket::encode)
                 .decoder(AiPlayerServerboundPacket::new)
-                .consumer(AiPlayerServerboundPacket::handle)
+                .consumerMainThread(AiPlayerServerboundPacket::handle)
                 .add();
     }
 }

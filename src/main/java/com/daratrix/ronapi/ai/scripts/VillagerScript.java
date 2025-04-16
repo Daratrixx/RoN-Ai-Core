@@ -10,7 +10,7 @@ import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.solegendary.reignofnether.util.Faction;
 
-public class VillagerScript implements IAiLogic {
+public class VillagerScript extends IAiLogic.AbstractAiLogic {
 
     public static void register() {
         AiLogics.registerAiLogic(new VillagerScript());
@@ -69,7 +69,7 @@ public class VillagerScript implements IAiLogic {
         var popUsed = player.getPopUsed();
         var popFree = popCap - popUsed;
         priorities.logger.log("productionPower: " + productionPower + "(" + popUsed + "/" + popCap + ")");
-        if (popCap < player.getMaxPop() && popFree < productionPower) {
+        if (popCap < this.getMaxPopulation() && popFree < productionPower) {
             var existing = player.countDone(TypeIds.Villagers.House);
             var target = 1 + (int) (productionPower / 10) + existing;
             priorities.logger.log("more houses: " + existing + "=>" + target);

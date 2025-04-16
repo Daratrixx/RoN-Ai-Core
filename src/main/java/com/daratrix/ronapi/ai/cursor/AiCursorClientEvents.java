@@ -10,7 +10,6 @@ import com.daratrix.ronapi.ai.scripts.VillagerScript;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.apis.WorldApi;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3d;
 import com.solegendary.reignofnether.cursor.CursorClientEvents;
 import com.solegendary.reignofnether.guiscreen.TopdownGui;
 import com.solegendary.reignofnether.hud.HudClientEvents;
@@ -20,6 +19,7 @@ import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.util.Faction;
 import com.solegendary.reignofnether.util.MyRenderer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
@@ -28,6 +28,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class AiCursorClientEvents {
     private static final ResourceLocation TEXTURE_CROSS = new ResourceLocation("reignofnether", "textures/cursors/customcursor_cross.png");
 
     @SubscribeEvent
-    public static void onDrawScreen(ScreenEvent.Render evt) {
+    public static void onDrawScreen(ScreenEvent.Render.Post evt) {
         long window = MC.getWindow().getWindow();
 
         if (!OrthoviewClientEvents.isEnabled()
@@ -72,7 +73,7 @@ public class AiCursorClientEvents {
         if (MC.player == null || MC.level == null)
             return;
 
-        PoseStack poseStack = evt.getPoseStack();
+        GuiGraphics guiGraphics = evt.getGuiGraphics();
         var mouseX = evt.getMouseX();
         var mouseY = evt.getMouseY();
 
@@ -80,7 +81,7 @@ public class AiCursorClientEvents {
             var iconX = mouseX + iconSize;
             var iconY = mouseY < MC.screen.height / 2 ? mouseY - iconSize + 20 : mouseY - iconSize;
 
-            MyRenderer.renderIcon(poseStack, getFactionIcon(leftClickAction), iconX, iconY, iconSize);
+            MyRenderer.renderIcon(guiGraphics, getFactionIcon(leftClickAction), iconX, iconY, iconSize);
         }
 
         if (!AiGameRuleRegister.showDebug(MC.getSingleplayerServer())) {
@@ -107,7 +108,7 @@ public class AiCursorClientEvents {
                     }
                 }
 
-                MyRenderer.renderTooltip(poseStack, lines, mouseX, mouseY);
+                MyRenderer.renderTooltip(guiGraphics, lines, mouseX, mouseY);
             }
         }
     }
@@ -149,13 +150,13 @@ public class AiCursorClientEvents {
             Vec3 pos = new Vec3(worldPos.x, worldPos.y, worldPos.z);
             if (leftClickAction == UnitAction.STARTRTS_VILLAGERS) {
                 System.out.println(RonApi.MOD_ID + ">AiCursorClientEvents.onMouseClick STARTRTS_VILLAGERS");
-                AiPlayerServerboundPacket.startRTSBot(Faction.VILLAGERS, VillagerScript.name, worldPos.x, worldPos.y, worldPos.z);
+                AiPlayerServerboundPacket.startRTSBot(Faction.VILLAGERS, VillagerScript.name, (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
             } else if (leftClickAction == UnitAction.STARTRTS_MONSTERS) {
                 System.out.println(RonApi.MOD_ID + ">AiCursorClientEvents.onMouseClick STARTRTS_MONSTERS");
-                AiPlayerServerboundPacket.startRTSBot(Faction.MONSTERS, MonsterScript.name, worldPos.x, worldPos.y, worldPos.z);
+                AiPlayerServerboundPacket.startRTSBot(Faction.MONSTERS, MonsterScript.name, (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
             } else if (leftClickAction == UnitAction.STARTRTS_PIGLINS) {
                 System.out.println(RonApi.MOD_ID + ">AiCursorClientEvents.onMouseClick STARTRTS_PIGLINS");
-                AiPlayerServerboundPacket.startRTSBot(Faction.PIGLINS, "CPU PIGLINS", worldPos.x, worldPos.y, worldPos.z);
+                AiPlayerServerboundPacket.startRTSBot(Faction.PIGLINS, "CPU PIGLINS", (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
             }
             leftClickAction = null;
         }

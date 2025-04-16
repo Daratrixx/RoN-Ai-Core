@@ -55,21 +55,21 @@ public class AiHudClientEvents {
         // ------------------------------
         if (!PlayerClientEvents.isRTSPlayer && !PlayerClientEvents.rtsLocked) {
             if (!AiStartButtons.villagerStartButton.isHidden.get()) {
-                AiStartButtons.villagerStartButton.render(evt.getPoseStack(),
+                AiStartButtons.villagerStartButton.render(evt.getGuiGraphics(),
                         screenWidth - (AiStartButtons.ICON_SIZE * 6),
                         AiStartButtons.ICON_SIZE * 2 + AiStartButtons.ICON_SIZE / 2,
                         mouseX, mouseY);
                 renderedButtons.add(AiStartButtons.villagerStartButton);
             }
             if (!AiStartButtons.monsterStartButton.isHidden.get()) {
-                AiStartButtons.monsterStartButton.render(evt.getPoseStack(),
+                AiStartButtons.monsterStartButton.render(evt.getGuiGraphics(),
                         (int) (screenWidth - (AiStartButtons.ICON_SIZE * 4f)),
                         AiStartButtons.ICON_SIZE * 2 + AiStartButtons.ICON_SIZE / 2,
                         mouseX, mouseY);
                 renderedButtons.add(AiStartButtons.monsterStartButton);
             }
             /*if (!AiStartButtons.piglinStartButton.isHidden.get()) {
-                AiStartButtons.piglinStartButton.render(evt.getPoseStack(),
+                AiStartButtons.piglinStartButton.render(evt.getGuiGraphics(),
                         screenWidth - (AiStartButtons.ICON_SIZE * 2),
                         AiStartButtons.ICON_SIZE * 2 + AiStartButtons.ICON_SIZE / 2,
                         mouseX, mouseY);
@@ -82,7 +82,7 @@ public class AiHudClientEvents {
         // ------------------------------------------------------
         for (Button button : renderedButtons)
             if (button.isMouseOver(mouseX, mouseY))
-                button.renderTooltip(evt.getPoseStack(), mouseX, mouseY);
+                button.renderTooltip(evt.getGuiGraphics(), mouseX, mouseY);
 
     }
 

@@ -29,7 +29,6 @@ public interface IPlayer {
 
     public int getPopUsed();
     public int getPopCap();
-    public int getMaxPop();
 
     public int getArmyPop();
     public int getWorkerPop();
