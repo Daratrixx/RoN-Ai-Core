@@ -16,10 +16,13 @@ import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.GarrisonableBuilding;
 import com.solegendary.reignofnether.building.ProductionBuilding;
+import com.solegendary.reignofnether.building.buildings.monsters.Laboratory;
+import com.solegendary.reignofnether.building.buildings.piglins.Portal;
+import com.solegendary.reignofnether.building.buildings.villagers.Castle;
+import com.solegendary.reignofnether.building.buildings.villagers.Library;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
@@ -132,6 +135,36 @@ public class ApiBuilding implements IBuilding {
     }
 
     @Override
+    public boolean hasUpgrade(int upgradeId) {
+        if (this.typeId == TypeIds.Villagers.Castle) {
+            return upgradeId == TypeIds.Villagers.OfficersQuarters
+                    && ((Castle) this.building).getUpgradeLevel() > 0; // expensive call...
+        }
+
+        if (this.typeId == TypeIds.Villagers.Library) {
+            return upgradeId == TypeIds.Villagers.GrandLibrary
+                    && ((Library) this.building).getUpgradeLevel() > 0; // expensive call...
+        }
+
+        if (this.typeId == TypeIds.Monsters.Laboratory) {
+            return upgradeId == TypeIds.Monsters.LightningRod
+                    && ((Laboratory) this.building).getUpgradeLevel() > 0; // expensive call...
+        }
+
+        if (this.typeId == TypeIds.Piglins.Portal) {
+            var portalType = ((Portal) this.building).portalType;
+            return switch (portalType) {
+                case CIVILIAN -> upgradeId == TypeIds.Piglins.CivilianPortal;
+                case MILITARY -> upgradeId == TypeIds.Piglins.MilitaryPortal;
+                case TRANSPORT -> upgradeId == TypeIds.Piglins.TransportPortal;
+                default -> false;
+            };
+        }
+
+        return false;
+    }
+
+    @Override
     public List<IOrder> getOrderQueue() {
         return List.of();
     }
@@ -168,6 +201,7 @@ public class ApiBuilding implements IBuilding {
 
     @Override
     public boolean issueOrder(int typeId) {
+
         return false;
     }
 
@@ -325,18 +359,7 @@ public class ApiBuilding implements IBuilding {
     }
 
     @Override
-    public boolean is(int priority) {
-        return this.typeId == priority;
-    }
-
-    @Override
-    public boolean isAnyOf(int... priorities) {
-        for (int priority : priorities) {
-            if (this.typeId == priority) {
-                return true;
-            }
-        }
-
-        return false;
+    public boolean is(int typeId) {
+        return this.typeId == typeId || this.hasUpgrade(typeId);
     }
 }

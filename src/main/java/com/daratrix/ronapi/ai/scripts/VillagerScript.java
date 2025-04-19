@@ -102,11 +102,13 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Villagers.Barracks, 3);
         priorities.addPriority(TypeIds.Villagers.Farm, 9, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Villagers.ArcaneTower, 1);
+        priorities.addPriority(TypeIds.Villagers.Library, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 4);
         priorities.addPriority(TypeIds.Villagers.Farm, 12, AiProductionPriorities.Location.FARM);
+        priorities.addPriority(TypeIds.Villagers.GrandLibrary, 1);
         priorities.addPriority(TypeIds.Villagers.Castle, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 5);
-        priorities.addPriority(TypeIds.Villagers.Library, 1);
+        priorities.addPriority(TypeIds.Villagers.OfficersQuarters, 1);
     }
 
     public void setUnitPriorities(IAiPlayer player, AiProductionPriorities priorities) {

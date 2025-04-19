@@ -1,5 +1,6 @@
 package com.daratrix.ronapi.ai.player;
 
+import com.daratrix.ronapi.ai.AiDependencies;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.models.ApiBuilding;
@@ -30,7 +31,14 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
 
     @Override
     public int count(int priority) {
-        return existing.getOrDefault(priority, 0) + (int) buildings.stream().filter(b -> b.getCurrentOrderId() == priority).count();
+        var baseId = AiDependencies.getUpgradeSourceTypeId(priority);
+        if (baseId == 0) {
+            // default behaviour when counting something that is not a building upgrade
+            return existing.getOrDefault(priority, 0) + (int) buildings.stream().filter(b -> b.getCurrentOrderId() == priority).count();
+        }
+
+        return (int) this.units.stream().filter(u -> u.is(priority)).count()
+                + (int) this.buildings.stream().filter(b -> b.is(priority) || (b.is(baseId) && b.getCurrentOrderId() == priority)).count();
     }
 
     @Override
@@ -40,7 +48,14 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
 
     @Override
     public int countDone(int priority) {
-        return existingDone.getOrDefault(priority, 0);
+        var baseId = AiDependencies.getUpgradeSourceTypeId(priority);
+        if (baseId == 0) {
+            // default behaviour when counting something that is not a building upgrade
+            return existingDone.getOrDefault(priority, 0);
+        }
+
+        return (int) this.units.stream().filter(u -> u.is(priority)).count()
+                + (int) this.buildings.stream().filter(b -> b.isDone() && b.is(priority)).count();
     }
 
     @Override

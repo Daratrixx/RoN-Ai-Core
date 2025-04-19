@@ -7,6 +7,7 @@ package com.daratrix.ronapi.apis;
 
 import com.daratrix.ronapi.models.interfaces.IBuilding;
 import com.daratrix.ronapi.models.interfaces.IResource;
+import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.daratrix.ronapi.utils.SpiralCounter;
 import com.solegendary.reignofnether.building.*;
@@ -42,42 +43,53 @@ public class BuildingApi {
     private static final Map<Integer, Boolean> isBridge = new HashMap<>();
     private static final Map<Integer, Boolean> mustCheckNetherTerrain = new HashMap<>();
 
+    public static ProductionItem toProductionItemError(String message) {
+        System.err.println(message);
+        return null;
+    }
+
     public static ProductionItem toProductionItem(int typeId, ProductionBuilding building) {
         var itemName = TypeIds.toItemName(typeId);
+        if (itemName == null || itemName.isEmpty()) {
+            return toProductionItemError("toProductionItem: unknown typeId" + typeId);
+        }
+
         return toProductionItem(itemName, building);
     }
 
     public static ProductionItem toProductionItem(String itemName, ProductionBuilding building) {
         return switch (itemName) {
+            case ZombieVillagerProd.itemName -> new ZombieVillagerProd(building);
             case CreeperProd.itemName -> new CreeperProd(building);
             case SkeletonProd.itemName -> new SkeletonProd(building);
             case ZombieProd.itemName -> new ZombieProd(building);
             case StrayProd.itemName -> new StrayProd(building);
             case HuskProd.itemName -> new HuskProd(building);
             case DrownedProd.itemName -> new DrownedProd(building);
+            case SlimeProd.itemName -> new SlimeProd(building);
             case SpiderProd.itemName -> new SpiderProd(building);
             case PoisonSpiderProd.itemName -> new PoisonSpiderProd(building);
+            case WardenProd.itemName -> new WardenProd(building);
+
             case VillagerProd.itemName -> new VillagerProd(building);
-            case ZombieVillagerProd.itemName -> new ZombieVillagerProd(building);
             case VindicatorProd.itemName -> new VindicatorProd(building);
             case PillagerProd.itemName -> new PillagerProd(building);
             case IronGolemProd.itemName -> new IronGolemProd(building);
             case WitchProd.itemName -> new WitchProd(building);
             case EvokerProd.itemName -> new EvokerProd(building);
-            case WardenProd.itemName -> new WardenProd(building);
             case RavagerProd.itemName -> new RavagerProd(building);
 
             case GruntProd.itemName -> new GruntProd(building);
             case BruteProd.itemName -> new BruteProd(building);
             case HeadhunterProd.itemName -> new HeadhunterProd(building);
             case HoglinProd.itemName -> new HoglinProd(building);
+            case MagmaCubeProd.itemName -> new MagmaCubeProd(building);
             case BlazeProd.itemName -> new BlazeProd(building);
             case WitherSkeletonProd.itemName -> new WitherSkeletonProd(building);
             case GhastProd.itemName -> new GhastProd(building);
 
             case ResearchVindicatorAxes.itemName -> new ResearchVindicatorAxes(building);
             case ResearchPillagerCrossbows.itemName -> new ResearchPillagerCrossbows(building);
-            case ResearchLabLightningRod.itemName -> new ResearchLabLightningRod(building);
             case ResearchResourceCapacity.itemName -> new ResearchResourceCapacity(building);
             case ResearchSpiderJockeys.itemName -> new ResearchSpiderJockeys(building);
             case ResearchPoisonSpiders.itemName -> new ResearchPoisonSpiders(building);
@@ -85,11 +97,12 @@ public class BuildingApi {
             case ResearchDrowned.itemName -> new ResearchDrowned(building);
             case ResearchStrays.itemName -> new ResearchStrays(building);
             case ResearchLingeringPotions.itemName -> new ResearchLingeringPotions(building);
+            case ResearchWaterPotions.itemName -> new ResearchWaterPotions(building);
+            case ResearchHealingPotions.itemName -> new ResearchHealingPotions(building);
             case ResearchEvokerVexes.itemName -> new ResearchEvokerVexes(building);
             case ResearchGolemSmithing.itemName -> new ResearchGolemSmithing(building);
             case ResearchSilverfish.itemName -> new ResearchSilverfish(building);
             case ResearchSculkAmplifiers.itemName -> new ResearchSculkAmplifiers(building);
-            case ResearchCastleFlag.itemName -> new ResearchCastleFlag(building);
             case ResearchRavagerCavalry.itemName -> new ResearchRavagerCavalry(building);
             case ResearchBruteShields.itemName -> new ResearchBruteShields(building);
             case ResearchHoglinCavalry.itemName -> new ResearchHoglinCavalry(building);
@@ -99,10 +112,13 @@ public class BuildingApi {
             case ResearchAdvancedPortals.itemName -> new ResearchAdvancedPortals(building);
             case ResearchFireResistance.itemName -> new ResearchFireResistance(building);
 
+            case ResearchGrandLibrary.itemName -> new ResearchGrandLibrary(building);
+            case ResearchCastleFlag.itemName -> new ResearchCastleFlag(building);
+            case ResearchLabLightningRod.itemName -> new ResearchLabLightningRod(building);
             case ResearchPortalForCivilian.itemName -> new ResearchPortalForCivilian(building);
             case ResearchPortalForMilitary.itemName -> new ResearchPortalForMilitary(building);
             case ResearchPortalForTransport.itemName -> new ResearchPortalForTransport(building);
-            default -> null;
+            default -> toProductionItemError("toProductionItem: unknown itemName" + itemName);
         };
     }
 

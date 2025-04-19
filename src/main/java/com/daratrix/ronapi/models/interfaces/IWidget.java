@@ -19,8 +19,16 @@ public interface IWidget extends ILocated {
     public boolean isAlive();
     public boolean isDead();
     public int getTypeId();
-    public boolean is(int priority);
-    public boolean isAnyOf(int... priorities);
+    public boolean is(int typeId);
+    default boolean isAnyOf(int... typeIds) {
+        for (int typeId : typeIds) {
+            if (this.is(typeId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     default boolean isMeleeAttacker() {
         return false;

@@ -364,19 +364,8 @@ public class ApiUnit implements IUnit {
     }
 
     @Override
-    public boolean is(int priority) {
-        return this.typeId == priority;
-    }
-
-    @Override
-    public boolean isAnyOf(int... priorities) {
-        for (int priority : priorities) {
-            if (this.typeId == priority) {
-                return true;
-            }
-        }
-
-        return false;
+    public boolean is(int typeId) {
+        return this.typeId == typeId;
     }
 
     @Override

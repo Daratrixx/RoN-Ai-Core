@@ -9,6 +9,7 @@ import com.daratrix.ronapi.apis.BuildingApi;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.interfaces.IBuilding;
+import com.daratrix.ronapi.models.interfaces.IOrderable;
 import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
@@ -181,6 +182,43 @@ public class AiController {
         }
     }
 
+    public void runAiUpgradeBuildings(MinecraftServer server, AiProductionPriorities.AiProductionPriority p) {
+        var upgradeSource = AiDependencies.getUpgradeSourceTypeId(p.typeId);
+        var existing = this.player.getBuildingsFiltered(b -> b.isDone() && b.is(upgradeSource)).toList();
+        var upgraded = existing.stream().filter(b -> b.hasUpgrade(p.typeId)).toList();
+        var upgrading = existing.stream().filter(b -> b.getCurrentOrderId() == p.typeId).toList();
+        var idleSources = existing.stream().filter(b -> !upgraded.contains(b) && !upgrading.contains(b) && b.isIdle()).toList();
+        var existingCount = upgrading.size() + upgraded.size();
+        var doneCount = upgraded.size();
+        var missing = p.count - doneCount;
+        var toStart = p.count - existingCount;
+
+        if (missing <= 0) {
+            this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count + ")");
+            return; // already fulfilled the priority
+        }
+
+        if (idleSources.isEmpty()) {
+            this.logger.log("Skipping upgrade " + TypeIds.toItemName(p.typeId) + " because there are no " + TypeIds.toItemName(upgradeSource) + " available " + "(" + doneCount + "/" + p.count + ")");
+            return; // can't fulfil the priority at this time
+        }
+
+        this.logger.log("Attempting to upgrade " + TypeIds.toItemName(p.typeId) + "(" + toStart + " to start, " + doneCount + "/" + p.count + " done)");
+
+        for (var source : idleSources) {
+            if (toStart <= 0) {
+                break;
+            }
+
+            if (!source.issueUpgradeOrder(p.typeId)) {
+                break; // could not start - skip remaining iterations
+            }
+
+            this.logger.log("Started upgrade: " + TypeIds.toItemName(p.typeId));
+            toStart--;
+        }
+    }
+
     public void runAiProduceBuildings(MinecraftServer server) {
         this.workerController.refreshWorkerTracker();
 
@@ -214,6 +252,12 @@ public class AiController {
         mainLoop:
         while (it.hasNext()) {
             var p = it.next();
+            var upgradeSource = AiDependencies.getUpgradeSourceTypeId(p.typeId);
+            if (upgradeSource != 0) {
+                runAiUpgradeBuildings(server, p);
+                continue;
+            }
+
             var existingCount = this.player.count(p.typeId/*, p.location*/);
             var doneCount = this.player.countDone(p.typeId);
             var missing = p.count - doneCount;
@@ -278,7 +322,7 @@ public class AiController {
 
             var canMake = AiDependencies.canMake(p.typeId, this.player);
             if (!canMake) {
-                this.logger.log("Skipping impossible " + TypeIds.toItemName(p.typeId) + " due to missing " + TypeIds.toItemName(AiDependencies.lastMissingrequirement));
+                this.logger.log("Skipping impossible " + TypeIds.toItemName(p.typeId) + " due to missing requirement:" + TypeIds.toItemName(AiDependencies.lastMissingrequirement));
                 continue; // impossible to fulfill the priority
             }
 

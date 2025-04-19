@@ -6,23 +6,29 @@ import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import java.util.*;
 
 public class AiDependencies {
-    private final static Map<Integer, List<Integer>> PriorityRequirements = new HashMap<Integer, List<Integer>>();
-    private final static Map<Integer, List<Integer>> PrioritySources = new HashMap<Integer, List<Integer>>();
+    private final static Map<Integer, HashSet<Integer>> PriorityRequirements = new HashMap<>();
+    private final static Map<Integer, HashSet<Integer>> PrioritySources = new HashMap<>();
 
-    private final static List<Integer> BuildingPriorities = new ArrayList<Integer>();
-    private final static List<Integer> UnitPriorities = new ArrayList<Integer>();
-    private final static List<Integer> ResearchPriorities = new ArrayList<Integer>();
+    private final static Map<Integer, Integer> PriorityUpgradesFrom = new HashMap<>();
 
     public static void setRequirements(int priority, Integer... requirements) {
-        var l = new ArrayList<Integer>(requirements.length);
+        var l = PriorityRequirements.getOrDefault(priority, null);
+        if (l == null) {
+            l = new HashSet<Integer>(requirements.length);
+            PriorityRequirements.put(priority, l);
+        }
+
         l.addAll(Arrays.asList(requirements));
-        PriorityRequirements.put(priority, l);
     }
 
     public static void setSources(int priority, Integer... sources) {
-        var l = new ArrayList<Integer>(sources.length);
+        var l = PrioritySources.getOrDefault(priority, null);
+        if (l == null) {
+            l = new HashSet<Integer>(sources.length);
+            PrioritySources.put(priority, l);
+        }
+
         l.addAll(Arrays.asList(sources));
-        PrioritySources.put(priority, l);
     }
 
     public static void setProduction(int priority, Integer... produced) {
@@ -31,15 +37,21 @@ public class AiDependencies {
         }
     }
 
+    public static void setUpgradesInto(int priority, int tranformsInto) {
+        PriorityUpgradesFrom.put(tranformsInto, priority);
+        setSources(priority, tranformsInto);
+    }
+
     public static int lastMissingrequirement = 0; // for logging
+
     public static boolean canMake(int priority, IAiPlayer aiPlayer) {
-        List<Integer> requirements = PriorityRequirements.getOrDefault(priority, null);
-        if(requirements == null) {
+        HashSet<Integer> requirements = PriorityRequirements.getOrDefault(priority, null);
+        if (requirements == null) {
             return true;
         }
 
         for (Integer requirement : requirements) {
-            if(aiPlayer.countDone(requirement) == 0) {
+            if (aiPlayer.countDone(requirement) == 0) {
                 lastMissingrequirement = requirement; // for logging
                 return false;
             }
@@ -48,8 +60,12 @@ public class AiDependencies {
         return true;
     }
 
-    public static List<Integer> getSourceTypeIds(int priority) {
-        return PrioritySources.get(priority);
+    public static HashSet<Integer> getSourceTypeIds(int priority) {
+        return PrioritySources.getOrDefault(priority, null);
+    }
+
+    public static int getUpgradeSourceTypeId(int priority) {
+        return PriorityUpgradesFrom.getOrDefault(priority, 0);
     }
 
     static {
@@ -75,15 +91,27 @@ public class AiDependencies {
 
         setProduction(TypeIds.Villagers.Blacksmith,
                 TypeIds.Villagers.IronGolem,
-                TypeIds.Villagers.DiamondAxes,
-                TypeIds.Villagers.MultishotCrossbows);
+                TypeIds.Villagers.GolemSmithing);
+
+        setProduction(TypeIds.Villagers.Library,
+                TypeIds.Villagers.LingeringPotions,
+                TypeIds.Villagers.WaterPotions,
+                TypeIds.Villagers.HealingPotions,
+                TypeIds.Villagers.Vexes,
+                TypeIds.Villagers.EnchantMaiming,
+                TypeIds.Villagers.EnchantSharpness,
+                TypeIds.Villagers.EnchantQuickCharge,
+                TypeIds.Villagers.EnchantMultiShot,
+                TypeIds.Villagers.EnchantVigor);
 
         setProduction(TypeIds.Villagers.ArcaneTower,
                 TypeIds.Villagers.Witch,
                 TypeIds.Villagers.Evoker);
 
         setProduction(TypeIds.Villagers.Castle,
-                TypeIds.Villagers.Ravager);
+                TypeIds.Villagers.Ravager,
+                TypeIds.Villagers.RavagerCavalry,
+                TypeIds.Villagers.OfficersQuarters);
 
         // setup Villager requirements
         setRequirements(TypeIds.Villagers.Barracks, TypeIds.Villagers.TownCentre);
@@ -94,6 +122,13 @@ public class AiDependencies {
         setRequirements(TypeIds.Villagers.ArcaneTower, TypeIds.Villagers.Barracks);
         setRequirements(TypeIds.Villagers.Library, TypeIds.Villagers.ArcaneTower);
         setRequirements(TypeIds.Villagers.Castle, TypeIds.Villagers.Library, TypeIds.Villagers.Blacksmith, TypeIds.Villagers.Barracks);
+
+        setRequirements(TypeIds.Villagers.EnchantSharpness, TypeIds.Villagers.GrandLibrary);
+        setRequirements(TypeIds.Villagers.EnchantMultiShot, TypeIds.Villagers.GrandLibrary);
+        setRequirements(TypeIds.Villagers.EnchantVigor, TypeIds.Villagers.GrandLibrary);
+
+        setUpgradesInto(TypeIds.Villagers.Library, TypeIds.Villagers.GrandLibrary);
+        setUpgradesInto(TypeIds.Villagers.Castle, TypeIds.Villagers.OfficersQuarters);
 
         // setup Monster sources
         setProduction(TypeIds.Monsters.Villager,
@@ -144,6 +179,8 @@ public class AiDependencies {
         setRequirements(TypeIds.Monsters.Dungeon, TypeIds.Monsters.Laboratory);
         setRequirements(TypeIds.Monsters.Stronghold, TypeIds.Monsters.SpiderLair, TypeIds.Monsters.Dungeon, TypeIds.Monsters.Graveyard);
 
+        setUpgradesInto(TypeIds.Monsters.Laboratory, TypeIds.Monsters.LightningRod);
+
         // setup Piglin sources
         /*setProduction(TypeIds.Piglins.Villager,
                 TypeIds.Piglins.TownCentre,
@@ -182,6 +219,10 @@ public class AiDependencies {
         setRequirements(TypeIds.Piglins.Blacksmith, TypeIds.Piglins.Barracks);
         setRequirements(TypeIds.Piglins.ArcaneTower, TypeIds.Piglins.Barracks);
         setRequirements(TypeIds.Piglins.Library, TypeIds.Piglins.ArcaneTower);
-        setRequirements(TypeIds.Piglins.Castle, TypeIds.Piglins.Library, TypeIds.Piglins.Blacksmith, TypeIds.Piglins.Barracks);*/
+        setRequirements(TypeIds.Piglins.Castle, TypeIds.Piglins.Library, TypeIds.Piglins.Blacksmith, TypeIds.Piglins.Barracks);
+        setUpgradesInto(TypeIds.Piglins.Portal, TypeIds.Piglins.CivilianPortal);
+        setUpgradesInto(TypeIds.Piglins.Portal, TypeIds.Piglins.MilitaryPortal);
+        setUpgradesInto(TypeIds.Piglins.Portal, TypeIds.Piglins.TransportPortal);
+        */
     }
 }

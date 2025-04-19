@@ -3,6 +3,7 @@ package com.daratrix.ronapi.apis;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.ProductionItem;
 import com.solegendary.reignofnether.resources.ResourceCost;
+import com.solegendary.reignofnether.resources.ResourceCosts;
 import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
@@ -33,7 +34,10 @@ public class TypeIds {
 
     public static int add(String itemName, ResourceCost cost) {
         var typeId = add(itemName);
-        TypeIdToCost.put(typeId, cost);
+        if (cost != null) {
+            TypeIdToCost.put(typeId, cost);
+        }
+
         return typeId;
     }
 
@@ -47,6 +51,10 @@ public class TypeIds {
 
     public static int add(UnitAction action) {
         return add(action.name());
+    }
+
+    public static int add(UnitAction action, ResourceCost cost) {
+        return add(action.name(), cost);
     }
 
     public static <T extends Building> int addB(Class<T> buildingClass) {
@@ -158,9 +166,24 @@ public class TypeIds {
         public final static int Ravager = addP(com.solegendary.reignofnether.unit.units.villagers.RavagerProd.class);
 
         // Villager researches
+        public final static int GolemSmithing = addP(com.solegendary.reignofnether.research.researchItems.ResearchGolemSmithing.class);
+        public final static int LingeringPotions = addP(com.solegendary.reignofnether.research.researchItems.ResearchLingeringPotions.class);
+        public final static int WaterPotions = addP(com.solegendary.reignofnether.research.researchItems.ResearchWaterPotions.class);
+        public final static int HealingPotions = addP(com.solegendary.reignofnether.research.researchItems.ResearchHealingPotions.class);
+        public final static int Vexes = addP(com.solegendary.reignofnether.research.researchItems.ResearchEvokerVexes.class);
+        public final static int GrandLibrary = addP(com.solegendary.reignofnether.research.researchItems.ResearchGrandLibrary.class);
+        public final static int RavagerCavalry = addP(com.solegendary.reignofnether.research.researchItems.ResearchRavagerCavalry.class);
+        public final static int OfficersQuarters = addP(com.solegendary.reignofnether.research.researchItems.ResearchCastleFlag.class);
+        // deprecated
         public final static int DiamondAxes = addP(com.solegendary.reignofnether.research.researchItems.ResearchVindicatorAxes.class);
         public final static int MultishotCrossbows = addP(com.solegendary.reignofnether.research.researchItems.ResearchPillagerCrossbows.class);
-        public final static int OfficersQuarters = addP(com.solegendary.reignofnether.research.researchItems.ResearchCastleFlag.class);
+
+        // Villager enchants
+        public final static int EnchantMaiming = add(UnitAction.ENCHANT_MAIMING, ResourceCosts.ENCHANT_MAIMING);
+        public final static int EnchantSharpness = add(UnitAction.ENCHANT_SHARPNESS, ResourceCosts.ENCHANT_SHARPNESS);
+        public final static int EnchantQuickCharge = add(UnitAction.ENCHANT_QUICKCHARGE, ResourceCosts.ENCHANT_QUICK_CHARGE);
+        public final static int EnchantMultiShot = add(UnitAction.ENCHANT_MULTISHOT, ResourceCosts.ENCHANT_MULTISHOT);
+        public final static int EnchantVigor = add(UnitAction.ENCHANT_VIGOR, ResourceCosts.ENCHANT_VIGOR);
     }
 
     public static class Monsters {
@@ -192,7 +215,7 @@ public class TypeIds {
         // Monster researches
         public final static int HusksUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchHusks.class);
         public final static int StrayUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchStrays.class);
-        public final static int LightningRodUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchLabLightningRod.class);
+        public final static int LightningRod = addP(com.solegendary.reignofnether.research.researchItems.ResearchLabLightningRod.class);
     }
 
     public static class Piglins {
@@ -219,8 +242,9 @@ public class TypeIds {
         public final static int BruteShield = addP(com.solegendary.reignofnether.research.researchItems.ResearchBruteShields.class);
         public final static int HeadhunterTrident = addP(com.solegendary.reignofnether.research.researchItems.ResearchHeavyTridents.class);
         public final static int WitherCloud = addP(com.solegendary.reignofnether.research.researchItems.ResearchWitherClouds.class);
-        public final static int CivilianPortalUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchPortalForCivilian.class);
-        public final static int MilitaryPortalUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchPortalForMilitary.class);
+        public final static int CivilianPortal = addP(com.solegendary.reignofnether.research.researchItems.ResearchPortalForCivilian.class);
+        public final static int MilitaryPortal = addP(com.solegendary.reignofnether.research.researchItems.ResearchPortalForMilitary.class);
+        public final static int TransportPortal = addP(com.solegendary.reignofnether.research.researchItems.ResearchPortalForTransport.class);
     }
 
     public static class Orders {
