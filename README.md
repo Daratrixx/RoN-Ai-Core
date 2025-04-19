@@ -37,6 +37,7 @@ This project consists of:
     - [x] Bug: Ai sometimes starts additional capitols
   - [x] Automatically select a location around the capitol to build structures
     - [ ] Allow structures to be built on to specific locations (Main, Farms, Woodline, Ore, Proxy...)
+      - [ ] Allow structures to prioritize certain areas in specific location (Front, Back...)
     - [x] Bug: Ai buildings sometimes clip into each others
     - [X] Bug: buildings are too far apart and the spiral becomes exponentially bigger
   - [ ] Build Stockpiles/Portals near distant resources
@@ -46,16 +47,17 @@ This project consists of:
     - [ ] Enforce number of builders per structure (powerbuild castle etc...)
   - [ ] Enforce required priorities that will prevent the list from progressing until fulfilled
   - [ ] Automatically fulfil techtree requirements ('autobuild')
+  - [ ] Support building upgrades (portals, lightning rod, grand library...)
 - 80% Training units
   - [x] Process the Unit priorities to decide when to start new units
   - [x] Automatically queue new units when a production building becomes idle
   - [ ] Enforce required priorities that will prevent the list from progressing until fulfilled
   - [ ] Automatically fulfil techtree requirements ('autobuild')
-  - 
 - 70% Assigning workers to resources
-  - [ ] Define resource gathering priorities
-  - [ ] Automatically adjust worker assignment to fulfil priorities
+  - [X] Define resource gathering priorities
+  - [X] Automatically adjust worker assignment to fulfil priorities
     - [ ] Bug: reassigned workers sometimes do not switch tasks
+    - [ ] Bug: sometimes multiple workers are assigned to the same farm when there are farms with no workers assigned
 - 20% Army management
   - [X] Army gather point
     - [X] Bug: Army gather point is sometimes on the wrong side of the base
@@ -77,3 +79,31 @@ This project consists of:
     - [ ] Routing
     - [ ] Choke points
     - [ ] Improved gather points and attack angles
+- 40% Prebuilt AIs
+  - Villager AI
+    - [X] Attack
+    - [X] Produces
+    - [X] Harvest
+    - [ ] Upgrades
+    - [ ] Expand
+    - [ ] Harass
+    - [ ] Enchant
+    - [ ] Job management
+    - [ ] Militia
+  - Monster AI
+    - [X] Attack
+    - [X] Produces
+    - [ ] Harvest
+    - [ ] Upgrades
+    - [ ] Expand
+    - [ ] Harass
+    - [ ] Night timing attacks
+    - [ ] Sculk sensor expansion
+  - Piglin AI
+    - [ ] Attack
+    - [ ] Produces
+    - [ ] Harvest
+    - [ ] Upgrades
+    - [ ] Expand
+    - [ ] Harass
+    - [ ] Portal Network
