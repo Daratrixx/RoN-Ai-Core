@@ -23,6 +23,8 @@ public interface IPlayer {
     public int countBuilding(String name);
     public int countResearch(String name);
 
+    public boolean hasResearch(int researchId);
+
     public int getFood();
     public int getWood();
     public int getOre();

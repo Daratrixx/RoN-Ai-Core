@@ -2,6 +2,7 @@ package com.daratrix.ronapi;;
 
 import com.daratrix.ronapi.ai.registers.AiGameRuleRegister;
 import com.daratrix.ronapi.ai.scripts.MonsterScript;
+import com.daratrix.ronapi.ai.scripts.PiglinScript;
 import com.daratrix.ronapi.ai.scripts.VillagerScript;
 import com.daratrix.ronapi.registers.ClientEventRegister;
 import com.daratrix.ronapi.registers.GameRuleRegister;
@@ -34,5 +35,6 @@ public class RonApi {
         // todo: move to a separate add-on
         VillagerScript.register();
         MonsterScript.register();
+        PiglinScript.register();
     }
 }

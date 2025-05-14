@@ -2,6 +2,7 @@ package com.daratrix.ronapi.ai;
 
 import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
+import com.solegendary.reignofnether.building.buildings.piglins.FlameSanctuary;
 
 import java.util.*;
 
@@ -182,47 +183,55 @@ public class AiDependencies {
         setUpgradesInto(TypeIds.Monsters.Laboratory, TypeIds.Monsters.LightningRod);
 
         // setup Piglin sources
-        /*setProduction(TypeIds.Piglins.Villager,
-                TypeIds.Piglins.TownCentre,
-                TypeIds.Piglins.Stockpile,
-                TypeIds.Piglins.House,
+        setProduction(TypeIds.Piglins.Grunt,
+                TypeIds.Piglins.MainPortal,
+                TypeIds.Piglins.Portal,
                 TypeIds.Piglins.Farm,
-                TypeIds.Piglins.Barracks,
-                TypeIds.Piglins.Blacksmith,
-                TypeIds.Piglins.ArcaneTower,
-                TypeIds.Piglins.Castle,
-                TypeIds.Piglins.Library);
+                TypeIds.Piglins.Bastion,
+                TypeIds.Piglins.HoglinStables,
+                TypeIds.Piglins.FlameSanctuary,
+                TypeIds.Piglins.WitherShrine,
+                TypeIds.Piglins.Fortress);
 
-        setProduction(TypeIds.Piglins.Barracks,
-                TypeIds.Piglins.Vindicator,
-                TypeIds.Piglins.Pillager);
+        setProduction(TypeIds.Piglins.MilitaryPortal,
+                TypeIds.Piglins.Brute,
+                TypeIds.Piglins.Headhunter,
+                TypeIds.Piglins.Hoglin,
+                TypeIds.Piglins.Blaze,
+                TypeIds.Piglins.WitherSkeleton,
+                TypeIds.Piglins.Ghast);
 
-        setProduction(TypeIds.Piglins.TownCentre,
-                TypeIds.Piglins.Villager);
+        setProduction(TypeIds.Piglins.MainPortal,
+                TypeIds.Piglins.Grunt);
 
-        setProduction(TypeIds.Piglins.Blacksmith,
-                TypeIds.Piglins.IronGolem,
-                TypeIds.Piglins.DiamondAxes,
-                TypeIds.Piglins.MultishotCrossbows);
+        setProduction(TypeIds.Piglins.Bastion,
+                TypeIds.Piglins.BruteShield,
+                TypeIds.Piglins.HeadhunterTrident);
 
-        setProduction(TypeIds.Villagers.ArcaneTower,
-                TypeIds.Piglins.Witch,
-                TypeIds.Piglins.Evoker);
+        setProduction(TypeIds.Piglins.HoglinStables,
+                TypeIds.Piglins.HoglinCavalry);
 
-        setProduction(TypeIds.Piglins.Castle,
-                TypeIds.Piglins.Ravager);
+        setProduction(TypeIds.Piglins.FlameSanctuary,
+                TypeIds.Piglins.FireResistance,
+                TypeIds.Piglins.BlazeFirewall);
+
+        setProduction(TypeIds.Piglins.WitherShrine,
+                TypeIds.Piglins.WitherCloud);
+
+        setProduction(TypeIds.Piglins.Fortress,
+                TypeIds.Piglins.SoulFireballs,
+                TypeIds.Piglins.AdvancedPortals);
 
         // setup Piglin requirements
-        setRequirements(TypeIds.Piglins.Barracks, TypeIds.Piglins.TownCentre);
-        setRequirements(TypeIds.Piglins.House, TypeIds.Piglins.TownCentre);
-        setRequirements(TypeIds.Piglins.Farm, TypeIds.Piglins.TownCentre);
-        setRequirements(TypeIds.Piglins.Blacksmith, TypeIds.Piglins.Barracks);
-        setRequirements(TypeIds.Piglins.ArcaneTower, TypeIds.Piglins.Barracks);
-        setRequirements(TypeIds.Piglins.Library, TypeIds.Piglins.ArcaneTower);
-        setRequirements(TypeIds.Piglins.Castle, TypeIds.Piglins.Library, TypeIds.Piglins.Blacksmith, TypeIds.Piglins.Barracks);
+        setRequirements(TypeIds.Piglins.Portal, TypeIds.Piglins.MainPortal);
+        setRequirements(TypeIds.Piglins.Farm, TypeIds.Piglins.MainPortal);
+        setRequirements(TypeIds.Piglins.Bastion, TypeIds.Piglins.Portal);
+        setRequirements(TypeIds.Piglins.WitherShrine, TypeIds.Piglins.Bastion);
+        setRequirements(TypeIds.Piglins.HoglinStables, TypeIds.Piglins.Portal);
+        setRequirements(TypeIds.Piglins.FlameSanctuary, TypeIds.Piglins.HoglinStables);
+        setRequirements(TypeIds.Piglins.Fortress, TypeIds.Piglins.WitherShrine, TypeIds.Piglins.FlameSanctuary);
         setUpgradesInto(TypeIds.Piglins.Portal, TypeIds.Piglins.CivilianPortal);
         setUpgradesInto(TypeIds.Piglins.Portal, TypeIds.Piglins.MilitaryPortal);
         setUpgradesInto(TypeIds.Piglins.Portal, TypeIds.Piglins.TransportPortal);
-        */
     }
 }

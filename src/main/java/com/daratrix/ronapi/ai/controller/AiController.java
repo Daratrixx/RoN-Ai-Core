@@ -184,7 +184,7 @@ public class AiController {
 
     public void runAiUpgradeBuildings(MinecraftServer server, AiProductionPriorities.AiProductionPriority p) {
         var upgradeSource = AiDependencies.getUpgradeSourceTypeId(p.typeId);
-        var existing = this.player.getBuildingsFiltered(b -> b.isDone() && b.is(upgradeSource)).toList();
+        var existing = this.player.getBuildingsFiltered(b -> b.isDone() && b.is(upgradeSource) && (b.hasUpgrade(p.typeId) || !b.isUpgraded())).toList();
         var upgraded = existing.stream().filter(b -> b.hasUpgrade(p.typeId)).toList();
         var upgrading = existing.stream().filter(b -> b.getCurrentOrderId() == p.typeId).toList();
         var idleSources = existing.stream().filter(b -> !upgraded.contains(b) && !upgrading.contains(b) && b.isIdle()).toList();
@@ -356,7 +356,7 @@ public class AiController {
                 } else {
                     this.workerController.builders.remove(builder);
                     this.workerController.idleWorkers.add(builder);
-                    this.logger.log("Failed to issue build order");
+                    this.logger.log(buildingLocation == null ? "Failed to find a build location" : "Failed to issue build order");
                     break mainLoop;
                 }
             }

@@ -65,7 +65,7 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
 
     @Override
     public Stream<IUnit> getIdleUnits(int priority) {
-        return this.getUnitsFiltered(u -> u.isIdle() && u.getTypeId() == priority);
+        return this.getUnitsFiltered(u -> u.isIdle() && u.is(priority));
     }
 
     @Override
@@ -75,32 +75,32 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
 
     @Override
     public Stream<IUnit> getUnits(int priority) {
-        return this.getUnitsFiltered(u -> u.getTypeId() == priority);
+        return this.getUnitsFiltered(u -> u.is(priority));
     }
 
     @Override
     public Stream<IUnit> getUnits(Collection<Integer> priorities) {
-        return this.getUnitsFiltered(u -> priorities.contains(u.getTypeId()));
+        return this.getUnitsFiltered(u -> priorities.contains(u.getTypeId()) || u.isAnyOf(priorities));
     }
 
     @Override
     public Stream<IBuilding> getIdleBuildings(int priority) {
-        return this.getBuildingsFiltered(b -> b.isDone() && b.isIdle() && b.getTypeId() == priority);
+        return this.getBuildingsFiltered(b -> b.isDone() && b.isIdle() && b.is(priority));
     }
 
     @Override
     public Stream<IBuilding> getIdleBuildings(Collection<Integer> priorities) {
-        return this.getBuildingsFiltered(b -> b.isDone() && b.isIdle() && priorities.contains(b.getTypeId()));
+        return this.getBuildingsFiltered(b -> b.isDone() && b.isIdle() && (priorities.contains(b.getTypeId()) || b.isAnyOf(priorities)));
     }
 
     @Override
     public Stream<IBuilding> getBuildings(int priority) {
-        return this.getBuildingsFiltered(b -> b.getTypeId() == priority);
+        return this.getBuildingsFiltered(b -> b.is(priority));
     }
 
     @Override
     public Stream<IBuilding> getBuildings(Collection<Integer> priorities) {
-        return this.getBuildingsFiltered(b -> priorities.contains(b.getTypeId()));
+        return this.getBuildingsFiltered(b -> priorities.contains(b.getTypeId()) || b.isAnyOf(priorities));
     }
 
     @Override

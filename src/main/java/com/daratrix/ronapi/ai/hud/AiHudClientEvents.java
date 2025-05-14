@@ -68,13 +68,13 @@ public class AiHudClientEvents {
                         mouseX, mouseY);
                 renderedButtons.add(AiStartButtons.monsterStartButton);
             }
-            /*if (!AiStartButtons.piglinStartButton.isHidden.get()) {
+            if (!AiStartButtons.piglinStartButton.isHidden.get()) {
                 AiStartButtons.piglinStartButton.render(evt.getGuiGraphics(),
                         screenWidth - (AiStartButtons.ICON_SIZE * 2),
                         AiStartButtons.ICON_SIZE * 2 + AiStartButtons.ICON_SIZE / 2,
                         mouseX, mouseY);
                 renderedButtons.add(AiStartButtons.piglinStartButton);
-            }*/
+            }
         }
 
         // ------------------------------------------------------

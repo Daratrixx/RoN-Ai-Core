@@ -18,6 +18,51 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
 
     public static final String name = "PiglinScript";
 
+
+    protected int portalCount = 0;
+    protected int civilianPortalCount = 0;
+    protected int militaryPortalCount = 0;
+    protected int advancedPortalCount = 0;
+
+    protected void BuildPortal(AiProductionPriorities priorities, int count) {
+        if (count < portalCount) {
+            return;
+        }
+
+        priorities.addPriority(TypeIds.Piglins.Portal, count);
+        this.portalCount = count;
+    }
+
+    protected void BuildCivilianPortal(AiProductionPriorities priorities, int count) {
+        if (count < civilianPortalCount) {
+            return;
+        }
+
+        this.BuildPortal(priorities, count + militaryPortalCount + advancedPortalCount);
+        priorities.addPriority(TypeIds.Piglins.CivilianPortal, count);
+        this.civilianPortalCount = count;
+    }
+
+    protected void BuildMilitaryPortal(AiProductionPriorities priorities, int count) {
+        if (count < militaryPortalCount) {
+            return;
+        }
+
+        this.BuildPortal(priorities, civilianPortalCount + count + advancedPortalCount);
+        priorities.addPriority(TypeIds.Piglins.MilitaryPortal, count);
+        this.militaryPortalCount = count;
+    }
+
+    protected void BuildAdvancedPortal(AiProductionPriorities priorities, int count) {
+        if (count < advancedPortalCount) {
+            return;
+        }
+
+        this.BuildPortal(priorities, civilianPortalCount + militaryPortalCount + count);
+        priorities.addPriority(TypeIds.Piglins.AdvancedPortals, count);
+        this.advancedPortalCount = count;
+    }
+
     private void setHarvestPriorities(IAiPlayer player, AiHarvestPriorities harvestingPriorities) {
         var farmCount = player.countDone(this.getFarmTypeId());
         var villagerCount = player.countDone(this.getWorkerTypeId());
@@ -55,7 +100,7 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
             return;
         }
 
-        if (player.count(TypeIds.Piglins.Grunt) < 7) {
+        if (player.count(TypeIds.Piglins.Grunt) < 6) {
             return; // wait to have a few Piglins before making the first house/building
         }
 
@@ -67,10 +112,10 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
         var popFree = popCap - popUsed;
         priorities.logger.log("productionPower: " + productionPower + "(" + popUsed + "/" + popCap + ")");
         if (popCap < this.getMaxPopulation() && popFree < productionPower) {
-            var existing = player.countDone(TypeIds.Piglins.House);
-            var target = 1 + (int) (productionPower / 10) + existing;
+            var existing = player.countDone(TypeIds.Piglins.CivilianPortal);
+            var target = 1 + (int) (productionPower / 15) + existing;
             priorities.logger.log("more houses: " + existing + "=>" + target);
-            priorities.addPriority(TypeIds.Piglins.House, target);
+            this.BuildCivilianPortal(priorities, target);
             if (popCap - popUsed < 3) {
                 return;
             }
@@ -88,26 +133,21 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
         //}
 
         //priorities.addPriority(TypeIds.Piglins.Stockpile, 1);
-        priorities.addPriority(TypeIds.Piglins.Portal, 1); // at least one house before farm
-        priorities.addPriority(TypeIds.Piglins.CivilianPortal, 1); // at least one house before farm
+        this.BuildCivilianPortal(priorities, 1); // at least one house before farm
         priorities.addPriority(TypeIds.Piglins.Farm, 1, AiProductionPriorities.Location.FARM);
-        //priorities.addPriority(TypeIds.Piglins.House, 2);
-        priorities.addPriority(TypeIds.Piglins.Portal, 2);
-        priorities.addPriority(TypeIds.Piglins.MilitaryPortal, 1);
+        this.BuildMilitaryPortal(priorities, 1);
         priorities.addPriority(TypeIds.Piglins.Farm, 3, AiProductionPriorities.Location.FARM);
-        priorities.addPriority(TypeIds.Piglins.Portal, 3);
-        priorities.addPriority(TypeIds.Piglins.MilitaryPortal, 2);
+        this.BuildMilitaryPortal(priorities,  2);
         priorities.addPriority(TypeIds.Piglins.Farm, 6, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Piglins.Bastion, 1);
         priorities.addPriority(TypeIds.Piglins.Farm, 9, AiProductionPriorities.Location.FARM);
-        /*priorities.addPriority(TypeIds.Piglins.ArcaneTower, 1);
-        priorities.addPriority(TypeIds.Piglins.Library, 1);
-        priorities.addPriority(TypeIds.Piglins.Barracks, 4);
+        priorities.addPriority(TypeIds.Piglins.HoglinStables, 1);
+        priorities.addPriority(TypeIds.Piglins.FlameSanctuary, 1);
+        this.BuildMilitaryPortal(priorities,  4);
         priorities.addPriority(TypeIds.Piglins.Farm, 12, AiProductionPriorities.Location.FARM);
-        priorities.addPriority(TypeIds.Piglins.GrandLibrary, 1);
-        priorities.addPriority(TypeIds.Piglins.Castle, 1);
-        priorities.addPriority(TypeIds.Piglins.Barracks, 5);
-        priorities.addPriority(TypeIds.Piglins.OfficersQuarters, 1);*/
+        priorities.addPriority(TypeIds.Piglins.WitherShrine, 1);
+        priorities.addPriority(TypeIds.Piglins.Fortress, 1);
+        this.BuildMilitaryPortal(priorities,  5);
     }
 
     public void setUnitPriorities(IAiPlayer player, AiProductionPriorities priorities) {
@@ -118,9 +158,11 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Piglins.Brute, 10);
         priorities.addPriority(TypeIds.Piglins.Headhunter, 12);
         priorities.addPriority(TypeIds.Piglins.Grunt, 30);
-        priorities.addPriority(TypeIds.Piglins.Brute, 20);
-        priorities.addPriority(TypeIds.Piglins.Headhunter, 30);
-        priorities.addPriority(TypeIds.Piglins.Grunt, 40);
+        priorities.addPriority(TypeIds.Piglins.Brute, 14);
+        priorities.addPriority(TypeIds.Piglins.Headhunter, 14);
+        priorities.addPriority(TypeIds.Piglins.Blaze, 5);
+        priorities.addPriority(TypeIds.Piglins.WitherSkeleton, 6);
+        priorities.addPriority(TypeIds.Piglins.Ghast, 3);
     }
 
     private void setArmyPriorities(IAiPlayer player, AiArmyPriorities armyPriorities) {
@@ -144,19 +186,13 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
 
     @Override
     public void setPriorities(IAiPlayer player, IAiControllerPriorities priorities) {
+        this.portalCount = 0;
+        this.civilianPortalCount = 0;
+        this.militaryPortalCount = 0;
+        this.advancedPortalCount = 0;
         this.setHarvestPriorities(player, priorities.getHarvestingPriorities());
         this.setBuildingPriorities(player, priorities.getBuildingPriorities());
         this.setUnitPriorities(player, priorities.getUnitPriorities());
         this.setArmyPriorities(player, priorities.getArmyPriorities());
-    }
-
-    @Override
-    public boolean useWarpten() {
-        return true;
-    }
-
-    @Override
-    public boolean useGreedisgood() {
-        return true;
     }
 }

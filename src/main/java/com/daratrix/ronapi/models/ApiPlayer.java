@@ -5,6 +5,7 @@ import com.daratrix.ronapi.models.interfaces.IBuilding;
 import com.daratrix.ronapi.models.interfaces.IPlayer;
 import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.utils.GeometryUtils;
+import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.unit.UnitClientEvents;
 import com.solegendary.reignofnether.player.RTSPlayer;
@@ -52,6 +53,11 @@ public class ApiPlayer implements IPlayer {
     @Override
     public int countResearch(String name) {
         return 0;
+    }
+
+    @Override
+    public boolean hasResearch(int researchId) {
+        return ResearchServerEvents.playerHasResearch(this.name, TypeIds.toItemName(researchId));
     }
 
     @Override

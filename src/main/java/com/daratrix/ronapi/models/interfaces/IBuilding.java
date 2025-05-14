@@ -30,6 +30,7 @@ public interface IBuilding extends IPlayerWidget, IStructure {
     boolean isCapitol();
     boolean canBeGarrisoned();
     boolean hasUpgrade(int typeId);
+    boolean isUpgraded();
 
     // mutations
 

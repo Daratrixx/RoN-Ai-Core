@@ -88,8 +88,6 @@ public class BuildingApi {
             case WitherSkeletonProd.itemName -> new WitherSkeletonProd(building);
             case GhastProd.itemName -> new GhastProd(building);
 
-            case ResearchVindicatorAxes.itemName -> new ResearchVindicatorAxes(building);
-            case ResearchPillagerCrossbows.itemName -> new ResearchPillagerCrossbows(building);
             case ResearchResourceCapacity.itemName -> new ResearchResourceCapacity(building);
             case ResearchSpiderJockeys.itemName -> new ResearchSpiderJockeys(building);
             case ResearchPoisonSpiders.itemName -> new ResearchPoisonSpiders(building);
@@ -111,6 +109,9 @@ public class BuildingApi {
             case ResearchWitherClouds.itemName -> new ResearchWitherClouds(building);
             case ResearchAdvancedPortals.itemName -> new ResearchAdvancedPortals(building);
             case ResearchFireResistance.itemName -> new ResearchFireResistance(building);
+            // obsolete
+            //case ResearchVindicatorAxes.itemName -> new ResearchVindicatorAxes(building);
+            //case ResearchPillagerCrossbows.itemName -> new ResearchPillagerCrossbows(building);
 
             case ResearchGrandLibrary.itemName -> new ResearchGrandLibrary(building);
             case ResearchCastleFlag.itemName -> new ResearchCastleFlag(building);

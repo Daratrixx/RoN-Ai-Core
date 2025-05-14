@@ -6,6 +6,7 @@ import com.daratrix.ronapi.ai.hud.buttons.AiStartButtons;
 import com.daratrix.ronapi.ai.player.AiPlayerServerboundPacket;
 import com.daratrix.ronapi.ai.registers.AiGameRuleRegister;
 import com.daratrix.ronapi.ai.scripts.MonsterScript;
+import com.daratrix.ronapi.ai.scripts.PiglinScript;
 import com.daratrix.ronapi.ai.scripts.VillagerScript;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.apis.WorldApi;
@@ -156,7 +157,7 @@ public class AiCursorClientEvents {
                 AiPlayerServerboundPacket.startRTSBot(Faction.MONSTERS, MonsterScript.name, (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
             } else if (leftClickAction == UnitAction.STARTRTS_PIGLINS) {
                 System.out.println(RonApi.MOD_ID + ">AiCursorClientEvents.onMouseClick STARTRTS_PIGLINS");
-                AiPlayerServerboundPacket.startRTSBot(Faction.PIGLINS, "CPU PIGLINS", (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
+                AiPlayerServerboundPacket.startRTSBot(Faction.PIGLINS, PiglinScript.name, (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
             }
             leftClickAction = null;
         }

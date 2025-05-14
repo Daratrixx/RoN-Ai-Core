@@ -58,6 +58,7 @@ This project consists of:
   - [X] Automatically adjust worker assignment to fulfil priorities
     - [ ] Bug: reassigned workers sometimes do not switch tasks
     - [ ] Bug: sometimes multiple workers are assigned to the same farm when there are farms with no workers assigned
+    - [ ] Bug: sometimes the AI looses track of worker assignments
 - 20% Army management
   - [X] Army gather point
     - [X] Bug: Army gather point is sometimes on the wrong side of the base
@@ -100,9 +101,10 @@ This project consists of:
     - [ ] Night timing attacks
     - [ ] Sculk sensor expansion
   - Piglin AI
-    - [ ] Attack
-    - [ ] Produces
-    - [ ] Harvest
+    - [X] Attack
+    - [X] Produces
+      - [ ] Bug: Ai builds outside of Nether terrain
+    - [X] Harvest
     - [ ] Upgrades
     - [ ] Expand
     - [ ] Harass

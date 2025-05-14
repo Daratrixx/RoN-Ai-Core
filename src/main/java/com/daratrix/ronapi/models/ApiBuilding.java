@@ -165,6 +165,28 @@ public class ApiBuilding implements IBuilding {
     }
 
     @Override
+    public boolean isUpgraded() {
+        if (this.typeId == TypeIds.Villagers.Castle) {
+            return ((Castle) this.building).getUpgradeLevel() > 0; // expensive call...
+        }
+
+        if (this.typeId == TypeIds.Villagers.Library) {
+            return ((Library) this.building).getUpgradeLevel() > 0; // expensive call...
+        }
+
+        if (this.typeId == TypeIds.Monsters.Laboratory) {
+            return ((Laboratory) this.building).getUpgradeLevel() > 0; // expensive call...
+        }
+
+        if (this.typeId == TypeIds.Piglins.Portal) {
+            var portalType = ((Portal) this.building).portalType;
+            return portalType != Portal.PortalType.BASIC;
+        }
+
+        return false;
+    }
+
+    @Override
     public List<IOrder> getOrderQueue() {
         return List.of();
     }
