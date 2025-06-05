@@ -5,6 +5,7 @@ import com.daratrix.ronapi.ai.controller.interfaces.IAiControllerPriorities;
 import com.daratrix.ronapi.ai.controller.interfaces.IAiLogic;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.ai.priorities.AiArmyPriorities;
+import com.daratrix.ronapi.ai.priorities.AiHarvestPriorities;
 import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.solegendary.reignofnether.util.Faction;
@@ -16,6 +17,33 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
     }
 
     public static final String name = "MonsterScript";
+
+    private void setHarvestPriorities(IAiPlayer player, AiHarvestPriorities harvestingPriorities) {
+        var farmCount = player.countDone(this.getFarmTypeId());
+        var villagerCount = player.countDone(this.getWorkerTypeId());
+
+        if (player.getFood() < 300) {
+            harvestingPriorities.addPriority(TypeIds.Resources.FoodEntity, 2);
+        }
+        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 4);
+        if (player.getFood() < 200) {
+            harvestingPriorities.addPriority(TypeIds.Resources.FoodBlock, 3);
+        }
+
+        for (int i = 0; i < farmCount; ++i) {
+            harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, i + 1); // each farm need a wood worker
+            harvestingPriorities.addPriority(TypeIds.Resources.FoodFarm, i + 1); // each farm need a farmer
+            harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, i / 3); // for every 3 farms, add an ore worker
+        }
+
+        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 16);
+        harvestingPriorities.addPriority(TypeIds.Resources.FoodFarm, 12);
+        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 6);
+
+        // in case of excessive workers, we assign to non-food resources
+        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 20);
+        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 12);
+    }
 
     public void setBuildingPriorities(IAiPlayer player, AiProductionPriorities priorities) {
 
@@ -60,19 +88,24 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Monsters.Graveyard, 4);
         priorities.addPriority(TypeIds.Monsters.SpiderLair, 1);
         priorities.addPriority(TypeIds.Monsters.Graveyard, 5);
+        priorities.addPriority(TypeIds.Monsters.Farm, 9);
         priorities.addPriority(TypeIds.Monsters.Stronghold, 1);
         priorities.addPriority(TypeIds.Monsters.Graveyard, 6);
         priorities.addPriority(TypeIds.Monsters.Dungeon, 2);
         priorities.addPriority(TypeIds.Monsters.Graveyard, 7);
+        priorities.addPriority(TypeIds.Monsters.Farm, 12);
     }
 
     public void setUnitPriorities(IAiPlayer player, AiProductionPriorities priorities) {
-        var zombie = player.countDone(TypeIds.Monsters.HusksUpgrade) > 0
+        var zombie = player.hasResearch(TypeIds.Monsters.HusksUpgrade)
                 ? TypeIds.Monsters.Husk
                 : TypeIds.Monsters.Zombie;
-        var skeleton = player.countDone(TypeIds.Monsters.StrayUpgrade) > 0
+        var skeleton = player.hasResearch(TypeIds.Monsters.StrayUpgrade)
                 ? TypeIds.Monsters.Stray
                 : TypeIds.Monsters.Skeleton;
+        var spider = player.hasResearch(TypeIds.Monsters.SpiderUpgrade)
+                ? TypeIds.Monsters.PoisonSpider
+                : TypeIds.Monsters.Spider;
         priorities.addPriority(TypeIds.Monsters.Villager, 8);
         priorities.addPriority(zombie, 4);
         priorities.addPriority(skeleton, 4);
@@ -82,13 +115,25 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Monsters.Villager, 24);
         priorities.addPriority(zombie, 20);
         priorities.addPriority(skeleton, 12);
+        priorities.addPriority(spider, 3);
         priorities.addPriority(TypeIds.Monsters.Villager, 28);
         priorities.addPriority(TypeIds.Monsters.Creeper, 2);
         priorities.addPriority(TypeIds.Monsters.Warden, 2);
-        priorities.addPriority(zombie, 40);
+        priorities.addPriority(zombie, 30);
         priorities.addPriority(skeleton, 20);
+        priorities.addPriority(spider, 5);
         priorities.addPriority(TypeIds.Monsters.Creeper, 4);
+        priorities.addPriority(TypeIds.Monsters.Villager, 38);
         priorities.addPriority(TypeIds.Monsters.Warden, 5);
+    }
+
+    public void setResearchPriorities(IAiPlayer player, AiProductionPriorities priorities) {
+        priorities.addPriority(TypeIds.Monsters.HusksUpgrade, 1);
+        priorities.addPriority(TypeIds.Monsters.SpiderWebs, 1);
+        priorities.addPriority(TypeIds.Monsters.StrayUpgrade, 1);
+        priorities.addPriority(TypeIds.Monsters.SpiderUpgrade, 1);
+        priorities.addPriority(TypeIds.Monsters.SculkAmplifiers, 1);
+        priorities.addPriority(TypeIds.Monsters.Silverfish, 1);
     }
 
     private void setArmyPriorities(IAiPlayer player, AiArmyPriorities armyPriorities) {
@@ -112,8 +157,10 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
 
     @Override
     public void setPriorities(IAiPlayer player, IAiControllerPriorities priorities) {
+        this.setHarvestPriorities(player, priorities.getHarvestingPriorities());
         this.setBuildingPriorities(player, priorities.getBuildingPriorities());
         this.setUnitPriorities(player, priorities.getUnitPriorities());
+        this.setResearchPriorities(player, priorities.getResearchPriorities());
         this.setArmyPriorities(player, priorities.getArmyPriorities());
     }
 }
