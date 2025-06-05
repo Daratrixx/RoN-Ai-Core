@@ -165,6 +165,18 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Piglins.Ghast, 3);
     }
 
+    public void setResearchPriorities(IAiPlayer player, AiProductionPriorities priorities) {
+        priorities.addPriority(TypeIds.Piglins.HeadhunterTrident, 1);
+        priorities.addPriority(TypeIds.Piglins.BruteShield, 1);
+        priorities.addPriority(TypeIds.Piglins.HoglinCavalry, 1);
+        priorities.addPriority(TypeIds.Piglins.FireResistance, 1);
+        priorities.addPriority(TypeIds.Piglins.BlazeFirewall, 1);
+        priorities.addPriority(TypeIds.Piglins.WitherCloud, 1);
+        priorities.addPriority(TypeIds.Piglins.AdvancedPortals, 1);
+        priorities.addPriority(TypeIds.Piglins.SoulFireballs, 1);
+        priorities.addPriority(TypeIds.Piglins.Bloodlust, 1);
+    }
+
     private void setArmyPriorities(IAiPlayer player, AiArmyPriorities armyPriorities) {
         armyPriorities.pickDefaultGatherPoint(player);
         if (armyPriorities.pickDefenseTarget(player)) {
@@ -193,6 +205,7 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
         this.setHarvestPriorities(player, priorities.getHarvestingPriorities());
         this.setBuildingPriorities(player, priorities.getBuildingPriorities());
         this.setUnitPriorities(player, priorities.getUnitPriorities());
+        this.setResearchPriorities(player, priorities.getResearchPriorities());
         this.setArmyPriorities(player, priorities.getArmyPriorities());
     }
 }
