@@ -442,7 +442,48 @@ public class AiController {
     }
 
     public void runAiProduceResearches(MinecraftServer server) {
+        var priorities = this.priorities.getResearchPriorities();
+        var it = priorities.iterator();
+        while (it.hasNext()) {
+            var p = it.next();
+            if (this.player.hasResearch(p.typeId)) {
+                this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId));
+                continue;
+            }
 
+            var inProgress = this.player.count(p.typeId);
+            if (inProgress > 0) {
+                this.logger.log("Skipping ongoing " + TypeIds.toItemName(p.typeId));
+                continue;
+            }
+
+            var canMake = AiDependencies.canMake(p.typeId, this.player);
+            if (!canMake) {
+                this.logger.log("Skipping impossible " + TypeIds.toItemName(p.typeId) + " due to missing " + TypeIds.toItemName(AiDependencies.lastMissingrequirement));
+                continue; // impossible to fulfill the priority
+            }
+
+            var canAfford = this.player.canAfford(p.typeId);
+            if (!canAfford) {
+                this.logger.log("Not enough resources for " + TypeIds.toItemName(p.typeId));
+                continue; // impossible to fulfill the priority
+            }
+
+            this.logger.log("Processing " + TypeIds.toItemName(p.typeId));
+
+            var producers = this.player.getIdleBuildings(AiDependencies.getSourceTypeIds(p.typeId)).toList();
+            this.logger.log(producers.size() + " producers for " + TypeIds.toItemName(p.typeId));
+            if (producers.isEmpty()) {
+                continue;
+            }
+
+            var producer = producers.get(0);
+            if (producer.issueResearchOrder(p.typeId)) {
+                WorldApi.queueWorldUpdate();
+            } else {
+                this.logger.log("Failed to issue train order for " + TypeIds.toItemName(p.typeId));
+            }
+        }
     }
 
     public void runAiUpdatePriorities(MinecraftServer server) {

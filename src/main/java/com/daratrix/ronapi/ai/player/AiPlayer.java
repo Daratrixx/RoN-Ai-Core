@@ -70,6 +70,10 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
 
     @Override
     public Stream<IUnit> getIdleUnits(Collection<Integer> priorities) {
+        if (priorities == null) {
+            return Stream.empty();
+        }
+
         return this.getUnitsFiltered(u -> u.isIdle() && priorities.contains(u.getTypeId()));
     }
 
@@ -80,6 +84,10 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
 
     @Override
     public Stream<IUnit> getUnits(Collection<Integer> priorities) {
+        if (priorities == null) {
+            return Stream.empty();
+        }
+
         return this.getUnitsFiltered(u -> priorities.contains(u.getTypeId()) || u.isAnyOf(priorities));
     }
 
@@ -90,6 +98,10 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
 
     @Override
     public Stream<IBuilding> getIdleBuildings(Collection<Integer> priorities) {
+        if (priorities == null) {
+            return Stream.empty();
+        }
+
         return this.getBuildingsFiltered(b -> b.isDone() && b.isIdle() && (priorities.contains(b.getTypeId()) || b.isAnyOf(priorities)));
     }
 
@@ -100,6 +112,10 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
 
     @Override
     public Stream<IBuilding> getBuildings(Collection<Integer> priorities) {
+        if (priorities == null) {
+            return Stream.empty();
+        }
+
         return this.getBuildingsFiltered(b -> priorities.contains(b.getTypeId()) || b.isAnyOf(priorities));
     }
 

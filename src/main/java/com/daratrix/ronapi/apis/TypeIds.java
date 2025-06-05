@@ -215,6 +215,10 @@ public class TypeIds {
         // Monster researches
         public final static int HusksUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchHusks.class);
         public final static int StrayUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchStrays.class);
+        public final static int SpiderWebs = addP(com.solegendary.reignofnether.research.researchItems.ResearchSpiderWebs.class);
+        public final static int SpiderUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchPoisonSpiders.class);
+        public final static int Silverfish = addP(com.solegendary.reignofnether.research.researchItems.ResearchSilverfish.class);
+        public final static int SculkAmplifiers = addP(com.solegendary.reignofnether.research.researchItems.ResearchSculkAmplifiers.class);
         public final static int LightningRod = addP(com.solegendary.reignofnether.research.researchItems.ResearchLabLightningRod.class);
     }
 
@@ -246,6 +250,7 @@ public class TypeIds {
         public final static int BlazeFirewall = addP(com.solegendary.reignofnether.research.researchItems.ResearchBlazeFirewall.class);
         public final static int WitherCloud = addP(com.solegendary.reignofnether.research.researchItems.ResearchWitherClouds.class);
         public final static int SoulFireballs = addP(com.solegendary.reignofnether.research.researchItems.ResearchSoulFireballs.class);
+        public final static int Bloodlust = addP(com.solegendary.reignofnether.research.researchItems.ResearchBloodlust.class);
         public final static int AdvancedPortals = addP(com.solegendary.reignofnether.research.researchItems.ResearchAdvancedPortals.class);
         public final static int CivilianPortal = addP(com.solegendary.reignofnether.research.researchItems.ResearchPortalForCivilian.class);
         public final static int MilitaryPortal = addP(com.solegendary.reignofnether.research.researchItems.ResearchPortalForMilitary.class);

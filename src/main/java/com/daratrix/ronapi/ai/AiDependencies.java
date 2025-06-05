@@ -157,7 +157,9 @@ public class AiDependencies {
 
         setProduction(TypeIds.Monsters.Laboratory,
                 TypeIds.Monsters.HusksUpgrade,
-                TypeIds.Monsters.StrayUpgrade);
+                TypeIds.Monsters.StrayUpgrade,
+                TypeIds.Monsters.SpiderUpgrade,
+                TypeIds.Monsters.SpiderWebs);
 
         setProduction(TypeIds.Monsters.Dungeon,
                 TypeIds.Monsters.Creeper);
@@ -167,7 +169,9 @@ public class AiDependencies {
                 TypeIds.Monsters.PoisonSpider);
 
         setProduction(TypeIds.Monsters.Stronghold,
-                TypeIds.Monsters.Warden);
+                TypeIds.Monsters.Warden,
+                TypeIds.Monsters.Silverfish,
+                TypeIds.Monsters.SculkAmplifiers);
 
         // setup Monster requirements
         setRequirements(TypeIds.Monsters.Graveyard, TypeIds.Monsters.Mausoleum);
@@ -220,6 +224,7 @@ public class AiDependencies {
 
         setProduction(TypeIds.Piglins.Fortress,
                 TypeIds.Piglins.SoulFireballs,
+                TypeIds.Piglins.Bloodlust,
                 TypeIds.Piglins.AdvancedPortals);
 
         // setup Piglin requirements

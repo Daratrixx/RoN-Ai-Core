@@ -93,7 +93,16 @@ public class ApiBuilding implements IBuilding {
 
     @Override
     public int getCurrentOrderId() {
-        return 0;
+        if (this.production == null) {
+            return 0;
+        }
+
+        var queue = this.production.productionQueue;
+        if (queue == null || queue.isEmpty()) {
+            return 0;
+        }
+
+        return TypeIds.get(queue.get(0));
     }
 
     @Override
