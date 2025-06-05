@@ -127,6 +127,14 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Villagers.Ravager, 3);
     }
 
+    public void setResearchPriorities(IAiPlayer player, AiProductionPriorities priorities) {
+        priorities.addPriority(TypeIds.Villagers.LingeringPotions, 1);
+        priorities.addPriority(TypeIds.Villagers.HealingPotions, 1);
+        priorities.addPriority(TypeIds.Villagers.WaterPotions, 1);
+        priorities.addPriority(TypeIds.Villagers.Vexes, 1);
+        priorities.addPriority(TypeIds.Villagers.RavagerCavalry, 1);
+    }
+
     private void setArmyPriorities(IAiPlayer player, AiArmyPriorities armyPriorities) {
         armyPriorities.pickDefaultGatherPoint(player);
         if (armyPriorities.pickDefenseTarget(player)) {
@@ -151,6 +159,7 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
         this.setHarvestPriorities(player, priorities.getHarvestingPriorities());
         this.setBuildingPriorities(player, priorities.getBuildingPriorities());
         this.setUnitPriorities(player, priorities.getUnitPriorities());
+        this.setResearchPriorities(player, priorities.getResearchPriorities());
         this.setArmyPriorities(player, priorities.getArmyPriorities());
     }
 
