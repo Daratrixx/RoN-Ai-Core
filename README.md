@@ -85,7 +85,7 @@ This project consists of:
     - [X] Attack
     - [X] Produces
     - [X] Harvest
-    - [ ] Upgrades
+    - [X] Upgrades
     - [ ] Expand
     - [ ] Harass
     - [ ] Enchant
@@ -94,8 +94,8 @@ This project consists of:
   - Monster AI
     - [X] Attack
     - [X] Produces
-    - [ ] Harvest
-    - [ ] Upgrades
+    - [X] Harvest
+    - [X] Upgrades
     - [ ] Expand
     - [ ] Harass
     - [ ] Night timing attacks
@@ -105,7 +105,7 @@ This project consists of:
     - [X] Produces
       - [ ] Bug: Ai builds outside of Nether terrain
     - [X] Harvest
-    - [ ] Upgrades
+    - [X] Upgrades
     - [ ] Expand
     - [ ] Harass
     - [ ] Portal Network
