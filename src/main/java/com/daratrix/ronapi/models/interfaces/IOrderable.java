@@ -6,6 +6,7 @@
 package com.daratrix.ronapi.models.interfaces;
 
 import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.building.BuildingPlacement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -31,7 +32,7 @@ public interface IOrderable {
     public boolean issuePointOrder(BlockPos pos, int orderId);
     public boolean issueWidgetOrder(IWidget target, int orderId);
     public boolean issueWidgetOrder(LivingEntity target, int orderId);
-    public boolean issueWidgetOrder(Building target, int orderId);
+    public boolean issueWidgetOrder(BuildingPlacement target, int orderId);
     public boolean issueOrder(int typeId);
     public boolean clearOrder(boolean clearQueue);
 

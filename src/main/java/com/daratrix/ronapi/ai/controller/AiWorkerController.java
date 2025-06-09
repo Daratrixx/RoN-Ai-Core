@@ -9,6 +9,7 @@ import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.building.BuildingPlacement;
 import net.minecraft.world.entity.LivingEntity;
 
 import java.util.*;
@@ -180,9 +181,9 @@ public class AiWorkerController {
         }
     }
 
-    private ArrayList<Building> assignedFarms = new ArrayList<>();
+    private ArrayList<BuildingPlacement> assignedFarms = new ArrayList<>();
 
-    public void spreadFarmWorkers(List<IUnit> workers, List<Building> idleFarms) {
+    public void spreadFarmWorkers(List<IUnit> workers, List<BuildingPlacement> idleFarms) {
         this.assignedFarms.clear();
         for (IUnit worker : workers) {
             var targetFarm = worker.getWorkerUnit().getGatherResourceGoal().data.targetFarm;
@@ -200,7 +201,7 @@ public class AiWorkerController {
         }
     }
 
-    public void orderFarmWorkers(List<IUnit> workers, List<Building> idleFarms) {
+    public void orderFarmWorkers(List<IUnit> workers, List<BuildingPlacement> idleFarms) {
         if (workers.isEmpty() || idleFarms.isEmpty()) {
             return;
         }

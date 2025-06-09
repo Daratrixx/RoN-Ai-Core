@@ -12,6 +12,7 @@ import com.daratrix.ronapi.models.interfaces.IOrder;
 import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.models.interfaces.IWidget;
 import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.resources.*;
 import com.solegendary.reignofnether.unit.UnitAction;
@@ -243,7 +244,7 @@ public class ApiUnit implements IUnit {
     }
 
     @Override
-    public boolean issueWidgetOrder(Building target, int orderId) {
+    public boolean issueWidgetOrder(BuildingPlacement target, int orderId) {
         UnitAction action = TypeIds.toUnitAction(orderId, target);
         if (action == UnitAction.NONE) {
             return false;
@@ -292,13 +293,13 @@ public class ApiUnit implements IUnit {
             return false;
         }
 
-        var itemName = TypeIds.toItemName(typeId);
+        var building = TypeIds.toBuildingData(typeId);
         if (!WorldApi.playerCanAfford(this.getOwnerName(), TypeIds.toItemCost(typeId))) {
             return false;
         }
 
         var existingBuildingCount = BuildingServerEvents.getBuildings().size();
-        BuildingServerEvents.placeBuilding(itemName, pos, Rotation.NONE, this.getOwnerName(), new int[]{this.entity.getId()}, false, false);
+        BuildingServerEvents.placeBuilding(building, pos, Rotation.NONE, this.getOwnerName(), new int[]{this.entity.getId()}, false, false);
 
         return BuildingServerEvents.getBuildings().size() > existingBuildingCount;
     }

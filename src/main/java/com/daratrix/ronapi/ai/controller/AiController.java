@@ -14,6 +14,7 @@ import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.resources.ResourceSources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -119,7 +120,7 @@ public class AiController {
                 .map(u -> u.getCurrentOrderTarget() instanceof Building b ? b : null)
                 .filter(Objects::nonNull)
                 .distinct().collect(Collectors.toCollection(ArrayList::new));
-        var idleFarms = new ArrayList<Building>(finishedFarms);
+        var idleFarms = new ArrayList<BuildingPlacement>(finishedFarms);
         idleFarms.removeAll(busyFarms);
         this.logger.log("- FARMS: " + finishedFarms.size() + " finishedFarms/" + busyFarms.size() + " busyFarms/" + idleFarms.size() + " idleFarms");
 

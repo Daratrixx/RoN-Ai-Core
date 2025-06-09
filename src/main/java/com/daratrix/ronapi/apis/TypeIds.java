@@ -1,7 +1,16 @@
 package com.daratrix.ronapi.apis;
 
 import com.solegendary.reignofnether.building.Building;
-import com.solegendary.reignofnether.building.ProductionItem;
+import com.solegendary.reignofnether.building.Buildings;
+import com.solegendary.reignofnether.building.buildings.monsters.PumpkinFarm;
+import com.solegendary.reignofnether.building.buildings.monsters.SpruceStockpile;
+import com.solegendary.reignofnether.building.buildings.piglins.NetherwartFarm;
+import com.solegendary.reignofnether.building.buildings.piglins.PortalBasic;
+import com.solegendary.reignofnether.building.buildings.villagers.OakStockpile;
+import com.solegendary.reignofnether.building.buildings.villagers.WheatFarm;
+import com.solegendary.reignofnether.building.production.ProductionItem;
+import com.solegendary.reignofnether.building.production.ProductionItems;
+import com.solegendary.reignofnether.research.researchItems.*;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.ResourceCosts;
 import com.solegendary.reignofnether.resources.ResourceName;
@@ -20,6 +29,8 @@ public class TypeIds {
     private static Map<Integer, String> TypeIdToName = new HashMap<>();
     private static Map<Integer, String> TypeIdToStructureName = new HashMap<>();
     private static Map<Integer, ResourceCost> TypeIdToCost = new HashMap<>();
+    private static Map<Integer, ProductionItem> TypeIdToProductionItem = new HashMap<>();
+    private static Map<Integer, Building> TypeIdToBuildingData = new HashMap<>();
 
     public static int add(String itemName) {
         if (NameToTypeId.containsKey(itemName)) {
@@ -57,25 +68,44 @@ public class TypeIds {
         return add(action.name(), cost);
     }
 
-    public static <T extends Building> int addB(Class<T> buildingClass) {
+    public static <T extends Building> int addB(T b) {
         try {
-            var nameField = buildingClass.getField("buildingName");
-            var costField = buildingClass.getField("cost");
-            var typeId = add((String) nameField.get(null), (ResourceCost) costField.get(null));
-            var structrueNameField = buildingClass.getField("structureName");
-            NameToTypeId.put((String) structrueNameField.get(null), TypeIdCount);
-            TypeIdToStructureName.put(typeId, (String) structrueNameField.get(null));
+            var name = b.name;
+            return addB(b, name);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public static <T extends Building> int addB(T b, String name) {
+        try {
+            var cost = b.cost;
+            var typeId = add(name, cost);
+            var structrueName = b.structureName;
+            NameToTypeId.put(structrueName, typeId);
+            TypeIdToStructureName.put(typeId, structrueName);
+            TypeIdToBuildingData.put(typeId, b);
             return typeId;
         } catch (Exception e) {
             return 0;
         }
     }
 
-    public static <T extends ProductionItem> int addP(Class<T> prodClass) {
+    public static <T extends ProductionItem> int addP(T p) {
         try {
-            var nameField = prodClass.getField("itemName");
-            var costField = prodClass.getField("cost");
-            return add((String) nameField.get(null), (ResourceCost) costField.get(null));
+            var name = p.getItemName();
+            return addP(p, name);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    public static <T extends ProductionItem> int addP(T p, String name) {
+        try {
+            var cost = p.defaultCost;
+            var typeId = add(name, cost);
+            TypeIdToProductionItem.put(typeId, p);
+            return typeId;
         } catch (Exception e) {
             return 0;
         }
@@ -145,38 +175,38 @@ public class TypeIds {
 
     public static class Villagers {
         // Villager structures
-        public final static int TownCentre = addB(com.solegendary.reignofnether.building.buildings.villagers.TownCentre.class);
-        public final static int Stockpile = addB(com.solegendary.reignofnether.building.buildings.villagers.OakStockpile.class);
-        public final static int House = addB(com.solegendary.reignofnether.building.buildings.villagers.VillagerHouse.class);
-        public final static int Farm = addB(com.solegendary.reignofnether.building.buildings.villagers.WheatFarm.class);
-        public final static int Barracks = addB(com.solegendary.reignofnether.building.buildings.villagers.Barracks.class);
-        public final static int Blacksmith = addB(com.solegendary.reignofnether.building.buildings.villagers.Blacksmith.class);
-        public final static int Watchtower = addB(com.solegendary.reignofnether.building.buildings.villagers.Watchtower.class);
-        public final static int ArcaneTower = addB(com.solegendary.reignofnether.building.buildings.villagers.ArcaneTower.class);
-        public final static int Library = addB(com.solegendary.reignofnether.building.buildings.villagers.Library.class);
-        public final static int Castle = addB(com.solegendary.reignofnether.building.buildings.villagers.Castle.class);
+        public final static int TownCentre = addB(Buildings.TOWN_CENTRE);
+        public final static int Stockpile = addB(Buildings.OAK_STOCKPILE, OakStockpile.buildingName);
+        public final static int House = addB(Buildings.VILLAGER_HOUSE);
+        public final static int Farm = addB(Buildings.WHEAT_FARM, WheatFarm.buildingName);
+        public final static int Barracks = addB(Buildings.BARRACKS);
+        public final static int Blacksmith = addB(Buildings.BLACKSMITH);
+        public final static int Watchtower = addB(Buildings.WATCHTOWER);
+        public final static int ArcaneTower = addB(Buildings.ARCANE_TOWER);
+        public final static int Library = addB(Buildings.LIBRARY);
+        public final static int Castle = addB(Buildings.CASTLE);
 
         // Villager units
-        public final static int Villager = addP(com.solegendary.reignofnether.unit.units.villagers.VillagerProd.class);
-        public final static int Vindicator = addP(com.solegendary.reignofnether.unit.units.villagers.VindicatorProd.class);
-        public final static int Pillager = addP(com.solegendary.reignofnether.unit.units.villagers.PillagerProd.class);
-        public final static int IronGolem = addP(com.solegendary.reignofnether.unit.units.villagers.IronGolemProd.class);
-        public final static int Witch = addP(com.solegendary.reignofnether.unit.units.villagers.WitchProd.class);
-        public final static int Evoker = addP(com.solegendary.reignofnether.unit.units.villagers.EvokerProd.class);
-        public final static int Ravager = addP(com.solegendary.reignofnether.unit.units.villagers.RavagerProd.class);
+        public final static int Villager = addP(ProductionItems.VILLAGER);
+        public final static int Vindicator = addP(ProductionItems.VINDICATOR);
+        public final static int Pillager = addP(ProductionItems.PILLAGER);
+        public final static int IronGolem = addP(ProductionItems.IRON_GOLEM);
+        public final static int Witch = addP(ProductionItems.WITCH);
+        public final static int Evoker = addP(ProductionItems.EVOKER);
+        public final static int Ravager = addP(ProductionItems.RAVAGER);
 
         // Villager researches
-        public final static int GolemSmithing = addP(com.solegendary.reignofnether.research.researchItems.ResearchGolemSmithing.class);
-        public final static int LingeringPotions = addP(com.solegendary.reignofnether.research.researchItems.ResearchLingeringPotions.class);
-        public final static int WaterPotions = addP(com.solegendary.reignofnether.research.researchItems.ResearchWaterPotions.class);
-        public final static int HealingPotions = addP(com.solegendary.reignofnether.research.researchItems.ResearchHealingPotions.class);
-        public final static int Vexes = addP(com.solegendary.reignofnether.research.researchItems.ResearchEvokerVexes.class);
-        public final static int GrandLibrary = addP(com.solegendary.reignofnether.research.researchItems.ResearchGrandLibrary.class);
-        public final static int RavagerCavalry = addP(com.solegendary.reignofnether.research.researchItems.ResearchRavagerCavalry.class);
-        public final static int OfficersQuarters = addP(com.solegendary.reignofnether.research.researchItems.ResearchCastleFlag.class);
+        public final static int GolemSmithing = addP(ProductionItems.RESEARCH_GOLEM_SMITHING);
+        public final static int LingeringPotions = addP(ProductionItems.RESEARCH_LINGERING_POTIONS);
+        public final static int WaterPotions = addP(ProductionItems.RESEARCH_WATER_POTIONS, ResearchWaterPotions.itemName);
+        public final static int HealingPotions = addP(ProductionItems.RESEARCH_HEALING_POTIONS, ResearchHealingPotions.itemName);
+        public final static int Vexes = addP(ProductionItems.RESEARCH_EVOKER_VEXES);
+        public final static int GrandLibrary = addP(ProductionItems.RESEARCH_GRAND_LIBRARY);
+        public final static int RavagerCavalry = addP(ProductionItems.RESEARCH_RAVAGER_CAVALRY);
+        public final static int OfficersQuarters = addP(ProductionItems.RESEARCH_CASTLE_FLAG);
         // deprecated
-        public final static int DiamondAxes = addP(com.solegendary.reignofnether.research.researchItems.ResearchVindicatorAxes.class);
-        public final static int MultishotCrossbows = addP(com.solegendary.reignofnether.research.researchItems.ResearchPillagerCrossbows.class);
+        public final static int DiamondAxes = addP(ProductionItems.RESEARCH_VINDICATOR_AXES);
+        public final static int MultishotCrossbows = addP(ProductionItems.RESEARCH_PILLAGER_CROSSBOWS);
 
         // Villager enchants
         public final static int EnchantMaiming = add(UnitAction.ENCHANT_MAIMING, ResourceCosts.ENCHANT_MAIMING);
@@ -188,73 +218,73 @@ public class TypeIds {
 
     public static class Monsters {
         // Monster structures
-        public final static int Mausoleum = addB(com.solegendary.reignofnether.building.buildings.monsters.Mausoleum.class);
-        public final static int Stockpile = addB(com.solegendary.reignofnether.building.buildings.monsters.SpruceStockpile.class);
-        public final static int House = addB(com.solegendary.reignofnether.building.buildings.monsters.HauntedHouse.class);
-        public final static int Farm = addB(com.solegendary.reignofnether.building.buildings.monsters.PumpkinFarm.class);
-        public final static int Graveyard = addB(com.solegendary.reignofnether.building.buildings.monsters.Graveyard.class);
-        public final static int Laboratory = addB(com.solegendary.reignofnether.building.buildings.monsters.Laboratory.class);
-        public final static int Watchtower = addB(com.solegendary.reignofnether.building.buildings.monsters.DarkWatchtower.class);
-        public final static int SpiderLair = addB(com.solegendary.reignofnether.building.buildings.monsters.SpiderLair.class);
-        public final static int Dungeon = addB(com.solegendary.reignofnether.building.buildings.monsters.Dungeon.class);
-        public final static int Stronghold = addB(com.solegendary.reignofnether.building.buildings.monsters.Stronghold.class);
-        public final static int SculkCatalyst = addB(com.solegendary.reignofnether.building.buildings.monsters.SculkCatalyst.class);
+        public final static int Mausoleum = addB(Buildings.MAUSOLEUM);
+        public final static int Stockpile = addB(Buildings.SPRUCE_STOCKPILE, SpruceStockpile.buildingName);
+        public final static int House = addB(Buildings.HAUNTED_HOUSE);
+        public final static int Farm = addB(Buildings.PUMPKIN_FARM, PumpkinFarm.buildingName);
+        public final static int Graveyard = addB(Buildings.GRAVEYARD);
+        public final static int Laboratory = addB(Buildings.LABORATORY);
+        public final static int Watchtower = addB(Buildings.DARK_WATCHTOWER);
+        public final static int SpiderLair = addB(Buildings.SPIDER_LAIR);
+        public final static int Dungeon = addB(Buildings.DUNGEON);
+        public final static int Stronghold = addB(Buildings.STRONGHOLD);
+        public final static int SculkCatalyst = addB(Buildings.SCULK_CATALYST);
 
         // Monster units
-        public final static int Villager = addP(com.solegendary.reignofnether.unit.units.monsters.ZombieVillagerProd.class);
-        public final static int Zombie = addP(com.solegendary.reignofnether.unit.units.monsters.ZombieProd.class);
-        public final static int Husk = addP(com.solegendary.reignofnether.unit.units.monsters.HuskProd.class);
-        public final static int Drowned = addP(com.solegendary.reignofnether.unit.units.monsters.DrownedProd.class);
-        public final static int Skeleton = addP(com.solegendary.reignofnether.unit.units.monsters.SkeletonProd.class);
-        public final static int Stray = addP(com.solegendary.reignofnether.unit.units.monsters.StrayProd.class);
-        public final static int Spider = addP(com.solegendary.reignofnether.unit.units.monsters.SpiderProd.class);
-        public final static int PoisonSpider = addP(com.solegendary.reignofnether.unit.units.monsters.PoisonSpiderProd.class);
-        public final static int Creeper = addP(com.solegendary.reignofnether.unit.units.monsters.CreeperProd.class);
-        public final static int Warden = addP(com.solegendary.reignofnether.unit.units.monsters.WardenProd.class);
+        public final static int Villager = addP(ProductionItems.ZOMBIE_VILLAGER);
+        public final static int Zombie = addP(ProductionItems.ZOMBIE);
+        public final static int Husk = addP(ProductionItems.HUSK);
+        public final static int Drowned = addP(ProductionItems.DROWNED);
+        public final static int Skeleton = addP(ProductionItems.SKELETON);
+        public final static int Stray = addP(ProductionItems.STRAY);
+        public final static int Spider = addP(ProductionItems.SPIDER);
+        public final static int PoisonSpider = addP(ProductionItems.POISON_SPIDER);
+        public final static int Creeper = addP(ProductionItems.CREEPER);
+        public final static int Warden = addP(ProductionItems.WARDEN);
 
         // Monster researches
-        public final static int HusksUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchHusks.class);
-        public final static int StrayUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchStrays.class);
-        public final static int SpiderWebs = addP(com.solegendary.reignofnether.research.researchItems.ResearchSpiderWebs.class);
-        public final static int SpiderUpgrade = addP(com.solegendary.reignofnether.research.researchItems.ResearchPoisonSpiders.class);
-        public final static int Silverfish = addP(com.solegendary.reignofnether.research.researchItems.ResearchSilverfish.class);
-        public final static int SculkAmplifiers = addP(com.solegendary.reignofnether.research.researchItems.ResearchSculkAmplifiers.class);
-        public final static int LightningRod = addP(com.solegendary.reignofnether.research.researchItems.ResearchLabLightningRod.class);
+        public final static int HusksUpgrade = addP(ProductionItems.RESEARCH_HUSKS);
+        public final static int StrayUpgrade = addP(ProductionItems.RESEARCH_STRAYS);
+        public final static int SpiderWebs = addP(ProductionItems.RESEARCH_SPIDER_WEBS);
+        public final static int SpiderUpgrade = addP(ProductionItems.RESEARCH_POISON_SPIDERS);
+        public final static int Silverfish = addP(ProductionItems.RESEARCH_SILVERFISH);
+        public final static int SculkAmplifiers = addP(ProductionItems.RESEARCH_SCULK_AMPLIFIERS);
+        public final static int LightningRod = addP(ProductionItems.RESEARCH_LAB_LIGHTNING_ROD, ResearchLabLightningRod.itemName);
     }
 
     public static class Piglins {
         // Piglin structures
-        public final static int MainPortal = addB(com.solegendary.reignofnether.building.buildings.piglins.CentralPortal.class);
-        public final static int Portal = addB(com.solegendary.reignofnether.building.buildings.piglins.Portal.class);
-        public final static int Farm = addB(com.solegendary.reignofnether.building.buildings.piglins.NetherwartFarm.class);
-        public final static int Bastion = addB(com.solegendary.reignofnether.building.buildings.piglins.Bastion.class);
-        public final static int WitherShrine = addB(com.solegendary.reignofnether.building.buildings.piglins.WitherShrine.class);
-        public final static int HoglinStables = addB(com.solegendary.reignofnether.building.buildings.piglins.HoglinStables.class);
-        public final static int FlameSanctuary = addB(com.solegendary.reignofnether.building.buildings.piglins.FlameSanctuary.class);
-        public final static int Fortress = addB(com.solegendary.reignofnether.building.buildings.piglins.Fortress.class);
+        public final static int MainPortal = addB(Buildings.CENTRAL_PORTAL);
+        public final static int Portal = addB(Buildings.PORTAL_BASIC, PortalBasic.buildingName);
+        public final static int Farm = addB(Buildings.NETHERWART_FARM, NetherwartFarm.buildingName);
+        public final static int Bastion = addB(Buildings.BASTION);
+        public final static int WitherShrine = addB(Buildings.WITHER_SHRINE);
+        public final static int HoglinStables = addB(Buildings.HOGLIN_STABLES);
+        public final static int FlameSanctuary = addB(Buildings.FLAME_SANCTUARY);
+        public final static int Fortress = addB(Buildings.FORTRESS);
 
         // Piglin units
-        public final static int Grunt = addP(com.solegendary.reignofnether.unit.units.piglins.GruntProd.class);
-        public final static int Brute = addP(com.solegendary.reignofnether.unit.units.piglins.BruteProd.class);
-        public final static int Headhunter = addP(com.solegendary.reignofnether.unit.units.piglins.HeadhunterProd.class);
-        public final static int WitherSkeleton = addP(com.solegendary.reignofnether.unit.units.piglins.WitherSkeletonProd.class);
-        public final static int Hoglin = addP(com.solegendary.reignofnether.unit.units.piglins.HoglinProd.class);
-        public final static int Blaze = addP(com.solegendary.reignofnether.unit.units.piglins.BlazeProd.class);
-        public final static int Ghast = addP(com.solegendary.reignofnether.unit.units.piglins.GhastProd.class);
+        public final static int Grunt = addP(ProductionItems.GRUNT);
+        public final static int Brute = addP(ProductionItems.BRUTE);
+        public final static int Headhunter = addP(ProductionItems.HEADHUNTER);
+        public final static int WitherSkeleton = addP(ProductionItems.WITHER_SKELETON);
+        public final static int Hoglin = addP(ProductionItems.HOGLIN);
+        public final static int Blaze = addP(ProductionItems.BLAZE);
+        public final static int Ghast = addP(ProductionItems.GHAST);
 
         // Piglin researches
-        public final static int BruteShield = addP(com.solegendary.reignofnether.research.researchItems.ResearchBruteShields.class);
-        public final static int HeadhunterTrident = addP(com.solegendary.reignofnether.research.researchItems.ResearchHeavyTridents.class);
-        public final static int HoglinCavalry = addP(com.solegendary.reignofnether.research.researchItems.ResearchHoglinCavalry.class);
-        public final static int FireResistance = addP(com.solegendary.reignofnether.research.researchItems.ResearchFireResistance.class);
-        public final static int BlazeFirewall = addP(com.solegendary.reignofnether.research.researchItems.ResearchBlazeFirewall.class);
-        public final static int WitherCloud = addP(com.solegendary.reignofnether.research.researchItems.ResearchWitherClouds.class);
-        public final static int SoulFireballs = addP(com.solegendary.reignofnether.research.researchItems.ResearchSoulFireballs.class);
-        public final static int Bloodlust = addP(com.solegendary.reignofnether.research.researchItems.ResearchBloodlust.class);
-        public final static int AdvancedPortals = addP(com.solegendary.reignofnether.research.researchItems.ResearchAdvancedPortals.class);
-        public final static int CivilianPortal = addP(com.solegendary.reignofnether.research.researchItems.ResearchPortalForCivilian.class);
-        public final static int MilitaryPortal = addP(com.solegendary.reignofnether.research.researchItems.ResearchPortalForMilitary.class);
-        public final static int TransportPortal = addP(com.solegendary.reignofnether.research.researchItems.ResearchPortalForTransport.class);
+        public final static int BruteShield = addP(ProductionItems.RESEARCH_BRUTE_SHIELDS);
+        public final static int HeadhunterTrident = addP(ProductionItems.RESEARCH_HEAVY_TRIDENTS);
+        public final static int HoglinCavalry = addP(ProductionItems.RESEARCH_HOGLIN_CAVALRY, ResearchHoglinCavalry.itemName);
+        public final static int FireResistance = addP(ProductionItems.RESEARCH_FIRE_RESISTANCE, ResearchFireResistance.itemName);
+        public final static int BlazeFirewall = addP(ProductionItems.RESEARCH_BLAZE_FIREWALL);
+        public final static int WitherCloud = addP(ProductionItems.RESEARCH_WITHER_CLOUDS);
+        public final static int SoulFireballs = addP(ProductionItems.RESEARCH_SOUL_FIREBALLS, ResearchSoulFireballs.itemName);
+        public final static int Bloodlust = addP(ProductionItems.RESEARCH_BLOODLUST);
+        public final static int AdvancedPortals = addP(ProductionItems.RESEARCH_ADVANCED_PORTALS);
+        public final static int CivilianPortal = addP(ProductionItems.RESEARCH_PORTAL_FOR_CIVILIAN);
+        public final static int MilitaryPortal = addP(ProductionItems.RESEARCH_PORTAL_FOR_MILITARY);
+        public final static int TransportPortal = addP(ProductionItems.RESEARCH_PORTAL_FOR_TRANSPORT);
     }
 
     public static class Orders {
@@ -311,5 +341,13 @@ public class TypeIds {
         } catch (Exception e) {
             return UnitAction.NONE;
         }
+    }
+
+    public static ProductionItem toProductionItem(int typeId) {
+        return TypeIdToProductionItem.get(typeId);
+    }
+
+    public static Building toBuildingData(int typeId) {
+        return TypeIdToBuildingData.get(typeId);
     }
 }

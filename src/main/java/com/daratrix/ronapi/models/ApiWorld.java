@@ -2,6 +2,7 @@ package com.daratrix.ronapi.models;
 
 import com.daratrix.ronapi.ai.player.AiPlayerServerEvents;
 import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.building.BuildingUtils;
 import com.solegendary.reignofnether.player.PlayerServerEvents;
@@ -31,7 +32,7 @@ public class ApiWorld {
 
     public final Map<String, ApiPlayer> players = new HashMap<>();
     public final Map<Unit, ApiUnit> units = new HashMap<>();
-    public final Map<Building, ApiBuilding> buildings = new HashMap<>();
+    public final Map<BuildingPlacement, ApiBuilding> buildings = new HashMap<>();
     public final Map<BlockPos, ApiResource> resources = new HashMap<>();
 
     public void reset() {
@@ -76,7 +77,7 @@ public class ApiWorld {
     }
 
     private static final ArrayList<Map.Entry<Unit, ApiUnit>> tempUnits = new ArrayList<>(1000);
-    private static final ArrayList<Map.Entry<Building, ApiBuilding>> tempBuildings = new ArrayList<>(1000);
+    private static final ArrayList<Map.Entry<BuildingPlacement, ApiBuilding>> tempBuildings = new ArrayList<>(1000);
 
     private void cleanupDead(MinecraftServer server) {
         var deadUnits = this.units.entrySet();
@@ -89,7 +90,7 @@ public class ApiWorld {
         tempUnits.clear();
 
         var deadBuildings = this.buildings.entrySet();
-        for (Map.Entry<Building, ApiBuilding> x : deadBuildings) {
+        for (Map.Entry<BuildingPlacement, ApiBuilding> x : deadBuildings) {
             if (x.getValue().isDead()) {
                 tempBuildings.add(x);
             }
@@ -160,7 +161,7 @@ public class ApiWorld {
         return apiUnit;
     }
 
-    public ApiBuilding track(MinecraftServer server, Building building) {
+    public ApiBuilding track(MinecraftServer server, BuildingPlacement building) {
         var apiBuilding = buildings.getOrDefault(building, null);
         if (apiBuilding != null) {
             return apiBuilding; // already tracked
@@ -192,7 +193,7 @@ public class ApiWorld {
         units.remove(unit);
     }
 
-    private void untrack(MinecraftServer server, Building building) {
+    private void untrack(MinecraftServer server, BuildingPlacement building) {
         var tracked = buildings.getOrDefault(building, null);
         if (tracked == null) {
             return; // not tracked

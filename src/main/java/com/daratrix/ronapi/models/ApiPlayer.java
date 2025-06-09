@@ -57,7 +57,7 @@ public class ApiPlayer implements IPlayer {
 
     @Override
     public boolean hasResearch(int researchId) {
-        return ResearchServerEvents.playerHasResearch(this.name, TypeIds.toItemName(researchId));
+        return ResearchServerEvents.playerHasResearch(this.name, TypeIds.toProductionItem(researchId));
     }
 
     @Override

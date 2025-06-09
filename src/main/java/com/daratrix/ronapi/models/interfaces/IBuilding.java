@@ -5,6 +5,7 @@
  */
 package com.daratrix.ronapi.models.interfaces;
 
+import com.solegendary.reignofnether.building.BuildingPlacement;
 import net.minecraft.core.BlockPos;
 import com.solegendary.reignofnether.building.Building;
 
@@ -16,7 +17,8 @@ import java.util.List;
  */
 public interface IBuilding extends IPlayerWidget, IStructure {
     // queries
-    Building getBuilding();
+    BuildingPlacement getBuilding();
+    Building getBuildingData();
     public List<Integer> getProductionQueue();
     public float getProductionProgress();
     public BlockPos getPos();

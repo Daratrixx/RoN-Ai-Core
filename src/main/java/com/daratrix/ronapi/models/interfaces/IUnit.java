@@ -7,6 +7,7 @@ package com.daratrix.ronapi.models.interfaces;
 
 import com.daratrix.ronapi.apis.TypeIds;
 import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
 import net.minecraft.core.BlockPos;
@@ -48,7 +49,7 @@ public interface IUnit extends IPlayerWidget, ILocated {
         return this.issueWidgetOrder(building, TypeIds.Orders.HarvestFarm);
     }
 
-    public default boolean issueHarvestOrder(Building building) {
+    public default boolean issueHarvestOrder(BuildingPlacement building) {
         return this.issueWidgetOrder(building, TypeIds.Orders.HarvestFarm);
     }
 

@@ -14,12 +14,16 @@ import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.models.interfaces.IWidget;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.building.Building;
+import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.GarrisonableBuilding;
-import com.solegendary.reignofnether.building.ProductionBuilding;
+import com.solegendary.reignofnether.building.buildings.piglins.PortalCivilian;
+import com.solegendary.reignofnether.building.buildings.placements.*;
+import com.solegendary.reignofnether.building.production.ProductionBuilding;
 import com.solegendary.reignofnether.building.buildings.monsters.Laboratory;
-import com.solegendary.reignofnether.building.buildings.piglins.Portal;
+import com.solegendary.reignofnether.building.buildings.piglins.AbstractPortal;
 import com.solegendary.reignofnether.building.buildings.villagers.Castle;
 import com.solegendary.reignofnether.building.buildings.villagers.Library;
+import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
 import com.solegendary.reignofnether.unit.interfaces.WorkerUnit;
@@ -37,16 +41,18 @@ import java.util.stream.Stream;
  */
 public class ApiBuilding implements IBuilding {
 
-    protected final Building building;
-    protected final ProductionBuilding production;
+    protected final BuildingPlacement physicalBuilding;
+    protected final ProductionPlacement production;
+    protected final Building buildingData;
     protected final int typeId;
     private final AABB boundingBox;
     protected final boolean isCapitol;
 
-    public ApiBuilding(Building building) {
-        this.building = building;
-        this.production = building instanceof ProductionBuilding p ? p : null;
-        this.typeId = TypeIds.get(building);
+    public ApiBuilding(BuildingPlacement building) {
+        this.physicalBuilding = building;
+        this.buildingData = building.getBuilding();
+        this.production = this.physicalBuilding instanceof ProductionPlacement p ? p : null;
+        this.typeId = TypeIds.get(this.buildingData);
         this.boundingBox = GeometryUtils.getBoundingBox(building.minCorner, building.maxCorner.offset(1, 1, 1));
         this.isCapitol = building.isCapitol;
     }
@@ -63,32 +69,36 @@ public class ApiBuilding implements IBuilding {
 
     @Override
     public BlockPos getPos() {
-        return this.building.originPos;
+        return this.physicalBuilding.originPos;
     }
 
     @Override
     public int getPopSupplied() {
-        return this.building.popSupply;
+        //if(this.typeId == TypeIds.Piglins.Portal && this.hasUpgrade(TypeIds.Piglins.CivilianPortal)) {
+        //    return PortalCivilian.CIVILIIAN_PORTAL_POPULATION_SUPPLY;
+        //}
+
+        return this.physicalBuilding.getBuilding().cost.population;
     }
 
     @Override
     public boolean isDone() {
-        return this.building.isBuilt;
+        return this.physicalBuilding.isBuilt;
     }
 
     @Override
     public boolean isUnderConstruction() {
-        return !this.building.isBuilt;
+        return !this.physicalBuilding.isBuilt;
     }
 
     @Override
     public String getOwnerName() {
-        return building.ownerName;
+        return this.physicalBuilding.ownerName;
     }
 
     @Override
     public void setOwnerByName(String ownerName) {
-        building.ownerName = ownerName;
+        this.physicalBuilding.ownerName = ownerName;
     }
 
     @Override
@@ -102,7 +112,7 @@ public class ApiBuilding implements IBuilding {
             return 0;
         }
 
-        return TypeIds.get(queue.get(0));
+        return TypeIds.get(queue.get(0).item);
     }
 
     @Override
@@ -115,7 +125,7 @@ public class ApiBuilding implements IBuilding {
     @Override
     public int countBuilders() {
         countBuildersCollection.clear();
-        WorldApi.getSingleton().players.get(this.building.ownerName)
+        WorldApi.getSingleton().players.get(this.physicalBuilding.ownerName)
                 .getUnitsFiltered(u -> u.isWorker() && u.isAlive())
                 .map(IUnit::getWorkerUnit)
                 .collect(Collectors.toCollection(() -> countBuildersCollection));
@@ -125,7 +135,7 @@ public class ApiBuilding implements IBuilding {
         for (WorkerUnit w : countBuildersCollection) {
             var repair = w.getBuildRepairGoal();
             var target = repair.getBuildingTarget();
-            if (target == this.building) {
+            if (target == this.physicalBuilding) {
                 ++count;
             }
         }
@@ -140,28 +150,28 @@ public class ApiBuilding implements IBuilding {
 
     @Override
     public boolean canBeGarrisoned() {
-        return this.building instanceof GarrisonableBuilding;
+        return this.physicalBuilding instanceof GarrisonableBuilding;
     }
 
     @Override
     public boolean hasUpgrade(int upgradeId) {
         if (this.typeId == TypeIds.Villagers.Castle) {
             return upgradeId == TypeIds.Villagers.OfficersQuarters
-                    && ((Castle) this.building).getUpgradeLevel() > 0; // expensive call...
+                    && this.physicalBuilding.getUpgradeLevel() > 0; // expensive call...
         }
 
         if (this.typeId == TypeIds.Villagers.Library) {
             return upgradeId == TypeIds.Villagers.GrandLibrary
-                    && ((Library) this.building).getUpgradeLevel() > 0; // expensive call...
+                    && this.physicalBuilding.getUpgradeLevel() > 0; // expensive call...
         }
 
         if (this.typeId == TypeIds.Monsters.Laboratory) {
             return upgradeId == TypeIds.Monsters.LightningRod
-                    && ((Laboratory) this.building).getUpgradeLevel() > 0; // expensive call...
+                    && this.physicalBuilding.getUpgradeLevel() > 0; // expensive call...
         }
 
         if (this.typeId == TypeIds.Piglins.Portal) {
-            var portalType = ((Portal) this.building).portalType;
+            var portalType = ((PortalPlacement) this.physicalBuilding).getPortalType();
             return switch (portalType) {
                 case CIVILIAN -> upgradeId == TypeIds.Piglins.CivilianPortal;
                 case MILITARY -> upgradeId == TypeIds.Piglins.MilitaryPortal;
@@ -175,24 +185,7 @@ public class ApiBuilding implements IBuilding {
 
     @Override
     public boolean isUpgraded() {
-        if (this.typeId == TypeIds.Villagers.Castle) {
-            return ((Castle) this.building).getUpgradeLevel() > 0; // expensive call...
-        }
-
-        if (this.typeId == TypeIds.Villagers.Library) {
-            return ((Library) this.building).getUpgradeLevel() > 0; // expensive call...
-        }
-
-        if (this.typeId == TypeIds.Monsters.Laboratory) {
-            return ((Laboratory) this.building).getUpgradeLevel() > 0; // expensive call...
-        }
-
-        if (this.typeId == TypeIds.Piglins.Portal) {
-            var portalType = ((Portal) this.building).portalType;
-            return portalType != Portal.PortalType.BASIC;
-        }
-
-        return false;
+        return this.physicalBuilding.getUpgradeLevel() > 0;
     }
 
     @Override
@@ -226,7 +219,7 @@ public class ApiBuilding implements IBuilding {
     }
 
     @Override
-    public boolean issueWidgetOrder(Building target, int orderId) {
+    public boolean issueWidgetOrder(BuildingPlacement target, int orderId) {
         return false;
     }
 
@@ -242,18 +235,12 @@ public class ApiBuilding implements IBuilding {
             return false;
         }
 
-        var production = BuildingApi.toProductionItem(typeId, this.production);
-        if (production == null || !production.canAfford(this.getOwnerName())) {
+        var production = TypeIds.toProductionItem(typeId);
+        if (production == null || !production.canAfford(PlayerServerEvents.serverLevel, this.getOwnerName())) {
             return false;
         }
 
-        this.production.productionQueue.add(production);
-        ResourcesServerEvents.addSubtractResources(new Resources(
-                building.ownerName,
-                -production.foodCost,
-                -production.woodCost,
-                -production.oreCost
-        ));
+        this.production.startProductionItem(production, this.physicalBuilding.originPos);
 
         return true;
     }
@@ -269,8 +256,13 @@ public class ApiBuilding implements IBuilding {
     }
 
     @Override
-    public Building getBuilding() {
-        return this.building;
+    public Building getBuildingData() {
+        return this.buildingData;
+    }
+
+    @Override
+    public BuildingPlacement getBuilding() {
+        return this.physicalBuilding;
     }
 
     @Override
@@ -280,43 +272,42 @@ public class ApiBuilding implements IBuilding {
 
     @Override
     public int getMinX() {
-        return this.building.minCorner.getX();
+        return this.physicalBuilding.minCorner.getX();
     }
 
     @Override
     public int getMaxX() {
-        return this.building.maxCorner.getX();
+        return this.physicalBuilding.maxCorner.getX();
     }
 
     @Override
     public int getMinY() {
-        return this.building.minCorner.getY();
+        return this.physicalBuilding.minCorner.getY();
     }
 
     @Override
     public int getMaxY() {
-
-        return this.building.maxCorner.getY();
+        return this.physicalBuilding.maxCorner.getY();
     }
 
     @Override
     public int getMinZ() {
-        return this.building.minCorner.getZ();
+        return this.physicalBuilding.minCorner.getZ();
     }
 
     @Override
     public int getMaxZ() {
-        return this.building.maxCorner.getZ();
+        return this.physicalBuilding.maxCorner.getZ();
     }
 
     @Override
     public BlockPos getMinPos() {
-        return this.building.minCorner;
+        return this.physicalBuilding.minCorner;
     }
 
     @Override
     public BlockPos getMaxPos() {
-        return this.building.maxCorner;
+        return this.physicalBuilding.maxCorner;
     }
 
     @Override
@@ -341,42 +332,42 @@ public class ApiBuilding implements IBuilding {
 
     @Override
     public String getName() {
-        return this.building.name;
+        return this.buildingData.name;
     }
 
     @Override
     public int getHealth() {
-        return this.building.getHealth();
+        return this.physicalBuilding.getHealth();
     }
 
     @Override
     public int getMaxHealth() {
-        return this.building.getMaxHealth();
+        return this.physicalBuilding.getMaxHealth();
     }
 
     @Override
     public boolean isAlive() {
-        return this.building.getHealth() > 0;
+        return this.physicalBuilding.getHealth() > 0;
     }
 
     @Override
     public boolean isDead() {
-        return this.building.getHealth() <= 0;
+        return this.physicalBuilding.getHealth() <= 0;
     }
 
     @Override
     public float getX() {
-        return this.building.centrePos.getX();
+        return this.physicalBuilding.centrePos.getX();
     }
 
     @Override
     public float getY() {
-        return this.building.centrePos.getY();
+        return this.physicalBuilding.centrePos.getY();
     }
 
     @Override
     public float getZ() {
-        return this.building.centrePos.getZ();
+        return this.physicalBuilding.centrePos.getZ();
     }
 
     @Override
