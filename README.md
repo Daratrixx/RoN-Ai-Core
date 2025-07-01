@@ -24,7 +24,7 @@ This project consists of:
   - [x] Name must be unique as it is used to display the script for users to select when spawning bots
   - [x] Unit priorities indicate in which order units should be created
   - [x] Building priorities indicate in which order structures must be built
-  - [ ] Research priorities indicate when researches need to be done
+  - [X] Research priorities indicate when researches need to be done
   - [X] Harvest priorities indicate how many workers should be assigned to different tasks at all time
   - [ ] Attack priorities indicate what units to attack, raid, and defend with
 - Registering the newly created class as an available script for the server to use
@@ -36,8 +36,12 @@ This project consists of:
   - [x] Process the Building priorities to decide when to start new structures
     - [x] Bug: Ai sometimes starts additional capitols
   - [x] Automatically select a location around the capitol to build structures
-    - [ ] Allow structures to be built on to specific locations (Main, Farms, Woodline, Ore, Proxy...)
-      - [ ] Allow structures to prioritize certain areas in specific location (Front, Back...)
+    - [ ] Allow structures to be built on to specific locations
+      - [X] Main
+      - [X] Farms
+      - [ ] Proxy (build close to/within the enemy base)
+      - [ ] Main
+    - [ ] Allow structures to prioritize certain areas in specific location (Front, Back...)
     - [x] Bug: Ai buildings sometimes clip into each others
     - [X] Bug: buildings are too far apart and the spiral becomes exponentially bigger
   - [ ] Build Stockpiles/Portals near distant resources
@@ -59,16 +63,22 @@ This project consists of:
     - [ ] Bug: reassigned workers sometimes do not switch tasks
     - [ ] Bug: sometimes multiple workers are assigned to the same farm when there are farms with no workers assigned
     - [ ] Bug: sometimes the AI looses track of worker assignments
+- 0% Hero management
+  - [ ] Train Heroes
+  - [ ] Learn Hero Skills
+  - [ ] Resurrect dead Heroes
 - 20% Army management
   - [X] Army gather point
     - [X] Bug: Army gather point is sometimes on the wrong side of the base
   - [X] Attack
     - [X] Select an attack target and send a group to attack
     - [ ] Attack group staging point
-  - [ ] Defense
-    - [ ] Seek and destroy enemy units near bases using entire idle army
+  - [X] Defense
+    - [X] Seek and destroy enemy units near bases using entire idle army
     - [ ] Defense group staging point
-    - [ ] Use at little units as possible to defend
+    - [X] Use at little units as possible to defend
+  - [ ] Creeping
+    - [ ] Hunt neutral Creeps to level up the Heroes
   - [ ] Harass
     - [ ] Select a harass target and send a group to attack
     - [ ] Harass group staging point
