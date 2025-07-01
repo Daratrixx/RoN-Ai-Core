@@ -33,6 +33,7 @@ public class ApiResource implements IResource {
     private BlockPos.MutableBlockPos maxPos = new BlockPos.MutableBlockPos(0, 0, 0);
     private int resourceAmount;
     private AABB boundingBox = null;
+    private boolean isCalculated = false;
 
     public ApiResource(ResourceName resourceName) {
         this.resourceTypeId = TypeIds.get(resourceName);
@@ -63,41 +64,73 @@ public class ApiResource implements IResource {
 
     @Override
     public int getMinX() {
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
         return this.minPos.getX();
     }
 
     @Override
     public int getMaxX() {
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
         return this.maxPos.getX();
     }
 
     @Override
     public int getMinY() {
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
         return this.minPos.getY();
     }
 
     @Override
     public int getMaxY() {
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
         return this.maxPos.getY();
     }
 
     @Override
     public int getMinZ() {
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
         return this.minPos.getZ();
     }
 
     @Override
     public int getMaxZ() {
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
         return this.maxPos.getZ();
     }
 
     @Override
     public BlockPos getMinPos() {
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
         return this.minPos.immutable();
     }
 
     @Override
     public BlockPos getMaxPos() {
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
         return this.maxPos.immutable();
     }
 
@@ -113,6 +146,10 @@ public class ApiResource implements IResource {
 
     @Override
     public AABB getBoundingBox() {
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
         return this.boundingBox;
     }
 
@@ -172,6 +209,7 @@ public class ApiResource implements IResource {
         this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ()) / 2);
 
         this.boundingBox = GeometryUtils.getBoundingBox(this.minPos, this.maxPos.offset(1, 1, 1));
+        this.isCalculated = true;
     }
 
     public void updateBoundingBox() {
@@ -192,25 +230,42 @@ public class ApiResource implements IResource {
         this.centerPos.setZ((this.minPos.getZ() + this.maxPos.getZ()) / 2);
 
         this.boundingBox = GeometryUtils.getBoundingBox(this.minPos, this.maxPos.offset(1, 1, 1));
+        this.isCalculated = true;
     }
 
     @Override
     public float getX() {
-        return centerPos.getX();
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
+        return this.centerPos.getX();
     }
 
     @Override
     public float getY() {
-        return centerPos.getY();
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
+        return this.centerPos.getY();
     }
 
     @Override
     public float getZ() {
-        return centerPos.getZ();
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
+        return this.centerPos.getZ();
     }
 
     @Override
     public BlockPos getPos() {
+        if (!this.isCalculated) {
+            this.updateBoundingBox();
+        }
+
         return this.centerPos;
     }
 }

@@ -120,20 +120,20 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
 
         //priorities.addPriority(TypeIds.Villagers.Stockpile, 1);
         priorities.addPriority(TypeIds.Villagers.House, 1); // at least one house before farm
-        priorities.addPriority(TypeIds.Villagers.Farm, 1, AiProductionPriorities.Location.FARM);
+        priorities.addPriority(TypeIds.Villagers.Farm, 1).atFarm();
         //priorities.addPriority(TypeIds.Villagers.House, 2);
         priorities.addPriority(TypeIds.Villagers.Barracks, 1);
-        priorities.addPriority(TypeIds.Villagers.Farm, 3, AiProductionPriorities.Location.FARM);
+        priorities.addPriority(TypeIds.Villagers.Farm, 3).atFarm();
         priorities.addPriority(TypeIds.Villagers.Barracks, 2);
+        priorities.addPriority(TypeIds.Villagers.Farm, 6).atFarm();
         priorities.addPriority(TypeIds.Villagers.Altar, 1);
-        priorities.addPriority(TypeIds.Villagers.Farm, 6, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Villagers.Blacksmith, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 3);
-        priorities.addPriority(TypeIds.Villagers.Farm, 9, AiProductionPriorities.Location.FARM);
+        priorities.addPriority(TypeIds.Villagers.Farm, 9).atFarm();
         priorities.addPriority(TypeIds.Villagers.ArcaneTower, 1);
         priorities.addPriority(TypeIds.Villagers.Library, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 4);
-        priorities.addPriority(TypeIds.Villagers.Farm, 12, AiProductionPriorities.Location.FARM);
+        priorities.addPriority(TypeIds.Villagers.Farm, 12).atFarm();
         priorities.addPriority(TypeIds.Villagers.GrandLibrary, 1);
         priorities.addPriority(TypeIds.Villagers.Castle, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 5);

@@ -26,8 +26,10 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
 
 
     @Override
-    public void addPriority(int typeId, int count) {
-        this.priorities.add(new AiArmyPriority(typeId, count));
+    public AiArmyPriority addPriority(int typeId, int count) {
+        var priority = new AiArmyPriority(typeId, count);
+        this.priorities.add(priority);
+        return priority;
     }
 
     public boolean pickDefenseTarget(IPlayer player) {

@@ -398,33 +398,13 @@ public class AiController {
     }
 
     public BlockPos getBuildingLocation(IUnit builder, int typeId, AiProductionPriorities.Location location) {
-        int farmRange = 6;
         int maxRange = 12;
-        int capitolBoxOffset = 5;
         if (this.capitol == null) {
             this.logger.log("Building around Builder at ANY(0-" + maxRange + ") range");
             return BuildingApi.getBuildingLocation(builder.getPos(), typeId, player.getName(), 0, maxRange, 0, 1);
         }
 
-        if (location == AiProductionPriorities.Location.FARM) {
-            var output = BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), 1, farmRange, capitolBoxOffset, 0);
-            if (output != null) {
-                this.logger.log("Building around Capitol at FARM(1-" + farmRange + ") range");
-                return output;
-            }
-
-            this.logger.log("Building around Capitol at MAIN(" + farmRange + "-" + maxRange + ") range");
-            output = BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), farmRange, maxRange, capitolBoxOffset, 1);
-            return output;
-        }
-
-        if (location == AiProductionPriorities.Location.MAIN) {
-            this.logger.log("Building around Capitol at MAIN(" + farmRange + "-" + maxRange + ") range");
-            return BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), farmRange, maxRange, capitolBoxOffset, 1);
-        }
-
-        this.logger.log("Building around Capitol at ANY(0-" + maxRange + ") range");
-        return BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), 0, maxRange, capitolBoxOffset, 1);
+        return BuildingApi.getBuildingLocation(builder.getPos(), typeId, player.getName(), location);
     }
 
     public void runAiProduceHero(MinecraftServer server, int typeId) {

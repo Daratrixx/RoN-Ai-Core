@@ -12,8 +12,10 @@ public class AiHarvestPriorities extends AiAbstractPriorities<AiHarvestPrioritie
         this.logger = logger;
     }
 
-    public void addPriority(int typeId, int count) {
-        priorities.add(new AiHarvestPriority(typeId, count));
+    public AiHarvestPriority addPriority(int typeId, int count) {
+        var priority = new AiHarvestPriority(typeId, count);
+        priorities.add(priority);
+        return priority;
     }
 
     public static class AiHarvestPriority extends AiAbstractPriorities.AiAbstractPriority {

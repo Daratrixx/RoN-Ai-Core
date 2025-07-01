@@ -161,18 +161,18 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
 
         //priorities.addPriority(TypeIds.Piglins.Stockpile, 1);
         this.BuildCivilianPortal(priorities, 1); // at least one house before farm
-        priorities.addPriority(TypeIds.Piglins.Farm, 1, AiProductionPriorities.Location.FARM);
+        priorities.addPriority(TypeIds.Piglins.Farm, 1).atFarm();
         this.BuildMilitaryPortal(priorities, 1);
-        priorities.addPriority(TypeIds.Piglins.Farm, 3, AiProductionPriorities.Location.FARM);
+        priorities.addPriority(TypeIds.Piglins.Farm, 3).atFarm();
         this.BuildMilitaryPortal(priorities,  2);
+        priorities.addPriority(TypeIds.Piglins.Farm, 6).atFarm();
         priorities.addPriority(TypeIds.Piglins.Altar, 1);
-        priorities.addPriority(TypeIds.Piglins.Farm, 6, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Piglins.Bastion, 1);
-        priorities.addPriority(TypeIds.Piglins.Farm, 9, AiProductionPriorities.Location.FARM);
+        priorities.addPriority(TypeIds.Piglins.Farm, 9).atFarm();
         priorities.addPriority(TypeIds.Piglins.HoglinStables, 1);
         priorities.addPriority(TypeIds.Piglins.FlameSanctuary, 1);
         this.BuildMilitaryPortal(priorities,  4);
-        priorities.addPriority(TypeIds.Piglins.Farm, 12, AiProductionPriorities.Location.FARM);
+        priorities.addPriority(TypeIds.Piglins.Farm, 12).atFarm();
         priorities.addPriority(TypeIds.Piglins.WitherShrine, 1);
         priorities.addPriority(TypeIds.Piglins.Fortress, 1);
         this.BuildMilitaryPortal(priorities,  5);

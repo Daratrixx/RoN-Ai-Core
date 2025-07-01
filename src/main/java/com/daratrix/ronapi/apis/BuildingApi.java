@@ -5,8 +5,10 @@
  */
 package com.daratrix.ronapi.apis;
 
+import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.models.interfaces.IBuilding;
 import com.daratrix.ronapi.models.interfaces.IResource;
+import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.daratrix.ronapi.utils.SpiralCounter;
@@ -43,6 +45,8 @@ public class BuildingApi {
     private static final Map<Integer, ArrayList<BuildingBlock>> foundationBlocks = new HashMap<>();
     private static final Map<Integer, Boolean> isBridge = new HashMap<>();
     private static final Map<Integer, Boolean> mustCheckNetherTerrain = new HashMap<>();
+    private static final ArrayList<BlockPos> farmSpiralPositions = new ArrayList<>();
+    private static final ArrayList<BlockPos> mainSpiralPositions = new ArrayList<>();
 
     public static ArrayList<BuildingBlock> getFoundationBlocks(int typeId) {
         var blocks = foundationBlocks.getOrDefault(typeId, null);
@@ -122,8 +126,26 @@ public class BuildingApi {
 
     private static final SpiralCounter spiral = new SpiralCounter();
 
-    public static BlockPos getBuildingLocation(BlockPos lookupOrigin, int typeId, String playerName) {
-        return getBuildingLocation(lookupOrigin, typeId, playerName, 0, 10, 10, 2);
+    public static BlockPos getBuildingLocation(BlockPos lookupOrigin, int typeId, String playerName, AiProductionPriorities.Location location) {
+        int farmRange = 6;
+        int maxRange = 12;
+        int capitolBoxOffset = 5;
+
+        if (location == AiProductionPriorities.Location.FARM) {
+            var output = BuildingApi.getBuildingLocation(lookupOrigin, typeId, playerName, 1, farmRange, capitolBoxOffset, 0);
+            if (output != null) {
+                return output;
+            }
+
+            output = BuildingApi.getBuildingLocation(lookupOrigin, typeId, playerName, farmRange, maxRange, capitolBoxOffset, 1);
+            return output;
+        }
+
+        if (location == AiProductionPriorities.Location.MAIN) {
+            return BuildingApi.getBuildingLocation(lookupOrigin, typeId, playerName, farmRange, maxRange, capitolBoxOffset, 1);
+        }
+
+        return BuildingApi.getBuildingLocation(lookupOrigin, typeId, playerName, 0, maxRange, capitolBoxOffset, 1);
     }
 
     public static BlockPos getBuildingLocation(BlockPos lookupOrigin, int typeId, String playerName, int spiralMin, int spiralMax, int boxOffset, int offset) {

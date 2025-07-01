@@ -14,7 +14,7 @@ public abstract class AiAbstractPriorities<T extends AiAbstractPriorities.AiAbst
         priorities.clear();
     }
 
-    public abstract void addPriority(int typeId, int count);
+    public abstract T addPriority(int typeId, int count);
 
     public boolean isEmpty() {
         return priorities.isEmpty();
