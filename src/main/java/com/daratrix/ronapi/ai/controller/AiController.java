@@ -15,6 +15,7 @@ import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.BuildingPlacement;
+import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.ResourceSources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -398,6 +399,33 @@ public class AiController {
         return BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), 0, maxRange, capitolBoxOffset, 1);
     }
 
+    public void runAiProduceHero(MinecraftServer server, int typeId) {
+        boolean reviving = this.player.hasHero(typeId);
+        ResourceCost cost = reviving
+                ? TypeIds.toReviveCost(typeId)
+                : TypeIds.toItemCost(typeId);
+        var canAfford = this.player.canAfford(cost);
+        if (!canAfford) {
+            this.logger.log("Not enough resources for " + (reviving ? "reviving" : "training") + " " + TypeIds.toItemName(typeId));
+            return; // impossible to fulfill the priority
+        }
+
+        this.logger.log("Processing " + TypeIds.toItemName(typeId));
+
+        var producers = this.player.getIdleBuildings(AiDependencies.getSourceTypeIds(typeId)).toList();
+        this.logger.log(producers.size() + " producers for " + TypeIds.toItemName(typeId));
+        for (int i = 0; i < producers.size(); ++i) {
+            var producer = producers.get(i);
+            if (reviving ? producer.issueReviveOrder(typeId) : producer.issueTrainOrder(typeId)) {
+                WorldApi.queueWorldUpdate();
+            } else {
+                this.logger.log("Failed to issue train order for " + TypeIds.toItemName(typeId));
+            }
+
+            return;
+        }
+    }
+
     public void runAiProduceUnits(MinecraftServer server) {
         var priorities = this.priorities.getUnitPriorities();
         var it = priorities.iterator();
@@ -416,6 +444,11 @@ public class AiController {
             if (!canMake) {
                 this.logger.log("Skipping impossible " + TypeIds.toItemName(p.typeId) + " due to missing " + TypeIds.toItemName(AiDependencies.lastMissingrequirement));
                 continue; // impossible to fulfill the priority
+            }
+
+            if (TypeIds.isHero(p.typeId)) {
+                this.runAiProduceHero(server, p.typeId);
+                continue;
             }
 
             var canAfford = this.player.canAfford(p.typeId);

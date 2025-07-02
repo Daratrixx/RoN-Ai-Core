@@ -81,6 +81,7 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
         //priorities.addPriority(TypeIds.Monsters.House, 2);
         priorities.addPriority(TypeIds.Monsters.Graveyard, 1);
         priorities.addPriority(TypeIds.Monsters.Farm, 6);
+        priorities.addPriority(TypeIds.Monsters.Altar, 1);
         priorities.addPriority(TypeIds.Monsters.Graveyard, 2);
         priorities.addPriority(TypeIds.Monsters.Laboratory, 1);
         priorities.addPriority(TypeIds.Monsters.Graveyard, 3);
@@ -112,6 +113,7 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Monsters.Villager, 16);
         priorities.addPriority(zombie, 10);
         priorities.addPriority(skeleton, 8);
+        priorities.addPriority(TypeIds.Monsters.HeroNecromancer, 1);
         priorities.addPriority(TypeIds.Monsters.Villager, 24);
         priorities.addPriority(zombie, 20);
         priorities.addPriority(skeleton, 12);

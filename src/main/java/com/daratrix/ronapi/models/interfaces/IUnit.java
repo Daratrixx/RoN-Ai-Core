@@ -21,6 +21,7 @@ public interface IUnit extends IPlayerWidget, ILocated {
     // queries
     public int getPopUsed();
     public boolean isWorker();
+    public boolean isHero();
     public int getId();
 
     public boolean isMaxCarryCapacityReached();

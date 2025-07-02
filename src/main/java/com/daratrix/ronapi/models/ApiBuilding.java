@@ -240,9 +240,21 @@ public class ApiBuilding implements IBuilding {
             return false;
         }
 
-        this.production.startProductionItem(production, this.physicalBuilding.originPos);
+        return this.production.startProductionItem(production, this.physicalBuilding.originPos);
+    }
 
-        return true;
+    @Override
+    public boolean issueReviveOrder(int typeId) {
+        if (this.production == null) {
+            return false;
+        }
+
+        var production = TypeIds.toReviveItem(typeId);
+        if (production == null || !production.canAfford(PlayerServerEvents.serverLevel, this.getOwnerName())) {
+            return false;
+        }
+
+        return this.production.startProductionItem(production, this.physicalBuilding.originPos);
     }
 
     @Override

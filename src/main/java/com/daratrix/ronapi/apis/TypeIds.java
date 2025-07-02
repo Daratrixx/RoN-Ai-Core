@@ -10,6 +10,8 @@ import com.solegendary.reignofnether.building.buildings.villagers.OakStockpile;
 import com.solegendary.reignofnether.building.buildings.villagers.WheatFarm;
 import com.solegendary.reignofnether.building.production.ProductionItem;
 import com.solegendary.reignofnether.building.production.ProductionItems;
+import com.solegendary.reignofnether.building.production.ReviveHeroProductionItem;
+import com.solegendary.reignofnether.registrars.EntityRegistrar;
 import com.solegendary.reignofnether.research.researchItems.*;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.ResourceCosts;
@@ -27,9 +29,12 @@ public class TypeIds {
     private static int TypeIdCount = 0;
     private static Map<String, Integer> NameToTypeId = new HashMap<>();
     private static Map<Integer, String> TypeIdToName = new HashMap<>();
+    private static Map<Integer, String> TypeIdToHeroName = new HashMap<>();
     private static Map<Integer, String> TypeIdToStructureName = new HashMap<>();
     private static Map<Integer, ResourceCost> TypeIdToCost = new HashMap<>();
+    private static Map<Integer, ResourceCost> TypeIdToReviveCost = new HashMap<>();
     private static Map<Integer, ProductionItem> TypeIdToProductionItem = new HashMap<>();
+    private static Map<Integer, ReviveHeroProductionItem> TypeIdToReviveItem = new HashMap<>();
     private static Map<Integer, Building> TypeIdToBuildingData = new HashMap<>();
 
     public static int add(String itemName) {
@@ -111,6 +116,21 @@ public class TypeIds {
         }
     }
 
+    public static <T extends ProductionItem, R extends ReviveHeroProductionItem> int addH(T p, R r, String heroId) {
+        try {
+            var name = p.getItemName();
+            var cost = p.defaultCost;
+            var typeId = add(name, cost);
+            TypeIdToProductionItem.put(typeId, p);
+            TypeIdToReviveItem.put(typeId, r);
+            TypeIdToReviveCost.put(typeId, r.defaultCost);
+            TypeIdToHeroName.put(typeId, heroId);
+            return typeId;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     public static int get(String itemName) {
         return NameToTypeId.getOrDefault(itemName, 0);
     }
@@ -129,6 +149,10 @@ public class TypeIds {
     }
 
     public static int get(Unit unit) {
+        if (unit instanceof com.solegendary.reignofnether.unit.units.villagers.RoyalGuardUnit) return Villagers.HeroRoyalGuard;
+        if (unit instanceof com.solegendary.reignofnether.unit.units.monsters.NecromancerUnit) return Monsters.HeroNecromancer;
+        if (unit instanceof com.solegendary.reignofnether.unit.units.piglins.PiglinMerchantUnit) return Piglins.HeroMerchant;
+
         if (unit instanceof com.solegendary.reignofnether.unit.units.villagers.VillagerUnit) return Villagers.Villager;
         if (unit instanceof com.solegendary.reignofnether.unit.units.villagers.VindicatorUnit)
             return Villagers.Vindicator;
@@ -174,6 +198,10 @@ public class TypeIds {
     }
 
     public static class Villagers {
+        public final static int HeroRoyalGuard = addH(ProductionItems.ROYAL_GUARD, ProductionItems.ROYAL_GUARD_REVIVE, "entity.reignofnether.royal_guard_unit");
+        public final static int ShrineOfProperity = addB(Buildings.SHRINE_OF_PROSPERITY);
+        public final static int Altar = ShrineOfProperity;
+
         // Villager structures
         public final static int TownCentre = addB(Buildings.TOWN_CENTRE);
         public final static int Stockpile = addB(Buildings.OAK_STOCKPILE, OakStockpile.buildingName);
@@ -217,6 +245,10 @@ public class TypeIds {
     }
 
     public static class Monsters {
+        public final static int HeroNecromancer = addH(ProductionItems.NECROMANCER, ProductionItems.NECROMANCER_REVIVE, "entity.reignofnether.necromancer_unit");
+        public final static int AltarOfDarkness = addB(Buildings.ALTAR_OF_DARKNESS);
+        public final static int Altar = AltarOfDarkness;
+
         // Monster structures
         public final static int Mausoleum = addB(Buildings.MAUSOLEUM);
         public final static int Stockpile = addB(Buildings.SPRUCE_STOCKPILE, SpruceStockpile.buildingName);
@@ -253,6 +285,10 @@ public class TypeIds {
     }
 
     public static class Piglins {
+        public final static int HeroMerchant = addH(ProductionItems.PIGLIN_MERCHANT, ProductionItems.PIGLIN_MERCHANT_REVIVE, "entity.reignofnether.piglin_merchant_unit");
+        public final static int InfernalPortal = addB(Buildings.INFERNAL_PORTAL);
+        public final static int Altar = InfernalPortal;
+
         // Piglin structures
         public final static int MainPortal = addB(Buildings.CENTRAL_PORTAL);
         public final static int Portal = addB(Buildings.PORTAL_BASIC, PortalBasic.buildingName);
@@ -314,6 +350,10 @@ public class TypeIds {
         return TypeIdToCost.getOrDefault(typeId, null);
     }
 
+    public static ResourceCost toReviveCost(int typeId) {
+        return TypeIdToCost.getOrDefault(typeId, null);
+    }
+
     public static UnitAction toUnitAction(int typeId, Object target) {
         if (typeId == Resources.FoodEntity) {
             return UnitAction.ATTACK;
@@ -345,6 +385,18 @@ public class TypeIds {
 
     public static ProductionItem toProductionItem(int typeId) {
         return TypeIdToProductionItem.get(typeId);
+    }
+
+    public static ReviveHeroProductionItem toReviveItem(int typeId) {
+        return TypeIdToReviveItem.get(typeId);
+    }
+
+    public static boolean isHero(int typeId) {
+        return TypeIdToReviveItem.containsKey(typeId);
+    }
+
+    public static String toHeroName(int typeId) {
+        return TypeIdToHeroName.getOrDefault(typeId, null);
     }
 
     public static Building toBuildingData(int typeId) {

@@ -37,6 +37,7 @@ public interface IBuilding extends IPlayerWidget, IStructure {
     // mutations
 
     boolean issueTrainOrder(int typeId);
+    boolean issueReviveOrder(int typeId);
 
     boolean issueResearchOrder(int typeId);
 

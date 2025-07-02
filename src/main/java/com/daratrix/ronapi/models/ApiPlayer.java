@@ -105,12 +105,12 @@ public class ApiPlayer implements IPlayer {
 
     @Override
     public int getArmyPop() {
-        return this.units.stream().filter(u -> !u.isWorker()).map(IUnit::getPopUsed).reduce(0, Integer::sum);
+        return this.units.stream().filter(u -> u.isAlive() && !u.isWorker()).map(IUnit::getPopUsed).reduce(0, Integer::sum);
     }
 
     @Override
     public int getWorkerPop() {
-        return this.units.stream().filter(IUnit::isWorker).map(IUnit::getPopUsed).reduce(0, Integer::sum);
+        return this.units.stream().filter(u -> u.isAlive() && u.isWorker()).map(IUnit::getPopUsed).reduce(0, Integer::sum);
     }
 
     @Override

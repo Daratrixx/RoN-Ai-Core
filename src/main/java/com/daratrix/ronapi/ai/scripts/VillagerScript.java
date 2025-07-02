@@ -97,6 +97,7 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Villagers.Barracks, 1);
         priorities.addPriority(TypeIds.Villagers.Farm, 3, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Villagers.Barracks, 2);
+        priorities.addPriority(TypeIds.Villagers.Altar, 1);
         priorities.addPriority(TypeIds.Villagers.Farm, 6, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Villagers.Blacksmith, 1);
         priorities.addPriority(TypeIds.Villagers.Barracks, 3);
@@ -118,6 +119,7 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Villagers.Villager, 16);
         priorities.addPriority(TypeIds.Villagers.Vindicator, 6);
         priorities.addPriority(TypeIds.Villagers.Pillager, 6);
+        priorities.addPriority(TypeIds.Villagers.HeroRoyalGuard, 1);
         priorities.addPriority(TypeIds.Villagers.Villager, 24);
         priorities.addPriority(TypeIds.Villagers.Vindicator, 12);
         priorities.addPriority(TypeIds.Villagers.Pillager, 12);

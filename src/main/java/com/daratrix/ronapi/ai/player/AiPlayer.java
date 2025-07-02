@@ -3,6 +3,7 @@ package com.daratrix.ronapi.ai.player;
 import com.daratrix.ronapi.ai.AiDependencies;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
+import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.models.ApiBuilding;
 import com.daratrix.ronapi.models.ApiPlayer;
 import com.daratrix.ronapi.models.ApiPlayerBase;
@@ -13,6 +14,7 @@ import com.solegendary.reignofnether.research.ResearchClientboundPacket;
 import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.resources.Resources;
 import com.solegendary.reignofnether.resources.ResourcesServerEvents;
+import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -28,6 +30,18 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
     private final Map<Integer, Integer> existingDone = new HashMap<>();
 
     private final List<IBuilding> constructingBuildings = new ArrayList<>();
+
+    private final List<IUnit> heroes = new ArrayList<>();
+
+    @Override
+    public boolean hasHero(int typeId) {
+        if (this.heroes.stream().anyMatch(u -> u.is(typeId))) {
+            return true;
+        }
+
+        var heroName = TypeIds.toHeroName(typeId);
+        return HeroUnit.getFallenHero(false, this.name, heroName) != null;
+    }
 
     @Override
     public int count(int priority) {
@@ -156,6 +170,12 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
             existing.putIfAbsent(unit.getTypeId(), 1);
             existingDone.computeIfPresent(unit.getTypeId(), (id, count) -> ++count);
             existingDone.putIfAbsent(unit.getTypeId(), 1);
+
+            if (unit.isHero()) {
+                this.heroes.removeIf(u -> u.getTypeId() == unit.getTypeId());
+                this.heroes.add(unit);
+            }
+
             return true;
         }
 

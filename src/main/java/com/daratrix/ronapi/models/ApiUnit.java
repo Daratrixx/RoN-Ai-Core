@@ -31,6 +31,7 @@ import java.util.List;
 public class ApiUnit implements IUnit {
     protected final Unit unit;
     protected final WorkerUnit worker;
+    protected final HeroUnit hero;
     protected final AttackerUnit attacker;
     protected final LivingEntity entity;
     protected final Mob mob;
@@ -40,6 +41,7 @@ public class ApiUnit implements IUnit {
         this.unit = unit;
         this.attacker = unit instanceof AttackerUnit a ? a : null;
         this.worker = unit instanceof WorkerUnit w ? w : null;
+        this.hero = unit instanceof HeroUnit h ? h : null;
         this.entity = unit instanceof LivingEntity e ? e : null;
         this.mob = unit instanceof Mob m ? m : null;
 
@@ -377,6 +379,11 @@ public class ApiUnit implements IUnit {
     @Override
     public boolean isWorker() {
         return this.worker != null;
+    }
+
+    @Override
+    public boolean isHero() {
+        return this.hero != null;
     }
 
     @Override

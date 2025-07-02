@@ -138,6 +138,7 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
         this.BuildMilitaryPortal(priorities, 1);
         priorities.addPriority(TypeIds.Piglins.Farm, 3, AiProductionPriorities.Location.FARM);
         this.BuildMilitaryPortal(priorities,  2);
+        priorities.addPriority(TypeIds.Piglins.Altar, 1);
         priorities.addPriority(TypeIds.Piglins.Farm, 6, AiProductionPriorities.Location.FARM);
         priorities.addPriority(TypeIds.Piglins.Bastion, 1);
         priorities.addPriority(TypeIds.Piglins.Farm, 9, AiProductionPriorities.Location.FARM);
@@ -156,6 +157,7 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Piglins.Headhunter, 4);
         priorities.addPriority(TypeIds.Piglins.Grunt, 16);
         priorities.addPriority(TypeIds.Piglins.Brute, 10);
+        priorities.addPriority(TypeIds.Piglins.HeroMerchant, 1);
         priorities.addPriority(TypeIds.Piglins.Headhunter, 12);
         priorities.addPriority(TypeIds.Piglins.Grunt, 30);
         priorities.addPriority(TypeIds.Piglins.Brute, 14);

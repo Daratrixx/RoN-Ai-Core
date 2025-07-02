@@ -18,6 +18,7 @@ import java.util.stream.Stream;
  * @author Daratrix
  */
 public interface IAiPlayer extends IPlayer {
+    public boolean hasHero(int typeId);
     public int count(int priority);
     public int count(int priority, AiProductionPriorities.Location location);
     public int countDone(int priority);

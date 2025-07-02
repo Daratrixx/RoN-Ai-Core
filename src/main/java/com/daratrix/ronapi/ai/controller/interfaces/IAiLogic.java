@@ -38,6 +38,15 @@ public interface IAiLogic {
         };
     }
 
+    default int getAltarTypeId() {
+        return switch (this.getFaction()) {
+            case VILLAGERS -> TypeIds.Villagers.Altar;
+            case MONSTERS -> TypeIds.Monsters.Altar;
+            case PIGLINS -> TypeIds.Piglins.Altar;
+            default -> 0;
+        };
+    }
+
     default int getTowerTypeId() {
         return switch (this.getFaction()) {
             case VILLAGERS -> TypeIds.Villagers.Watchtower;

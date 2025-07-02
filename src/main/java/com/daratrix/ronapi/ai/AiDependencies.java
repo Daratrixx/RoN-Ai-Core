@@ -90,6 +90,9 @@ public class AiDependencies {
         setProduction(TypeIds.Villagers.TownCentre,
                 TypeIds.Villagers.Villager);
 
+        setProduction(TypeIds.Villagers.Altar,
+                TypeIds.Villagers.HeroRoyalGuard);
+
         setProduction(TypeIds.Villagers.Blacksmith,
                 TypeIds.Villagers.IronGolem,
                 TypeIds.Villagers.GolemSmithing);
@@ -155,6 +158,9 @@ public class AiDependencies {
         setProduction(TypeIds.Monsters.Mausoleum,
                 TypeIds.Monsters.Villager);
 
+        setProduction(TypeIds.Monsters.Altar,
+                TypeIds.Monsters.HeroNecromancer);
+
         setProduction(TypeIds.Monsters.Laboratory,
                 TypeIds.Monsters.HusksUpgrade,
                 TypeIds.Monsters.StrayUpgrade,
@@ -207,6 +213,9 @@ public class AiDependencies {
 
         setProduction(TypeIds.Piglins.MainPortal,
                 TypeIds.Piglins.Grunt);
+
+        setProduction(TypeIds.Piglins.Altar,
+                TypeIds.Piglins.HeroMerchant);
 
         setProduction(TypeIds.Piglins.Bastion,
                 TypeIds.Piglins.BruteShield,
