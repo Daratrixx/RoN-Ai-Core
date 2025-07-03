@@ -1,5 +1,6 @@
 package com.daratrix.ronapi.apis;
 
+import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.Buildings;
 import com.solegendary.reignofnether.building.buildings.monsters.PumpkinFarm;
@@ -23,6 +24,7 @@ import net.minecraft.world.entity.LivingEntity;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class TypeIds {
 
@@ -149,9 +151,12 @@ public class TypeIds {
     }
 
     public static int get(Unit unit) {
-        if (unit instanceof com.solegendary.reignofnether.unit.units.villagers.RoyalGuardUnit) return Villagers.HeroRoyalGuard;
-        if (unit instanceof com.solegendary.reignofnether.unit.units.monsters.NecromancerUnit) return Monsters.HeroNecromancer;
-        if (unit instanceof com.solegendary.reignofnether.unit.units.piglins.PiglinMerchantUnit) return Piglins.HeroMerchant;
+        if (unit instanceof com.solegendary.reignofnether.unit.units.villagers.RoyalGuardUnit)
+            return Villagers.HeroRoyalGuard;
+        if (unit instanceof com.solegendary.reignofnether.unit.units.monsters.NecromancerUnit)
+            return Monsters.HeroNecromancer;
+        if (unit instanceof com.solegendary.reignofnether.unit.units.piglins.PiglinMerchantUnit)
+            return Piglins.HeroMerchant;
 
         if (unit instanceof com.solegendary.reignofnether.unit.units.villagers.VillagerUnit) return Villagers.Villager;
         if (unit instanceof com.solegendary.reignofnether.unit.units.villagers.VindicatorUnit)
@@ -171,7 +176,9 @@ public class TypeIds {
         if (unit instanceof com.solegendary.reignofnether.unit.units.monsters.SkeletonUnit) return Monsters.Skeleton;
         if (unit instanceof com.solegendary.reignofnether.unit.units.monsters.StrayUnit) return Monsters.Stray;
         if (unit instanceof com.solegendary.reignofnether.unit.units.monsters.CreeperUnit) return Monsters.Creeper;
-        if (unit instanceof com.solegendary.reignofnether.unit.units.monsters.WardenProd) return Monsters.Warden;
+        if (unit instanceof com.solegendary.reignofnether.unit.units.monsters.SpiderUnit) return Monsters.Spider;
+        if (unit instanceof com.solegendary.reignofnether.unit.units.monsters.PoisonSpiderUnit) return Monsters.PoisonSpider;
+        if (unit instanceof com.solegendary.reignofnether.unit.units.monsters.WardenUnit) return Monsters.Warden;
 
         if (unit instanceof com.solegendary.reignofnether.unit.units.piglins.GruntUnit) return Piglins.Grunt;
         if (unit instanceof com.solegendary.reignofnether.unit.units.piglins.BruteUnit) return Piglins.Brute;
@@ -336,6 +343,27 @@ public class TypeIds {
         public final static int Follow = add(UnitAction.FOLLOW);
         public final static int Return = add(UnitAction.RETURN_RESOURCES);
         public final static int Stop = add(UnitAction.STOP);
+
+        // abilities
+        public final static int Roar = add(UnitAction.ROAR);
+        public final static int MaceSlam = add(UnitAction.MACE_SLAM);
+        public final static int Taunt = add(UnitAction.TAUNTING_CRY);
+        public final static int Avatar = add(UnitAction.AVATAR);
+
+        public final static int CallLightning = add(UnitAction.CALL_LIGHTNING);
+        public final static int SonicBoom = add(UnitAction.CAST_SONIC_BOOM);
+        public final static int RaiseDead = add(UnitAction.RAISE_DEAD);
+        public final static int InsomniaCurse = add(UnitAction.INSOMNIA_CURSE);
+        public final static int BloodMoon = add(UnitAction.BLOOD_MOON);
+
+        public final static int BloodLust = add(UnitAction.BLOOD_LUST);
+        public final static int ShieldOn = add(UnitAction.ENABLE_SHIELD_RAISE);
+        public final static int ShieldOff = add(UnitAction.DISABLE_SHIELD_RAISE);
+        public final static int Firewall = add(UnitAction.SHOOT_FIREWALL);
+        public final static int WitherCloud = add(UnitAction.WITHER_CLOUD);
+        public final static int ThrowTnt = add(UnitAction.THROW_TNT);
+        public final static int FancyFeast = add(UnitAction.FANCY_FEAST);
+        public final static int LootExplosion = add(UnitAction.LOOT_EXPLOSION);
     }
 
     public static String toItemName(int typeId) {

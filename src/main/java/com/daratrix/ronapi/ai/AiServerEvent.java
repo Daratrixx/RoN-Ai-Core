@@ -45,7 +45,7 @@ public class AiServerEvent {
                 WorldApi.updateWorld(server);
                 for (AiController c : controllers) {
                     c.runAiArmy(server);
-                    c.runAiMicro(server);
+                    c. runAiMicro(server);
                 }
                 break;
             case 3:

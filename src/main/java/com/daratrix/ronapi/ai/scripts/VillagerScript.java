@@ -121,8 +121,9 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Villagers.Pillager, 6);
         priorities.addPriority(TypeIds.Villagers.HeroRoyalGuard, 1);
         priorities.addPriority(TypeIds.Villagers.Villager, 24);
+        priorities.addPriority(TypeIds.Villagers.Witch, 3);
         priorities.addPriority(TypeIds.Villagers.Vindicator, 12);
-        priorities.addPriority(TypeIds.Villagers.Pillager, 12);
+        priorities.addPriority(TypeIds.Villagers.Pillager, 9);
         priorities.addPriority(TypeIds.Villagers.Villager, 32);
         priorities.addPriority(TypeIds.Villagers.IronGolem, 3);
         priorities.addPriority(TypeIds.Villagers.Evoker, 3);

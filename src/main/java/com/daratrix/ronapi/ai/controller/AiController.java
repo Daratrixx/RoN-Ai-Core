@@ -1,6 +1,7 @@
 package com.daratrix.ronapi.ai.controller;
 
 import com.daratrix.ronapi.ai.AiDependencies;
+import com.daratrix.ronapi.ai.MicroUtils;
 import com.daratrix.ronapi.ai.controller.interfaces.IAiControllerPriorities;
 import com.daratrix.ronapi.ai.controller.interfaces.IAiLogic;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
@@ -68,6 +69,23 @@ public class AiController {
             return; // nothing to control
         }
 
+        for(var u : this.armyController.army) {
+            if(Math.random() >= 0.1) {
+                continue; // only micro about 10% of units every 4 seconds
+            }
+
+            var handler = this.logic.getMicroLogic(u.getTypeId());
+            if(handler != null) {
+                handler.accept(u);
+                continue;
+            }
+
+            handler = MicroUtils.getMicroLogic(u.getTypeId());
+            if(handler != null) {
+                handler.accept(u);
+                continue;
+            }
+        }
     }
 
     public void runAiArmy(MinecraftServer server) {

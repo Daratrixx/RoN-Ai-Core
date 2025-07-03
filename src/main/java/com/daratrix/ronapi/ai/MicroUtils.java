@@ -1,0 +1,134 @@
+package com.daratrix.ronapi.ai;
+
+import com.daratrix.ronapi.apis.TypeIds;
+import com.daratrix.ronapi.models.ApiUnit;
+import com.daratrix.ronapi.models.interfaces.IBoxed;
+import com.daratrix.ronapi.models.interfaces.IOrderable;
+import com.daratrix.ronapi.models.interfaces.IPlayerWidget;
+import com.daratrix.ronapi.models.interfaces.IUnit;
+import com.daratrix.ronapi.utils.GeometryUtils;
+import com.solegendary.reignofnether.ability.Ability;
+import com.solegendary.reignofnether.ability.abilities.*;
+import com.solegendary.reignofnether.building.BuildingPlacement;
+import com.solegendary.reignofnether.building.production.ProductionItems;
+import com.solegendary.reignofnether.research.ResearchServerEvents;
+import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
+import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
+import com.solegendary.reignofnether.unit.interfaces.Unit;
+import com.solegendary.reignofnether.unit.units.monsters.SpiderUnit;
+import com.solegendary.reignofnether.unit.units.monsters.WardenUnit;
+import com.solegendary.reignofnether.unit.units.piglins.BruteUnit;
+import com.solegendary.reignofnether.unit.units.piglins.WitherSkeletonUnit;
+import com.solegendary.reignofnether.unit.units.villagers.EvokerUnit;
+import com.solegendary.reignofnether.unit.units.villagers.RavagerUnit;
+import com.solegendary.reignofnether.unit.units.villagers.WitchUnit;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.function.Consumer;
+
+public class MicroUtils {
+
+    public static HashMap<Integer, Consumer<IPlayerWidget>> defaultMicroLogics = new HashMap<>();
+
+    static {
+        defaultMicroLogics.put(TypeIds.Villagers.Ravager, MicroUtils::microRavager);
+
+        defaultMicroLogics.put(TypeIds.Monsters.Warden, MicroUtils::microWarden);
+
+        defaultMicroLogics.put(TypeIds.Piglins.Brute, MicroUtils::microBrute);
+        defaultMicroLogics.put(TypeIds.Piglins.WitherSkeleton, MicroUtils::microWitherSkeleton);
+    }
+
+    public static Consumer<IPlayerWidget> getMicroLogic(int typeId) {
+        return defaultMicroLogics.getOrDefault(typeId, null);
+    }
+
+    public static void enableAutocastAbilities(IPlayerWidget u) {
+        if (u.is(TypeIds.Villagers.Witch)) {
+            u.getAbility(ThrowLingeringRegenPotion.class).setAutocast(true);
+        }
+
+        if (u.is(TypeIds.Villagers.Evoker)) {
+            //if (ResearchServerEvents.playerHasResearch(u.getOwnerName(), ProductionItems.RESEARCH_EVOKER_VEXES)) {
+            u.getAbility(CastSummonVexes.class).setAutocast(true); // fang/fang/vex
+            //}
+        }
+
+        if (u.isAnyOf(TypeIds.Monsters.Spider, TypeIds.Monsters.PoisonSpider)) {
+            //if (ResearchServerEvents.playerHasResearch(u.getOwnerName(), ProductionItems.RESEARCH_SPIDER_WEBS)) {
+            u.getAbility(SpinWebs.class).setAutocast(true);
+            //}
+        }
+    }
+
+    public static void microRavager(IPlayerWidget unit) {
+        var roarAbility = unit.getAbility(Roar.class);
+        if (!roarAbility.isOffCooldown()) {
+            return;
+        }
+
+        var target = unit.getAttackTarget();
+        if (target instanceof LivingEntity e && (!(target instanceof Unit u) || !u.getOwnerName().equals(unit.getOwnerName()) && GeometryUtils.isWithinDistance(unit, e, 4))) {
+            unit.issueOrder(TypeIds.Orders.Roar);
+            return;
+        }
+    }
+
+    public static void microWarden(IPlayerWidget unit) {
+        var sonicBoomAbility = unit.getAbility(SonicBoom.class);
+        if (!sonicBoomAbility.isOffCooldown()) {
+            return;
+        }
+
+        var target = unit.getAttackTarget();
+        if (target instanceof LivingEntity e && e.getHealth() > 30 && (!(target instanceof Unit u) || !u.getOwnerName().equals(unit.getOwnerName()))) {
+            unit.issueWidgetOrder(e, TypeIds.Orders.SonicBoom);
+            return;
+        }
+
+        if (target instanceof BuildingPlacement b && !b.ownerName.equals(unit.getOwnerName())) {
+            unit.issueWidgetOrder(b, TypeIds.Orders.SonicBoom);
+            return;
+        }
+    }
+
+    public static void microBrute(IPlayerWidget unit) {
+        var shieldAbility = unit.getAbility(ToggleShield.class);
+        var bloodlustAbility = unit.getAbility(Bloodlust.class);
+
+        var target = unit.getAttackTarget();
+        if (target instanceof LivingEntity e && (!(target instanceof Unit u) || !u.getOwnerName().equals(unit.getOwnerName())) && GeometryUtils.isWithinDistance(unit, e, 10)) {
+            if (bloodlustAbility.isOffCooldown()) unit.issueOrder(TypeIds.Orders.BloodLust);
+            if (target instanceof RangedAttackerUnit) {
+                if (!shieldAbility.isAutocasting()) unit.issueOrder(TypeIds.Orders.ShieldOn);
+            }
+            return;
+        }
+
+        if (target instanceof BuildingPlacement b && !b.ownerName.equals(unit.getOwnerName()) && GeometryUtils.isWithinDistance((IBoxed) b, unit, 4)) {
+            if (bloodlustAbility.isOffCooldown()) unit.issueOrder(TypeIds.Orders.BloodLust);
+            if (!shieldAbility.isAutocasting()) unit.issueOrder(TypeIds.Orders.ShieldOn);
+            return;
+        }
+
+        if (shieldAbility.isAutocasting()) unit.issueOrder(TypeIds.Orders.ShieldOff);
+    }
+
+    public static void microWitherSkeleton(IPlayerWidget unit) {
+        var witherCloudAbility = unit.getAbility(WitherCloud.class);
+        if (!witherCloudAbility.isOffCooldown()) {
+            return;
+        }
+
+        var target = unit.getAttackTarget();
+        if (target instanceof LivingEntity e && (!(target instanceof Unit u) || !u.getOwnerName().equals(unit.getOwnerName())) && GeometryUtils.isWithinDistance(unit, e, 4)) {
+            unit.issueOrder(TypeIds.Orders.WitherCloud);
+            return;
+        }
+    }
+}

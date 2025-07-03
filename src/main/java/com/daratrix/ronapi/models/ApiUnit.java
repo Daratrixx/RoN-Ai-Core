@@ -11,12 +11,14 @@ import com.daratrix.ronapi.models.interfaces.IBuilding;
 import com.daratrix.ronapi.models.interfaces.IOrder;
 import com.daratrix.ronapi.models.interfaces.IUnit;
 import com.daratrix.ronapi.models.interfaces.IWidget;
+import com.solegendary.reignofnether.ability.Ability;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.BuildingServerEvents;
 import com.solegendary.reignofnether.resources.*;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
+import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
 import com.solegendary.reignofnether.unit.interfaces.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,6 +26,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.Rotation;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author Daratrix
@@ -65,6 +68,23 @@ public class ApiUnit implements IUnit {
         }
 
         return this.getCurrentOrderId() == 0;
+    }
+
+    @Override
+    public Stream<Ability> getAbilities() {
+        return this.unit.getAbilities().stream();
+    }
+
+    @Override
+    public <T extends Ability> T getAbility(Class<T> abiltiyClass) {
+        var abilities = this.unit.getAbilities();
+        for (var ability : abilities) {
+            if (abiltiyClass.isInstance(ability)) {
+                return abiltiyClass.cast(ability);
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -119,7 +139,7 @@ public class ApiUnit implements IUnit {
 
             if (target != null) {
                 var checkpoints = this.unit.getCheckpoints();
-                if(!checkpoints.isEmpty()) {
+                if (!checkpoints.isEmpty()) {
                     var checkpoint = checkpoints.get(0);
                     if (!checkpoint.isGreen && ResourceSources.isHuntableAnimal(target)) {
                         return TypeIds.Resources.FoodEntity;
@@ -404,5 +424,24 @@ public class ApiUnit implements IUnit {
     @Override
     public boolean isCarryingItems() {
         return !this.unit.getItems().isEmpty();
+    }
+
+    @Override
+    public Object getAttackTarget() {
+        var targetEntity = this.mob != null
+                ? this.mob.getTarget()
+                : null;
+        if (targetEntity != null) {
+            return targetEntity;
+        }
+
+        var targetBuilding = this.attacker != null && this.attacker.getAttackBuildingGoal() instanceof MeleeAttackBuildingGoal g
+                ? g.getBuildingTarget()
+                : null;
+        if (targetBuilding != null) {
+            return targetBuilding;
+        }
+
+        return null;
     }
 }

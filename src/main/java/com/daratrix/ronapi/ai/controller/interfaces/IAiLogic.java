@@ -2,7 +2,12 @@ package com.daratrix.ronapi.ai.controller.interfaces;
 
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.apis.TypeIds;
+import com.daratrix.ronapi.models.ApiUnit;
+import com.daratrix.ronapi.models.interfaces.IPlayerWidget;
 import com.solegendary.reignofnether.util.Faction;
+
+import java.util.HashMap;
+import java.util.function.Consumer;
 
 public interface IAiLogic {
     public String getName();
@@ -88,11 +93,14 @@ public interface IAiLogic {
     }
 
     void setMaxPopulation(int maxPopulation);
+
     int getMaxPopulation();
 
+    public Consumer<IPlayerWidget> getMicroLogic(int typeId);
 
     public abstract class AbstractAiLogic implements IAiLogic {
         protected int maxPopulation = 150;
+        protected HashMap<Integer, Consumer<IPlayerWidget>> microLogics = new HashMap<>();
 
         public void setMaxPopulation(int maxPopulation) {
             this.maxPopulation = maxPopulation;
@@ -100,6 +108,11 @@ public interface IAiLogic {
 
         public int getMaxPopulation() {
             return this.maxPopulation;
+        }
+
+        @Override
+        public Consumer<IPlayerWidget> getMicroLogic(int typeId) {
+            return this.microLogics.getOrDefault(typeId, null);
         }
     }
 }

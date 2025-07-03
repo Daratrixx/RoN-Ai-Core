@@ -1,6 +1,7 @@
 package com.daratrix.ronapi.ai.player;
 
 import com.daratrix.ronapi.ai.AiDependencies;
+import com.daratrix.ronapi.ai.MicroUtils;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.apis.TypeIds;
@@ -170,6 +171,8 @@ public class AiPlayer extends ApiPlayer implements IAiPlayer {
             existing.putIfAbsent(unit.getTypeId(), 1);
             existingDone.computeIfPresent(unit.getTypeId(), (id, count) -> ++count);
             existingDone.putIfAbsent(unit.getTypeId(), 1);
+
+            MicroUtils.enableAutocastAbilities(unit);
 
             if (unit.isHero()) {
                 this.heroes.removeIf(u -> u.getTypeId() == unit.getTypeId());
