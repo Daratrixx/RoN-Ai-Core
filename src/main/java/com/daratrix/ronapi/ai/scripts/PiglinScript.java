@@ -8,6 +8,15 @@ import com.daratrix.ronapi.ai.priorities.AiArmyPriorities;
 import com.daratrix.ronapi.ai.priorities.AiHarvestPriorities;
 import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.apis.TypeIds;
+import com.daratrix.ronapi.models.interfaces.IHero;
+import com.solegendary.reignofnether.ability.heroAbilities.monster.BloodMoon;
+import com.solegendary.reignofnether.ability.heroAbilities.monster.InsomniaCurse;
+import com.solegendary.reignofnether.ability.heroAbilities.monster.RaiseDead;
+import com.solegendary.reignofnether.ability.heroAbilities.monster.SoulSiphonPassive;
+import com.solegendary.reignofnether.ability.heroAbilities.piglin.FancyFeast;
+import com.solegendary.reignofnether.ability.heroAbilities.piglin.GreedIsGoodPassive;
+import com.solegendary.reignofnether.ability.heroAbilities.piglin.LootExplosion;
+import com.solegendary.reignofnether.ability.heroAbilities.piglin.ThrowTNT;
 import com.solegendary.reignofnether.util.Faction;
 
 public class PiglinScript extends IAiLogic.AbstractAiLogic {
@@ -18,6 +27,24 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
 
     public static final String name = "PiglinScript";
 
+    public PiglinScript() {
+        super();
+
+        this.heroSkillLogics.put(TypeIds.Piglins.HeroMerchant, PiglinScript::MerchantSkills);
+    }
+
+    private static void MerchantSkills(IHero hero) {
+        hero.upgradeSkill(ThrowTNT.class, 1);
+        hero.upgradeSkill(FancyFeast.class, 1);
+        hero.upgradeSkill(GreedIsGoodPassive.class, 1);
+        hero.upgradeSkill(ThrowTNT.class, 2);
+        hero.upgradeSkill(FancyFeast.class, 2);
+        hero.upgradeSkill(LootExplosion.class, 1);
+        hero.upgradeSkill(GreedIsGoodPassive.class, 2);
+        hero.upgradeSkill(ThrowTNT.class, 3);
+        hero.upgradeSkill(FancyFeast.class, 3);
+        hero.upgradeSkill(GreedIsGoodPassive.class, 3);
+    }
 
     protected int portalCount = 0;
     protected int civilianPortalCount = 0;

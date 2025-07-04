@@ -36,6 +36,25 @@ public class ApiUnit implements IUnit {
     protected final WorkerUnit worker;
     protected final HeroUnit hero;
     protected final AttackerUnit attacker;
+
+    @Override
+    public int getMana() {
+        if (this.hero == null) {
+            return 0;
+        }
+
+        return (int) this.hero.getMana();
+    }
+
+    @Override
+    public int getMaxMana() {
+        if (this.hero == null) {
+            return 0;
+        }
+
+        return (int) this.hero.getMaxMana();
+    }
+
     protected final LivingEntity entity;
     protected final Mob mob;
     protected final int typeId;

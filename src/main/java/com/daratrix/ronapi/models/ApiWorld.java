@@ -11,6 +11,7 @@ import com.solegendary.reignofnether.resources.ResourceName;
 import com.solegendary.reignofnether.resources.ResourceSource;
 import com.solegendary.reignofnether.resources.ResourceSources;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
+import com.solegendary.reignofnether.unit.interfaces.HeroUnit;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -149,7 +150,7 @@ public class ApiWorld {
             return apiUnit; // already tracked
         }
 
-        apiUnit = new ApiUnit(unit);
+        apiUnit = unit instanceof HeroUnit ? new ApiHero(unit) : new ApiUnit(unit);
         units.put(unit, apiUnit);
         //System.out.println("Tracking unit " + apiUnit.getName() + " (" + apiUnit.getOwnerName() + ")");
 

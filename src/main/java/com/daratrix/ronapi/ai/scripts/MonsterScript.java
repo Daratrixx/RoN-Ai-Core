@@ -8,6 +8,11 @@ import com.daratrix.ronapi.ai.priorities.AiArmyPriorities;
 import com.daratrix.ronapi.ai.priorities.AiHarvestPriorities;
 import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.apis.TypeIds;
+import com.daratrix.ronapi.models.interfaces.IHero;
+import com.solegendary.reignofnether.ability.heroAbilities.monster.BloodMoon;
+import com.solegendary.reignofnether.ability.heroAbilities.monster.InsomniaCurse;
+import com.solegendary.reignofnether.ability.heroAbilities.monster.RaiseDead;
+import com.solegendary.reignofnether.ability.heroAbilities.monster.SoulSiphonPassive;
 import com.solegendary.reignofnether.util.Faction;
 
 public class MonsterScript extends IAiLogic.AbstractAiLogic {
@@ -17,6 +22,25 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
     }
 
     public static final String name = "MonsterScript";
+
+    public MonsterScript() {
+        super();
+
+        this.heroSkillLogics.put(TypeIds.Monsters.HeroNecromancer, MonsterScript::NecromancerSkills);
+    }
+
+    private static void NecromancerSkills(IHero hero) {
+        hero.upgradeSkill(RaiseDead.class, 1);
+        hero.upgradeSkill(InsomniaCurse.class, 1);
+        hero.upgradeSkill(SoulSiphonPassive.class, 1);
+        hero.upgradeSkill(RaiseDead.class, 2);
+        hero.upgradeSkill(InsomniaCurse.class, 2);
+        hero.upgradeSkill(BloodMoon.class, 1);
+        hero.upgradeSkill(SoulSiphonPassive.class, 2);
+        hero.upgradeSkill(RaiseDead.class, 3);
+        hero.upgradeSkill(InsomniaCurse.class, 3);
+        hero.upgradeSkill(SoulSiphonPassive.class, 3);
+    }
 
     private void setHarvestPriorities(IAiPlayer player, AiHarvestPriorities harvestingPriorities) {
         var farmCount = player.countDone(this.getFarmTypeId());

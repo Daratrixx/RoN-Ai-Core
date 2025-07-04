@@ -8,6 +8,15 @@ import com.daratrix.ronapi.ai.priorities.AiHarvestPriorities;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
+import com.daratrix.ronapi.models.interfaces.IHero;
+import com.solegendary.reignofnether.ability.heroAbilities.piglin.FancyFeast;
+import com.solegendary.reignofnether.ability.heroAbilities.piglin.GreedIsGoodPassive;
+import com.solegendary.reignofnether.ability.heroAbilities.piglin.LootExplosion;
+import com.solegendary.reignofnether.ability.heroAbilities.piglin.ThrowTNT;
+import com.solegendary.reignofnether.ability.heroAbilities.villager.Avatar;
+import com.solegendary.reignofnether.ability.heroAbilities.villager.BattleRagePassive;
+import com.solegendary.reignofnether.ability.heroAbilities.villager.MaceSlam;
+import com.solegendary.reignofnether.ability.heroAbilities.villager.TauntingCry;
 import com.solegendary.reignofnether.util.Faction;
 
 public class VillagerScript extends IAiLogic.AbstractAiLogic {
@@ -17,6 +26,25 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
     }
 
     public static final String name = "VillagerScript";
+
+    public VillagerScript() {
+        super();
+
+        this.heroSkillLogics.put(TypeIds.Villagers.HeroRoyalGuard, VillagerScript::RoyalGuardSkills);
+    }
+
+    private static void RoyalGuardSkills(IHero hero) {
+        hero.upgradeSkill(MaceSlam.class, 1);
+        hero.upgradeSkill(BattleRagePassive.class, 1);
+        hero.upgradeSkill(TauntingCry.class, 1);
+        hero.upgradeSkill(MaceSlam.class, 2);
+        hero.upgradeSkill(BattleRagePassive.class, 2);
+        hero.upgradeSkill(Avatar.class, 1);
+        hero.upgradeSkill(TauntingCry.class, 2);
+        hero.upgradeSkill(MaceSlam.class, 3);
+        hero.upgradeSkill(BattleRagePassive.class, 3);
+        hero.upgradeSkill(TauntingCry.class, 3);
+    }
 
     private void setHarvestPriorities(IAiPlayer player, AiHarvestPriorities harvestingPriorities) {
         var farmCount = player.countDone(this.getFarmTypeId());

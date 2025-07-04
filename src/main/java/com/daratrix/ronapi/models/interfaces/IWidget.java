@@ -18,6 +18,12 @@ public interface IWidget extends ILocated {
     public String getName();
     public int getHealth();
     public int getMaxHealth();
+    default public int getMana(){
+        return 0;
+    }
+    default public int getMaxMana() {
+        return 0;
+    }
     public boolean isAlive();
     public boolean isDead();
     public int getTypeId();

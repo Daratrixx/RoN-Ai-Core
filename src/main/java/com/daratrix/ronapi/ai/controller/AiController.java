@@ -9,6 +9,7 @@ import com.daratrix.ronapi.ai.priorities.AiProductionPriorities;
 import com.daratrix.ronapi.apis.BuildingApi;
 import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.apis.WorldApi;
+import com.daratrix.ronapi.models.ApiHero;
 import com.daratrix.ronapi.models.interfaces.IBuilding;
 import com.daratrix.ronapi.models.interfaces.IOrderable;
 import com.daratrix.ronapi.models.interfaces.IUnit;
@@ -69,19 +70,28 @@ public class AiController {
             return; // nothing to control
         }
 
-        for(var u : this.armyController.army) {
-            if(Math.random() >= 0.1) {
-                continue; // only micro about 10% of units every 4 seconds
+        for (var u : this.armyController.army) {
+            // always attempt to learn skills
+            if (u instanceof ApiHero h) {
+                var skillHandler = this.logic.getHeroSkillLogic(h.getTypeId());
+                if (skillHandler != null) {
+                    skillHandler.accept(h);
+                }
+            }
+
+            // every 2 seconds, only 30%/10% chance to micro each heroes/units
+            if (Math.random() >= (u.isHero() ? 0.3 : 0.1)) {
+                continue;
             }
 
             var handler = this.logic.getMicroLogic(u.getTypeId());
-            if(handler != null) {
+            if (handler != null) {
                 handler.accept(u);
                 continue;
             }
 
             handler = MicroUtils.getMicroLogic(u.getTypeId());
-            if(handler != null) {
+            if (handler != null) {
                 handler.accept(u);
                 continue;
             }
