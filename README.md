@@ -63,10 +63,10 @@ This project consists of:
     - [ ] Bug: reassigned workers sometimes do not switch tasks
     - [ ] Bug: sometimes multiple workers are assigned to the same farm when there are farms with no workers assigned
     - [ ] Bug: sometimes the AI looses track of worker assignments
-- 0% Hero management
-  - [ ] Train Heroes
-  - [ ] Learn Hero Skills
-  - [ ] Resurrect dead Heroes
+- 100% Hero management
+  - [X] Train Heroes
+  - [X] Resurrect dead Heroes
+  - [X] Learn Hero Skills
 - 20% Army management
   - [X] Army gather point
     - [X] Bug: Army gather point is sometimes on the wrong side of the base
@@ -85,7 +85,7 @@ This project consists of:
   - [ ] Micro
     - [ ] Focus-fire
     - [ ] Pullback
-    - [ ] Spell-casting // will most likely use the wave survival code
+    - [X] Spell-casting
   - [ ] Map analysis
     - [ ] Routing
     - [ ] Choke points
