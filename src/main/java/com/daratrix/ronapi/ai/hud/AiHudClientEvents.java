@@ -53,7 +53,7 @@ public class AiHudClientEvents {
         // ------------------------------
         // Start buttons (spectator only)
         // ------------------------------
-        if (!PlayerClientEvents.isRTSPlayer && !PlayerClientEvents.rtsLocked) {
+        if (!PlayerClientEvents.rtsLocked) {
             if (!AiStartButtons.villagerStartButton.isHidden.get()) {
                 AiStartButtons.villagerStartButton.render(evt.getGuiGraphics(),
                         screenWidth - (AiStartButtons.ICON_SIZE * 6),
