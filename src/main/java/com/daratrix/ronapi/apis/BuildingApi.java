@@ -80,7 +80,7 @@ public class BuildingApi {
 
         var itemName = TypeIds.toStructureName(typeId);
         assert MC.level != null;
-        blocks = BuildingBlockData.getBuildingBlocks(itemName, MC.level);
+        blocks = BuildingBlockData.getBuildingBlocksFromNbt(itemName, MC.level);
         buildingBlocks.put(typeId, blocks);
 
         return blocks;
