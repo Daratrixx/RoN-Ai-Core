@@ -85,11 +85,11 @@ public interface IAiLogic {
     }
 
     default boolean useWarpten() {
-        return true;
+        return false;
     }
 
     default boolean useGreedisgood() {
-        return true;
+        return false;
     }
 
     void setMaxPopulation(int maxPopulation);

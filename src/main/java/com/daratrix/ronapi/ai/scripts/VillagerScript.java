@@ -193,14 +193,4 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
         this.setResearchPriorities(player, priorities.getResearchPriorities());
         this.setArmyPriorities(player, priorities.getArmyPriorities());
     }
-
-    @Override
-    public boolean useWarpten() {
-        return false;
-    }
-
-    @Override
-    public boolean useGreedisgood() {
-        return false;
-    }
 }
