@@ -81,11 +81,11 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
         int productionPower = 3 // TC buffer
                 + player.countDone(TypeIds.Monsters.Mausoleum) * 3
                 + player.countDone(TypeIds.Monsters.Graveyard) * 2
-                + player.countDone(TypeIds.Monsters.Dungeon) * 3
-                + player.countDone(TypeIds.Monsters.SpiderLair) * 3
+                + player.countDone(TypeIds.Monsters.Dungeon) * 2
+                + player.countDone(TypeIds.Monsters.SpiderLair) * 2
                 + player.countDone(TypeIds.Monsters.Stronghold) * 4;
         if (player.getPopCap() < this.getMaxPopulation() && player.getPopCap() - player.getPopUsed() < productionPower) {
-            priorities.addPriority(TypeIds.Monsters.House, 1 + (int) (productionPower / 10) + player.countDone(TypeIds.Monsters.House));
+            priorities.addPriority(TypeIds.Monsters.House, 1 + (int) (productionPower / 10) + player.countDone(TypeIds.Monsters.House)).atSide();
         }
 
         // dynamically create stockpiles every time nearest resource distance becomes too high
@@ -101,24 +101,24 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
 
         //priorities.addPriority(TypeIds.Monsters.Stockpile, 1);
         //priorities.addPriority(TypeIds.Monsters.House, 1);
-        priorities.addPriority(TypeIds.Monsters.Farm, 3);
+        priorities.addPriority(TypeIds.Monsters.Farm, 3).atFarm();
         //priorities.addPriority(TypeIds.Monsters.House, 2);
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 1);
-        priorities.addPriority(TypeIds.Monsters.Farm, 6);
-        priorities.addPriority(TypeIds.Monsters.Altar, 1);
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 2);
-        priorities.addPriority(TypeIds.Monsters.Laboratory, 1);
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 3);
-        priorities.addPriority(TypeIds.Monsters.Dungeon, 1);
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 4);
-        priorities.addPriority(TypeIds.Monsters.SpiderLair, 1);
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 5);
-        priorities.addPriority(TypeIds.Monsters.Farm, 9);
-        priorities.addPriority(TypeIds.Monsters.Stronghold, 1);
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 6);
-        priorities.addPriority(TypeIds.Monsters.Dungeon, 2);
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 7);
-        priorities.addPriority(TypeIds.Monsters.Farm, 12);
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 1).atFront();
+        priorities.addPriority(TypeIds.Monsters.Farm, 6).atFarm();
+        priorities.addPriority(TypeIds.Monsters.Altar, 1).atBack();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 2).atFront();
+        priorities.addPriority(TypeIds.Monsters.Laboratory, 1).atBack();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 3).atFront();
+        priorities.addPriority(TypeIds.Monsters.Dungeon, 1).atFront();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 4).atFront();
+        priorities.addPriority(TypeIds.Monsters.SpiderLair, 1).atBack();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 5).atFront();
+        priorities.addPriority(TypeIds.Monsters.Farm, 9).atFarm();
+        priorities.addPriority(TypeIds.Monsters.Stronghold, 1).atFront();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 6).atFront();
+        priorities.addPriority(TypeIds.Monsters.Dungeon, 2).atFront();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 7).atFront();
+        priorities.addPriority(TypeIds.Monsters.Farm, 12).atFarm();
     }
 
     public void setUnitPriorities(IAiPlayer player, AiProductionPriorities priorities) {

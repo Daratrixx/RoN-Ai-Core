@@ -56,19 +56,34 @@ public class AiProductionPriorities extends AiAbstractPriorities<AiProductionPri
             this.proximity = proximity;
             return this;
         }
+
+        public AiProductionPriority atFront() {
+            this.proximity = Proximity.FRONT;
+            return this;
+        }
+
+        public AiProductionPriority atBack() {
+            this.proximity = Proximity.BACK;
+            return this;
+        }
+
+        public AiProductionPriority atSide() {
+            this.proximity = Proximity.SIDE;
+            return this;
+        }
     }
 
     public enum Location {
         ANY,
+        CAPITOL,
         MAIN,
         FARM,
     }
 
     public enum Proximity {
         RANDOM,
-        CONCENTRIC,
-        EDGE,
         FRONT,
         BACK,
+        SIDE,
     }
 }

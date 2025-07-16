@@ -14,13 +14,16 @@ public class SpiralCounter {
         this.z = 0;
     }
 
-    public void next() {
+    public boolean next() {
+        boolean expanded = false;
         ++this.n;
         if (this.n >= this.s * this.s) {
             this.s += 2;
+            expanded = true;
         }
         this.updateX();
         this.updateZ();
+        return expanded;
     }
 
     /**

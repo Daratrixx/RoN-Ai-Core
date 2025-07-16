@@ -377,7 +377,7 @@ public class AiController {
             }
 
             for (var builder : availableWorkers) {
-                var buildingLocation = this.getBuildingLocation(builder, p.typeId, p.location);
+                var buildingLocation = this.getBuildingLocation(builder, p.typeId, p.location, p.proximity);
 
                 if (buildingLocation != null && builder.issueBuildOrder(buildingLocation, p.typeId)) {
                     ++builderCount;
@@ -397,14 +397,13 @@ public class AiController {
         this.logger.log("Completed all priorities");
     }
 
-    public BlockPos getBuildingLocation(IUnit builder, int typeId, AiProductionPriorities.Location location) {
-        int maxRange = 12;
+    public BlockPos getBuildingLocation(IUnit builder, int typeId, AiProductionPriorities.Location location, AiProductionPriorities.Proximity proximity) {
         if (this.capitol == null) {
-            this.logger.log("Building around Builder at ANY(0-" + maxRange + ") range");
-            return BuildingApi.getBuildingLocation(builder.getPos(), typeId, player.getName(), 0, maxRange, 0, 1);
+            this.logger.log("Building around Builder at CAPITOL-RANDOM");
+            return BuildingApi.getBuildingLocation(builder.getPos(), typeId, player.getName(), AiProductionPriorities.Location.CAPITOL, AiProductionPriorities.Proximity.RANDOM);
         }
 
-        return BuildingApi.getBuildingLocation(builder.getPos(), typeId, player.getName(), location);
+        return BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), location, proximity);
     }
 
     public void runAiProduceHero(MinecraftServer server, int typeId) {

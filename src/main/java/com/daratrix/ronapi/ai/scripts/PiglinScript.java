@@ -56,7 +56,7 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
             return;
         }
 
-        priorities.addPriority(TypeIds.Piglins.Portal, count);
+        priorities.addPriority(TypeIds.Piglins.Portal, count).atSide();
         this.portalCount = count;
     }
 
@@ -166,15 +166,15 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Piglins.Farm, 3).atFarm();
         this.BuildMilitaryPortal(priorities,  2);
         priorities.addPriority(TypeIds.Piglins.Farm, 6).atFarm();
-        priorities.addPriority(TypeIds.Piglins.Altar, 1);
-        priorities.addPriority(TypeIds.Piglins.Bastion, 1);
+        priorities.addPriority(TypeIds.Piglins.Altar, 1).atBack();
+        priorities.addPriority(TypeIds.Piglins.Bastion, 1).atFront();
         priorities.addPriority(TypeIds.Piglins.Farm, 9).atFarm();
-        priorities.addPriority(TypeIds.Piglins.HoglinStables, 1);
-        priorities.addPriority(TypeIds.Piglins.FlameSanctuary, 1);
+        priorities.addPriority(TypeIds.Piglins.HoglinStables, 1).atBack();
+        priorities.addPriority(TypeIds.Piglins.FlameSanctuary, 1).atBack();
         this.BuildMilitaryPortal(priorities,  4);
         priorities.addPriority(TypeIds.Piglins.Farm, 12).atFarm();
-        priorities.addPriority(TypeIds.Piglins.WitherShrine, 1);
-        priorities.addPriority(TypeIds.Piglins.Fortress, 1);
+        priorities.addPriority(TypeIds.Piglins.WitherShrine, 1).atBack();
+        priorities.addPriority(TypeIds.Piglins.Fortress, 1).atFront();
         this.BuildMilitaryPortal(priorities,  5);
     }
 

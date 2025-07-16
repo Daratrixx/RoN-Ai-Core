@@ -27,10 +27,13 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.*;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +50,7 @@ public class BuildingApi {
     private static final Map<Integer, Boolean> mustCheckNetherTerrain = new HashMap<>();
     private static final ArrayList<BlockPos> farmSpiralPositions = new ArrayList<>();
     private static final ArrayList<BlockPos> mainSpiralPositions = new ArrayList<>();
+    private static final ArrayList<ArrayList<Vec2>> excentricSpiralPositions = new ArrayList<>();
 
     public static ArrayList<BuildingBlock> getFoundationBlocks(int typeId) {
         var blocks = foundationBlocks.getOrDefault(typeId, null);
@@ -260,8 +264,6 @@ public class BuildingApi {
 
     // don't allow building inside/on top of resources
     private static boolean isOverlappingResources(AABB boundingBox) {
-        resources.clear();
-        WorldApi.getSingleton().resources.values().stream().distinct().collect(Collectors.toCollection(() -> resources));
         for (IResource r : resources) {
             if (GeometryUtils.colliding(boundingBox, r.getBoundingBox())) {
                 //System.out.println("Skipping location due to colliding with resources");
@@ -271,6 +273,8 @@ public class BuildingApi {
 
         return false;
     }
+
+    private static final ArrayList<IBuilding> buildings = new ArrayList<>();
 
     // disallow the building borders from overlapping any other's, even if they don't collide physical blocks
     // also allow for a 1 block gap between buildings so units can spawn and stairs don't have their blockstates messed up
@@ -295,5 +299,167 @@ public class BuildingApi {
         }
 
         return true;
+    }
+
+
+    public static BlockPos getBuildingLocation(BlockPos lookupOrigin, int typeId, String playerName, AiProductionPriorities.Location location, AiProductionPriorities.Proximity proximity) {
+        var boxOffset = 5;
+        var offset = 1;
+        if (location == AiProductionPriorities.Location.FARM || location == AiProductionPriorities.Location.CAPITOL) {
+            offset = 0;
+        }
+
+        var buildingBlocks = getBuildingBlocks(typeId);
+        var checkNeverTerrain = mustCheckNeverTerrain(typeId, playerName);
+        var testingBlocks = getTestingBlocks(typeId);
+
+        var potentialPositions = getPotentialPositions(lookupOrigin, location, proximity);
+
+        resources.clear();
+        WorldApi.getSingleton().resources.values().stream().distinct().collect(Collectors.toCollection(() -> resources));
+        buildings.clear();
+        WorldApi.getSingleton().buildings.values().stream().distinct().collect(Collectors.toCollection(() -> buildings));
+
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        BlockPos.MutableBlockPos min = new BlockPos.MutableBlockPos();
+        BlockPos.MutableBlockPos max = new BlockPos.MutableBlockPos();
+        GeometryUtils.setMinMaxFromBlocks(min, max, testingBlocks.stream().map(BuildingBlock::getBlockPos));
+        max.move(1, 1, 1);
+        var w = Math.abs(max.getX() - min.getX());
+        var l = Math.abs(max.getZ() - min.getZ());
+        var foundationBlocks = getFoundationBlocks(typeId);
+        for (Vec2 potentialPosition : potentialPositions) {
+            var x = potentialPosition.x;
+            var signX = Math.signum(x);
+            var z = potentialPosition.y;
+            var signZ = Math.signum(z);
+            pos.set(lookupOrigin.getX() + boxOffset * signX + x * (offset + w / 2.),
+                    0,
+                    lookupOrigin.getZ() + boxOffset * signZ + z * (offset + l / 2.));
+            WorldApi.getTerrainHeight(pos); // also updates pos.setY()
+
+            // offset buildingBlocks by pos and store the results in testingBlocks
+            offsetBuildingBlocks(buildingBlocks, pos, testingBlocks);
+            GeometryUtils.setMinMaxFromBlocks(min, max, testingBlocks.stream().map(BuildingBlock::getBlockPos));
+            max.move(1, 1, 1);
+            var boundingBox = GeometryUtils.getBoundingBox(min, max, offset);
+
+            if (isBuildingPlacementWithinWorldBorder(boundingBox)
+                    && !isOverlappingResources(boundingBox)
+                    && !isOverlappingAnyOtherBuilding(boundingBox)
+                    && !isBuildingPlacementInvalid(testingBlocks, foundationBlocks, checkNeverTerrain)) {
+                return pos;
+            }
+
+            spiral.next();
+        }
+
+        //System.err.println("Failed to find location for " + TypeIds.toItemName(typeId));
+        return null;
+    }
+
+    private static ArrayList<Vec2> getPotentialPositionsOutput;
+
+    private static ArrayList<Vec2> getPotentialPositions(BlockPos origin, AiProductionPriorities.Location location, AiProductionPriorities.Proximity proximity) {
+        getPotentialPositionsOutput.clear();
+        var toCenter = new Vec2(-origin.getX(), -origin.getZ());
+        switch (proximity) {
+            case RANDOM -> sortRandom(toCenter);
+            case FRONT -> sortFront(toCenter);
+            case BACK -> sortBack(toCenter);
+            case SIDE -> sortSide(toCenter);
+        }
+
+        int shift = -1;
+        switch (location) {
+            case ANY -> shift = 4; // start building at the edge of the farm area
+            case CAPITOL -> shift = 0; // start building at the center
+            case MAIN -> shift = 6;  // start building outside the farm area
+            case FARM -> shift = 0;  // start building at the center
+        }
+
+        for (int i = 0; i < excentricSpiralPositions.size(); ++i) {
+            getPotentialPositionsOutput.addAll(excentricSpiralPositions.get((i + shift) % excentricSpiralPositions.size()));
+        }
+
+        return getPotentialPositionsOutput;
+    }
+
+    private static void sortRandom(Vec2 toCenter) {
+        var comparator = compareRandom(toCenter);
+        sortPositions(comparator);
+    }
+
+    private static void sortFront(Vec2 toCenter) {
+        var comparator = compareFront(toCenter);
+        sortPositions(comparator);
+    }
+
+    private static void sortBack(Vec2 toCenter) {
+        var comparator = compareBack(toCenter);
+        sortPositions(comparator);
+    }
+
+    private static void sortSide(Vec2 toCenter) {
+        var comparator = compareSide(toCenter);
+        sortPositions(comparator);
+    }
+
+    private static void sortPositions(Comparator<Vec2> comparator) {
+        for (ArrayList<Vec2> positions : excentricSpiralPositions) {
+            positions.sort(comparator);
+        }
+    }
+
+    private static Comparator<Vec2> compareRandom(Vec2 toCenter) {
+        return (Vec2 a, Vec2 b) -> {
+            return Integer.compare(toCenter.hashCode() * a.hashCode(), toCenter.hashCode() * b.hashCode());
+        };
+    }
+
+    private static Comparator<Vec2> compareFront(Vec2 toCenter) {
+        return (Vec2 a, Vec2 b) -> {
+            var simA = GeometryUtils.similarity(a, toCenter);
+            var simB = GeometryUtils.similarity(b, toCenter);
+            return Double.compare(simA, simB);
+        };
+    }
+
+    private static Comparator<Vec2> compareBack(Vec2 toCenter) {
+        return (Vec2 a, Vec2 b) -> {
+            var simA = -GeometryUtils.similarity(a, toCenter);
+            var simB = -GeometryUtils.similarity(b, toCenter);
+            return Double.compare(simA, simB);
+        };
+    }
+
+    private static Comparator<Vec2> compareSide(Vec2 toCenter) {
+        return (Vec2 a, Vec2 b) -> {
+            var simA = -Math.abs(GeometryUtils.similarity(a, toCenter));
+            var simB = -Math.abs(GeometryUtils.similarity(b, toCenter));
+            return Double.compare(simA, simB);
+        };
+    }
+
+    static {
+        spiral.reset();
+        for (int i = 0; i < 12; ++i) {
+            ArrayList<Vec2> ring = new ArrayList<>();
+            excentricSpiralPositions.add(ring);
+
+            while (true) {
+                var x = spiral.getX();
+                var z = spiral.getZ();
+
+                var pos = new Vec2(x, z);
+                ring.add(pos);
+
+                if (spiral.next()) {
+                    break;
+                }
+            }
+        }
+
+        getPotentialPositionsOutput = new ArrayList<Vec2>(excentricSpiralPositions.stream().map(ArrayList::size).reduce(Integer::sum).get());
     }
 }

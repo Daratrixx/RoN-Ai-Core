@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec2;
 
 import java.util.stream.Stream;
 
@@ -180,6 +181,10 @@ public class GeometryUtils {
 
     public static int distanceComparator(Vec3i v1, Vec3i v2, Vec3i from) {
         return Double.compare(v1.distSqr(from), v2.distSqr(from));
+    }
+
+    public static double similarity(Vec2 a, Vec2 b) {
+        return Math.acos(a.dot(b) / (a.length() * b.length()));
     }
 
 }
