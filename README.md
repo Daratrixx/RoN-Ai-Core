@@ -31,19 +31,26 @@ This project consists of:
   - [x] `AiLogics.registerAiLogic(new AiLogic());`
   - [x] Buttons to spawn bots for each faction
   - [ ] Dropdown/ui to select which script to use when spawning in new bots
+  - [ ] ui to assign bots to starting locations and teams
 ### Available features
-- 60% Building structures
+- 0% Quality of Life
+  - [ ] command to force Ass to ally other players
+- 75% Building structures
   - [x] Process the Building priorities to decide when to start new structures
     - [x] Bug: Ai sometimes starts additional capitols
   - [x] Automatically select a location around the capitol to build structures
-    - [ ] Allow structures to be built on to specific locations
-      - [X] Main
-      - [X] Farms
+    - [x] Allow structures to be built on to specific locations
+      - [x] Main (build away from the capital if possible)
+      - [x] Farms (build close the to Capitol if possible)
       - [ ] Proxy (build close to/within the enemy base)
-      - [ ] Main
-    - [ ] Allow structures to prioritize certain areas in specific location (Front, Back...)
+      - [ ] Resource (build close to a resource node)
+    - [x] Allow structures to prioritize certain areas in specific location
+      - [x] Random
+      - [x] Front
+      - [x] Back
+      - [x] Sides
     - [x] Bug: Ai buildings sometimes clip into each others
-    - [X] Bug: buildings are too far apart and the spiral becomes exponentially bigger
+    - [x] Bug: buildings are too far apart and the spiral becomes exponentially bigger
   - [ ] Build Stockpiles/Portals near distant resources
   - [ ] Build multiple Capitols
   - [x] Automatically select workers for construction projects
@@ -51,7 +58,7 @@ This project consists of:
     - [ ] Enforce number of builders per structure (powerbuild castle etc...)
   - [ ] Enforce required priorities that will prevent the list from progressing until fulfilled
   - [ ] Automatically fulfil techtree requirements ('autobuild')
-  - [ ] Support building upgrades (portals, lightning rod, grand library...)
+  - [x] Support building upgrades (portals, lightning rod, grand library...)
 - 80% Training units
   - [x] Process the Unit priorities to decide when to start new units
   - [x] Automatically queue new units when a production building becomes idle
