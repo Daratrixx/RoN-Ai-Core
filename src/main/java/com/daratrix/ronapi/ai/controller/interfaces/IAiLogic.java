@@ -5,6 +5,7 @@ import com.daratrix.ronapi.apis.TypeIds;
 import com.daratrix.ronapi.models.interfaces.IHero;
 import com.daratrix.ronapi.models.interfaces.IPlayerWidget;
 import com.solegendary.reignofnether.util.Faction;
+import net.minecraft.world.level.Level;
 
 import java.util.HashMap;
 import java.util.function.Consumer;
@@ -14,7 +15,7 @@ public interface IAiLogic {
 
     public Faction getFaction();
 
-    public void setPriorities(IAiPlayer player, IAiControllerPriorities priorities);
+    public void setPriorities(Level level, IAiPlayer player, IAiControllerPriorities priorities);
 
     default int getWorkerTypeId() {
         return switch (this.getFaction()) {

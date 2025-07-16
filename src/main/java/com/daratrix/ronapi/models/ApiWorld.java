@@ -16,6 +16,7 @@ import com.solegendary.reignofnether.unit.interfaces.Unit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
@@ -28,8 +29,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ApiWorld {
-
-    private static final Minecraft MC = Minecraft.getInstance();
 
     public final Map<String, ApiPlayer> players = new HashMap<>();
     public final Map<Unit, ApiUnit> units = new HashMap<>();
@@ -47,9 +46,8 @@ public class ApiWorld {
         //resources.clear();
     }
 
-
     public void updateTracking(MinecraftServer server) {
-        if (MC.level == null) {
+        if (server.overworld() == null) {
             return; // wait for the server to be ready...
         }
 
@@ -104,7 +102,7 @@ public class ApiWorld {
         try {
             // make sure the resources amount are accurate, and remove depleted resource nodes
             var depletedResourceBlocks = this.resources.keySet().stream().distinct().filter(b -> ResourceSources.getFromBlockPos(b, level) == null).collect(Collectors.toCollection(ArrayList::new));
-            depletedResourceBlocks.forEach(this::untrack);
+            depletedResourceBlocks.forEach(r -> untrack(server, r));
         } catch (Exception e) {
             // no clue how to not run code when the level is not ready to be scanned...
         }
@@ -208,17 +206,17 @@ public class ApiWorld {
         buildings.remove(building);
     }
 
-    private void untrack(BlockPos pos) {
+    private void untrack(MinecraftServer server, BlockPos pos) {
         var tracked = resources.getOrDefault(pos, null);
         if (tracked == null) {
             return; // not tracked
         }
 
-        tracked.untrack(MC.level, pos);
+        tracked.untrack(server.overworld(), pos);
         resources.remove(pos);
     }
 
-    private ApiResource track(BlockPos pos, ResourceName resource) {
+    private ApiResource track(MinecraftServer server, BlockPos pos, ResourceName resource) {
         synchronized (resources) {
             if (resource == ResourceName.NONE) {
                 return null; // nothing to track
@@ -236,27 +234,27 @@ public class ApiWorld {
             }
 
             var output = new ApiResource(resource);
-            output.track(MC.level, pos);
+            output.track(server.overworld(), pos);
             resources.put(pos, output);
-            trackAdjacentTo(pos, output);
+            trackAdjacentTo(server.overworld(), pos, output);
             return output;
         }
     }
 
-    private void trackAdjacentTo(BlockPos pos, ApiResource resource) {
+    private void trackAdjacentTo(Level level, BlockPos pos, ApiResource resource) {
         var adjacentPositions = Stream.of(pos.above(), pos.below(), pos.east(), pos.west(), pos.south(), pos.north()).toList();
         for (BlockPos adjPosition : adjacentPositions) {
-            trackAdjacent(adjPosition, resource);
+            trackAdjacent(level, adjPosition, resource);
         }
     }
 
-    private void trackAdjacent(BlockPos pos, ApiResource resource) {
+    private void trackAdjacent(Level level, BlockPos pos, ApiResource resource) {
         var existing = resources.getOrDefault(pos, null);
         if (existing != null) {
             return;
         }
 
-        ResourceSource resourceSource = ResourceSources.getFromBlockPos(pos, MC.level);
+        ResourceSource resourceSource = ResourceSources.getFromBlockPos(pos, level);
         if (resourceSource == null) {
             return;
         }
@@ -266,9 +264,9 @@ public class ApiWorld {
             return;
         }
 
-        resource.track(MC.level, pos);
+        resource.track(level, pos);
         resources.put(pos, resource);
-        trackAdjacentTo(pos, resource);
+        trackAdjacentTo(level, pos, resource);
     }
 
     public boolean scanChunk(MinecraftServer server, int x, int z) {
@@ -305,7 +303,7 @@ public class ApiWorld {
                 ResourceSource resourceSource;
                 while ((resourceSource = ResourceSources.getFromBlockPos(pos, overworld)) != null) {
                     var resourceName = resourceSource.resourceName;
-                    track(pos.immutable(), resourceName);
+                    track(server, pos.immutable(), resourceName);
 
                     // we repeat the process downward to find entire stacks of resources, not just the tip
                     pos.setY(--y);

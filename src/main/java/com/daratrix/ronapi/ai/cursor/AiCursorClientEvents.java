@@ -151,13 +151,13 @@ public class AiCursorClientEvents {
             Vec3 pos = new Vec3(worldPos.x, worldPos.y, worldPos.z);
             if (leftClickAction == UnitAction.STARTRTS_VILLAGERS) {
                 System.out.println(RonApi.MOD_ID + ">AiCursorClientEvents.onMouseClick STARTRTS_VILLAGERS");
-                AiPlayerServerboundPacket.startRTSBot(Faction.VILLAGERS, VillagerScript.name, (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
+                AiPlayerServerboundPacket.startRTSBot(MC.level, Faction.VILLAGERS, VillagerScript.name, (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
             } else if (leftClickAction == UnitAction.STARTRTS_MONSTERS) {
                 System.out.println(RonApi.MOD_ID + ">AiCursorClientEvents.onMouseClick STARTRTS_MONSTERS");
-                AiPlayerServerboundPacket.startRTSBot(Faction.MONSTERS, MonsterScript.name, (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
+                AiPlayerServerboundPacket.startRTSBot(MC.level, Faction.MONSTERS, MonsterScript.name, (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
             } else if (leftClickAction == UnitAction.STARTRTS_PIGLINS) {
                 System.out.println(RonApi.MOD_ID + ">AiCursorClientEvents.onMouseClick STARTRTS_PIGLINS");
-                AiPlayerServerboundPacket.startRTSBot(Faction.PIGLINS, PiglinScript.name, (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
+                AiPlayerServerboundPacket.startRTSBot(MC.level, Faction.PIGLINS, PiglinScript.name, (int) worldPos.x, (int) worldPos.y, (int) worldPos.z);
             }
             leftClickAction = null;
         }

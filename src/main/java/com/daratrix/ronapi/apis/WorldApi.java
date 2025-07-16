@@ -9,16 +9,16 @@ import com.daratrix.ronapi.models.savedata.WorldApiResourceSaveData;
 import com.daratrix.ronapi.timer.Timer;
 import com.daratrix.ronapi.timer.TimerServerEvents;
 import com.daratrix.ronapi.utils.GeometryUtils;
-import com.solegendary.reignofnether.alliance.AlliancesClient;
+import com.solegendary.reignofnether.alliance.AlliancesServerEvents;
 import com.solegendary.reignofnether.registrars.GameRuleRegistrar;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.unit.interfaces.Unit;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.AABB;
@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 
 public class WorldApi {
 
-    private static final Minecraft MC = Minecraft.getInstance();
     private static ApiWorld singleton = null;
 
     public static ApiWorld getSingleton() {
@@ -142,18 +141,18 @@ public class WorldApi {
         return getSingleton().resources.getOrDefault(pos, null);
     }
 
-    public static int getTerrainHeight(BlockPos.MutableBlockPos pos) {
-        if (MC.level == null) {
+    public static int getTerrainHeight(Level level, BlockPos.MutableBlockPos pos) {
+        if (level == null) {
             return 0;
         }
 
-        var chunk = MC.level.getChunkAt(pos);
-        return getTerrainHeight(chunk, pos);
+        var chunk = level.getChunkAt(pos);
+        return getTerrainHeight(level, chunk, pos);
     }
 
     private static HashMap<Vec3i, Integer> terrainHeightCache = new HashMap<Vec3i, Integer>();
 
-    public static int getTerrainHeight(ChunkAccess chunk, BlockPos.MutableBlockPos pos) {
+    public static int getTerrainHeight(Level level, ChunkAccess chunk, BlockPos.MutableBlockPos pos) {
         // from cache, dig down in case blocks are destroyed
         if (terrainHeightCache.containsKey(pos)) {
             var maxY = terrainHeightCache.get(pos);
@@ -166,7 +165,7 @@ public class WorldApi {
         }
 
         // from yLevel - yLevel is expected to be the lowest level units can reach
-        var yLevelRule = MC.getSingleplayerServer().getGameRules().getRule(GameRuleRegistrar.GROUND_Y_LEVEL);
+        var yLevelRule = level.getGameRules().getRule(GameRuleRegistrar.GROUND_Y_LEVEL);
         if (yLevelRule != null) {
             int maxY = yLevelRule.get() + 30;
             int minY = yLevelRule.get() - 2;
@@ -209,11 +208,11 @@ public class WorldApi {
     }
 
     public static Stream<IPlayer> getPlayerEnemies(IPlayer p) {
-        return singleton.players.values().stream().filter(x -> x != p && !AlliancesClient.isAllied(x.getName(), p.getName())).map(x -> (IPlayer) x);
+        return singleton.players.values().stream().filter(x -> x != p && !AlliancesServerEvents.isAllied(x.getName(), p.getName())).map(x -> (IPlayer) x);
     }
 
     public static Stream<IPlayer> getPlayerEnemies(String playerName) {
-        return singleton.players.values().stream().filter(x -> !Objects.equals(x.getName(), playerName) && !AlliancesClient.isAllied(x.getName(), playerName)).map(x -> x);
+        return singleton.players.values().stream().filter(x -> !Objects.equals(x.getName(), playerName) && !AlliancesServerEvents.isAllied(x.getName(), playerName)).map(x -> x);
     }
 
     private static String getThreatsPlayerName = null;
@@ -221,7 +220,7 @@ public class WorldApi {
     private static boolean getThreatsPredicate(LivingEntity e) {
         if (e instanceof Unit u) {
             var owner = u.getOwnerName();
-            return !Objects.equals(owner, getThreatsPlayerName) && !AlliancesClient.isAllied(getThreatsPlayerName, u.getOwnerName());
+            return !Objects.equals(owner, getThreatsPlayerName) && !AlliancesServerEvents.isAllied(getThreatsPlayerName, u.getOwnerName());
         }
         return false;
     }

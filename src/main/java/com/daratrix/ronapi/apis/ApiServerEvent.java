@@ -33,12 +33,12 @@ public class ApiServerEvent {
 
         var server = evt.getServer();
         var level = server.overworld();
-        LoadApiResources(level, server);
+        LoadApiResources(level);
         System.out.println("API Scan size: " + GameRuleRegister.scanSize(server));
         System.out.println("API Show debug: " + GameRuleRegister.showDebug(server));
     }
 
-    private static void LoadApiResources(ServerLevel level, MinecraftServer server) {
+    private static void LoadApiResources(ServerLevel level) {
         var savedResources = WorldApiResourceSaveData.getInstance(level);
         if (savedResources.resources.isEmpty()) {
             // run the map scan to build the list of resources from scratch

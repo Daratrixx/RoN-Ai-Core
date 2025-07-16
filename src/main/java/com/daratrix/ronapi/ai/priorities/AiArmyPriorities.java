@@ -8,6 +8,7 @@ import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.Level;
 
 public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiArmyPriority> {
 
@@ -52,7 +53,7 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
      *
      * @param player
      */
-    public void pickDefaultGatherPoint(IPlayer player) {
+    public void pickDefaultGatherPoint(Level level, IPlayer player) {
         // we try to find a base, either a base with a Capitol, or any base
         var base = player.getBasesFiltered(ApiPlayerBase::hasCapitol).findFirst().orElse(null);
 
@@ -63,7 +64,7 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
         if (base == null) {
             // if we can't find a base, fallback to the center of the map
             this.defaultGatherPoint.set(0, 0, 0);
-            WorldApi.getTerrainHeight(this.defaultGatherPoint);
+            WorldApi.getTerrainHeight(level, this.defaultGatherPoint);
             return;
         }
 
@@ -94,7 +95,7 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
         }
 
         // adjust to terrain height
-        WorldApi.getTerrainHeight(this.defaultGatherPoint);
+        WorldApi.getTerrainHeight(level, this.defaultGatherPoint);
     }
 
     /**

@@ -18,6 +18,7 @@ import com.solegendary.reignofnether.ability.heroAbilities.piglin.GreedIsGoodPas
 import com.solegendary.reignofnether.ability.heroAbilities.piglin.LootExplosion;
 import com.solegendary.reignofnether.ability.heroAbilities.piglin.ThrowTNT;
 import com.solegendary.reignofnether.util.Faction;
+import net.minecraft.world.level.Level;
 
 public class PiglinScript extends IAiLogic.AbstractAiLogic {
 
@@ -206,8 +207,8 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Piglins.Bloodlust, 1);
     }
 
-    private void setArmyPriorities(IAiPlayer player, AiArmyPriorities armyPriorities) {
-        armyPriorities.pickDefaultGatherPoint(player);
+    private void setArmyPriorities(Level level, IAiPlayer player, AiArmyPriorities armyPriorities) {
+        armyPriorities.pickDefaultGatherPoint(level, player);
         if (armyPriorities.pickDefenseTarget(player)) {
             armyPriorities.attackTarget = null; // don't attack while bases are threatened
         } else {
@@ -226,7 +227,7 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
     }
 
     @Override
-    public void setPriorities(IAiPlayer player, IAiControllerPriorities priorities) {
+    public void setPriorities(Level level, IAiPlayer player, IAiControllerPriorities priorities) {
         this.portalCount = 0;
         this.civilianPortalCount = 0;
         this.militaryPortalCount = 0;
@@ -235,6 +236,6 @@ public class PiglinScript extends IAiLogic.AbstractAiLogic {
         this.setBuildingPriorities(player, priorities.getBuildingPriorities());
         this.setUnitPriorities(player, priorities.getUnitPriorities());
         this.setResearchPriorities(player, priorities.getResearchPriorities());
-        this.setArmyPriorities(player, priorities.getArmyPriorities());
+        this.setArmyPriorities(level, player, priorities.getArmyPriorities());
     }
 }

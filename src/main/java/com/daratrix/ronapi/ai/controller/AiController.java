@@ -23,6 +23,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 
 import java.util.*;
@@ -159,7 +160,7 @@ public class AiController {
         List<LivingEntity> animals;
 
         try {
-            animals = Minecraft.getInstance().level.getEntitiesOfClass(LivingEntity.class, animalDetectionBox, ResourceSources::isHuntableAnimal);
+            animals = server.overworld().getEntitiesOfClass(LivingEntity.class, animalDetectionBox, ResourceSources::isHuntableAnimal);
         } catch (Exception e) {
             return;
         }
@@ -377,7 +378,7 @@ public class AiController {
             }
 
             for (var builder : availableWorkers) {
-                var buildingLocation = this.getBuildingLocation(builder, p.typeId, p.location, p.proximity);
+                var buildingLocation = this.getBuildingLocation(server.overworld(), builder, p.typeId, p.location, p.proximity);
 
                 if (buildingLocation != null && builder.issueBuildOrder(buildingLocation, p.typeId)) {
                     ++builderCount;
@@ -397,13 +398,13 @@ public class AiController {
         this.logger.log("Completed all priorities");
     }
 
-    public BlockPos getBuildingLocation(IUnit builder, int typeId, AiProductionPriorities.Location location, AiProductionPriorities.Proximity proximity) {
+    public BlockPos getBuildingLocation(Level level, IUnit builder, int typeId, AiProductionPriorities.Location location, AiProductionPriorities.Proximity proximity) {
         if (this.capitol == null) {
             this.logger.log("Building around Builder at CAPITOL-RANDOM");
-            return BuildingApi.getBuildingLocation(builder.getPos(), typeId, player.getName(), AiProductionPriorities.Location.CAPITOL, AiProductionPriorities.Proximity.RANDOM);
+            return BuildingApi.getBuildingLocation(level, builder.getPos(), typeId, player.getName(), AiProductionPriorities.Location.CAPITOL, AiProductionPriorities.Proximity.RANDOM);
         }
 
-        return BuildingApi.getBuildingLocation(this.capitol.getPos(), typeId, player.getName(), location, proximity);
+        return BuildingApi.getBuildingLocation(level, this.capitol.getPos(), typeId, player.getName(), location, proximity);
     }
 
     public void runAiProduceHero(MinecraftServer server, int typeId) {
@@ -530,7 +531,7 @@ public class AiController {
     public void runAiUpdatePriorities(MinecraftServer server) {
         this.player.checkCompletedBuildings();
         this.priorities.reset();
-        this.logic.setPriorities(this.player, this.priorities);
+        this.logic.setPriorities(server.overworld(), this.player, this.priorities);
     }
 
     public void updateCapitol() {

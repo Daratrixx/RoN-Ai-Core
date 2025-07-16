@@ -18,6 +18,7 @@ import com.solegendary.reignofnether.ability.heroAbilities.villager.BattleRagePa
 import com.solegendary.reignofnether.ability.heroAbilities.villager.MaceSlam;
 import com.solegendary.reignofnether.ability.heroAbilities.villager.TauntingCry;
 import com.solegendary.reignofnether.util.Faction;
+import net.minecraft.world.level.Level;
 
 public class VillagerScript extends IAiLogic.AbstractAiLogic {
 
@@ -166,8 +167,8 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(TypeIds.Villagers.RavagerCavalry, 1);
     }
 
-    private void setArmyPriorities(IAiPlayer player, AiArmyPriorities armyPriorities) {
-        armyPriorities.pickDefaultGatherPoint(player);
+    private void setArmyPriorities(Level level, IAiPlayer player, AiArmyPriorities armyPriorities) {
+        armyPriorities.pickDefaultGatherPoint(level, player);
         if (armyPriorities.pickDefenseTarget(player)) {
             armyPriorities.attackTarget = null; // don't attack while bases are threatened
         } else {
@@ -186,11 +187,11 @@ public class VillagerScript extends IAiLogic.AbstractAiLogic {
     }
 
     @Override
-    public void setPriorities(IAiPlayer player, IAiControllerPriorities priorities) {
+    public void setPriorities(Level level, IAiPlayer player, IAiControllerPriorities priorities) {
         this.setHarvestPriorities(player, priorities.getHarvestingPriorities());
         this.setBuildingPriorities(player, priorities.getBuildingPriorities());
         this.setUnitPriorities(player, priorities.getUnitPriorities());
         this.setResearchPriorities(player, priorities.getResearchPriorities());
-        this.setArmyPriorities(player, priorities.getArmyPriorities());
+        this.setArmyPriorities(level, player, priorities.getArmyPriorities());
     }
 }

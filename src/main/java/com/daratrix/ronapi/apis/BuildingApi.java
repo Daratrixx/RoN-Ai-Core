@@ -22,6 +22,7 @@ import com.solegendary.reignofnether.unit.units.piglins.*;
 import com.solegendary.reignofnether.unit.units.villagers.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.IceBlock;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,8 +42,6 @@ import java.util.stream.Collectors;
  */
 public class BuildingApi {
 
-    private static final Minecraft MC = Minecraft.getInstance();
-
     private static final Map<Integer, ArrayList<BuildingBlock>> buildingBlocks = new HashMap<>();
     private static final Map<Integer, ArrayList<BuildingBlock>> testingBlocks = new HashMap<>();
     private static final Map<Integer, ArrayList<BuildingBlock>> foundationBlocks = new HashMap<>();
@@ -52,43 +51,43 @@ public class BuildingApi {
     private static final ArrayList<BlockPos> mainSpiralPositions = new ArrayList<>();
     private static final ArrayList<ArrayList<Vec2>> excentricSpiralPositions = new ArrayList<>();
 
-    public static ArrayList<BuildingBlock> getFoundationBlocks(int typeId) {
+    public static ArrayList<BuildingBlock> getFoundationBlocks(Level level, int typeId) {
         var blocks = foundationBlocks.getOrDefault(typeId, null);
         if (blocks != null) {
             return blocks;
         }
 
-        assert MC.level != null;
-        var testing = getTestingBlocks(typeId);
+        assert level != null;
+        var testing = getTestingBlocks(level, typeId);
         var minY = testing.stream().map(x -> x.getBlockPos().getY()).min(Integer::compareTo).orElse(0);
-        blocks = getTestingBlocks(typeId).stream().filter(b -> b.getBlockPos().getY() == minY).collect(Collectors.toCollection(ArrayList::new));
+        blocks = getTestingBlocks(level, typeId).stream().filter(b -> b.getBlockPos().getY() == minY).collect(Collectors.toCollection(ArrayList::new));
         foundationBlocks.put(typeId, blocks);
 
         return blocks;
     }
 
-    public static ArrayList<BuildingBlock> getTestingBlocks(int typeId) {
+    public static ArrayList<BuildingBlock> getTestingBlocks(Level level, int typeId) {
         var blocks = testingBlocks.getOrDefault(typeId, null);
         if (blocks != null) {
             return blocks;
         }
 
-        assert MC.level != null;
-        blocks = getBuildingBlocks(typeId).stream().map(b -> new BuildingBlock(mutable(b.getBlockPos()), b.getBlockState())).collect(Collectors.toCollection(ArrayList::new));
+        assert level != null;
+        blocks = getBuildingBlocks(level, typeId).stream().map(b -> new BuildingBlock(mutable(b.getBlockPos()), b.getBlockState())).collect(Collectors.toCollection(ArrayList::new));
         testingBlocks.put(typeId, blocks);
 
         return blocks;
     }
 
-    public static ArrayList<BuildingBlock> getBuildingBlocks(int typeId) {
+    public static ArrayList<BuildingBlock> getBuildingBlocks(Level level, int typeId) {
         var blocks = buildingBlocks.getOrDefault(typeId, null);
         if (blocks != null) {
             return blocks;
         }
 
         var itemName = TypeIds.toStructureName(typeId);
-        assert MC.level != null;
-        blocks = BuildingBlockData.getBuildingBlocksFromNbt(itemName, MC.level);
+        assert level != null;
+        blocks = BuildingBlockData.getBuildingBlocksFromNbt(itemName, level);
         buildingBlocks.put(typeId, blocks);
 
         return blocks;
@@ -130,76 +129,6 @@ public class BuildingApi {
 
     private static final SpiralCounter spiral = new SpiralCounter();
 
-    public static BlockPos getBuildingLocation(BlockPos lookupOrigin, int typeId, String playerName, AiProductionPriorities.Location location) {
-        int farmRange = 6;
-        int maxRange = 12;
-        int capitolBoxOffset = 5;
-
-        if (location == AiProductionPriorities.Location.FARM) {
-            var output = BuildingApi.getBuildingLocation(lookupOrigin, typeId, playerName, 1, farmRange, capitolBoxOffset, 0);
-            if (output != null) {
-                return output;
-            }
-
-            output = BuildingApi.getBuildingLocation(lookupOrigin, typeId, playerName, farmRange, maxRange, capitolBoxOffset, 1);
-            return output;
-        }
-
-        if (location == AiProductionPriorities.Location.MAIN) {
-            return BuildingApi.getBuildingLocation(lookupOrigin, typeId, playerName, farmRange, maxRange, capitolBoxOffset, 1);
-        }
-
-        return BuildingApi.getBuildingLocation(lookupOrigin, typeId, playerName, 0, maxRange, capitolBoxOffset, 1);
-    }
-
-    public static BlockPos getBuildingLocation(BlockPos lookupOrigin, int typeId, String playerName, int spiralMin, int spiralMax, int boxOffset, int offset) {
-        spiral.reset();
-        if (spiralMin > 0) {
-            spiral.skipS(spiralMin);
-        }
-
-        var buildingBlocks = getBuildingBlocks(typeId);
-        var checkNeverTerrain = mustCheckNeverTerrain(typeId, playerName);
-        var testingBlocks = getTestingBlocks(typeId);
-
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        BlockPos.MutableBlockPos min = new BlockPos.MutableBlockPos();
-        BlockPos.MutableBlockPos max = new BlockPos.MutableBlockPos();
-        GeometryUtils.setMinMaxFromBlocks(min, max, testingBlocks.stream().map(BuildingBlock::getBlockPos));
-        max.move(1, 1, 1);
-        var w = Math.abs(max.getX() - min.getX());
-        var l = Math.abs(max.getZ() - min.getZ());
-        var foundationBlocks = getFoundationBlocks(typeId);
-        while (spiral.getS() < spiralMax * 2) {
-            var spiralX = spiral.getX();
-            var signX = Math.signum(spiralX);
-            var spiralZ = spiral.getZ();
-            var signZ = Math.signum(spiralZ);
-            pos.set(lookupOrigin.getX() + boxOffset * signX + (spiralX * offset) + (spiralX * w / 2.),
-                    0,
-                    lookupOrigin.getZ() + boxOffset * signZ + (spiralZ * offset) + (spiralZ * l / 2.));
-            WorldApi.getTerrainHeight(pos); // also updates pos.setY()
-            // offset buildingBlocks by pos and store the results in testingBlocks
-            offsetBuildingBlocks(buildingBlocks, pos, testingBlocks);
-            GeometryUtils.setMinMaxFromBlocks(min, max, testingBlocks.stream().map(BuildingBlock::getBlockPos));
-            max.move(1, 1, 1);
-            var boundingBox = GeometryUtils.getBoundingBox(min, max, offset);
-
-            if (isBuildingPlacementWithinWorldBorder(boundingBox)
-                    && !isOverlappingResources(boundingBox)
-                    && !isOverlappingAnyOtherBuilding(boundingBox)
-                    && !isBuildingPlacementInvalid(testingBlocks, foundationBlocks, checkNeverTerrain)) {
-                //System.out.println("Found location for " + TypeIds.toItemName(typeId));
-                return pos;
-            }
-
-            spiral.next();
-        }
-
-        //System.err.println("Failed to find location for " + TypeIds.toItemName(typeId));
-        return null;
-    }
-
     // minimum % of blocks below a building that need to be supported by a solid block for it to be placeable
     // 1 means you can't have any gaps at all, 0 means you can place buildings in mid-air
     private static final float MIN_SUPPORTED_BLOCKS_PERCENT = 0.6f;
@@ -207,8 +136,8 @@ public class BuildingApi {
     // piglin buildings must be build on at least 80% nether blocks
     private static final float MIN_NETHER_BLOCKS_PERCENT = 0.8f;
 
-    private static boolean isBuildingPlacementInvalid(ArrayList<BuildingBlock> blocksToDraw, ArrayList<BuildingBlock> foundation, boolean checkNeverTerrain) {
-        if (MC.level == null)
+    private static boolean isBuildingPlacementInvalid(Level level, ArrayList<BuildingBlock> blocksToDraw, ArrayList<BuildingBlock> foundation, boolean checkNeverTerrain) {
+        if (level == null)
             return true;
 
         //System.out.println("isBuildingPlacementInvalid " + foundation.size() + "/" + blocksToDraw.size());
@@ -222,15 +151,15 @@ public class BuildingApi {
         for (BuildingBlock block : blocksToDraw) {
             BlockPos bp = block.getBlockPos().above();
             BlockState bs = block.getBlockState(); // building block
-            BlockState bsWorld = MC.level.getBlockState(bp);
+            BlockState bsWorld = level.getBlockState(bp);
 
             if ((bsWorld.isSolid() || !bsWorld.getFluidState().isEmpty()) && (bs.isSolid() || !bs.getFluidState().isEmpty())) {
                 //System.out.println("Skipping location due to clipping at " + bp.toShortString());
                 return true; // clipping
             }
 
-            if (MC.level != null && foundation.contains(block)) {
-                BlockState bsBelow = MC.level.getBlockState(bp.below()); // world block
+            if (level != null && foundation.contains(block)) {
+                BlockState bsBelow = level.getBlockState(bp.below()); // world block
                 if (bs.isSolid() && !(bsBelow.getBlock() instanceof IceBlock)) {
                     blocksBelow += 1;
                     if (bsBelow.isSolid() && !(bsBelow.getBlock() instanceof LeavesBlock)) {
@@ -239,9 +168,9 @@ public class BuildingApi {
                 }
             }
 
-            if (checkNeverTerrain && MC.level != null && foundation.contains(block) && bs.isSolid()) {
+            if (checkNeverTerrain && level != null && foundation.contains(block) && bs.isSolid()) {
                 nbBlocksBelow += 1;
-                if (NetherBlocks.isNetherBlock(MC.level, bp.below())) {
+                if (NetherBlocks.isNetherBlock(level, bp.below())) {
                     netherBlocksBelow += 1;
                 }
             }
@@ -290,10 +219,10 @@ public class BuildingApi {
         return false;
     }
 
-    private static boolean isBuildingPlacementWithinWorldBorder(AABB boundingBox) {
+    private static boolean isBuildingPlacementWithinWorldBorder(Level level, AABB boundingBox) {
         var aabbCenter = boundingBox.getCenter();
         var aabbSize = boundingBox.getSize();
-        if (MC.level.getWorldBorder().getDistanceToBorder(aabbCenter.x, aabbCenter.z) < aabbSize) {
+        if (level.getWorldBorder().getDistanceToBorder(aabbCenter.x, aabbCenter.z) < aabbSize) {
             //System.out.println("Skipping location due to being out of bounds");
             return false;
         }
@@ -302,16 +231,16 @@ public class BuildingApi {
     }
 
 
-    public static BlockPos getBuildingLocation(BlockPos lookupOrigin, int typeId, String playerName, AiProductionPriorities.Location location, AiProductionPriorities.Proximity proximity) {
+    public static BlockPos getBuildingLocation(Level level, BlockPos lookupOrigin, int typeId, String playerName, AiProductionPriorities.Location location, AiProductionPriorities.Proximity proximity) {
         var boxOffset = 5;
         var offset = 1;
         if (location == AiProductionPriorities.Location.FARM || location == AiProductionPriorities.Location.CAPITOL) {
             offset = 0;
         }
 
-        var buildingBlocks = getBuildingBlocks(typeId);
+        var buildingBlocks = getBuildingBlocks(level, typeId);
         var checkNeverTerrain = mustCheckNeverTerrain(typeId, playerName);
-        var testingBlocks = getTestingBlocks(typeId);
+        var testingBlocks = getTestingBlocks(level, typeId);
 
         var potentialPositions = getPotentialPositions(lookupOrigin, location, proximity);
 
@@ -327,7 +256,7 @@ public class BuildingApi {
         max.move(1, 1, 1);
         var w = Math.abs(max.getX() - min.getX());
         var l = Math.abs(max.getZ() - min.getZ());
-        var foundationBlocks = getFoundationBlocks(typeId);
+        var foundationBlocks = getFoundationBlocks(level, typeId);
         for (Vec2 potentialPosition : potentialPositions) {
             var x = potentialPosition.x;
             var signX = Math.signum(x);
@@ -336,7 +265,7 @@ public class BuildingApi {
             pos.set(lookupOrigin.getX() + boxOffset * signX + x * (offset + w / 2.),
                     0,
                     lookupOrigin.getZ() + boxOffset * signZ + z * (offset + l / 2.));
-            WorldApi.getTerrainHeight(pos); // also updates pos.setY()
+            WorldApi.getTerrainHeight(level, pos); // also updates pos.setY()
 
             // offset buildingBlocks by pos and store the results in testingBlocks
             offsetBuildingBlocks(buildingBlocks, pos, testingBlocks);
@@ -344,10 +273,10 @@ public class BuildingApi {
             max.move(1, 1, 1);
             var boundingBox = GeometryUtils.getBoundingBox(min, max, offset);
 
-            if (isBuildingPlacementWithinWorldBorder(boundingBox)
+            if (isBuildingPlacementWithinWorldBorder(level, boundingBox)
                     && !isOverlappingResources(boundingBox)
                     && !isOverlappingAnyOtherBuilding(boundingBox)
-                    && !isBuildingPlacementInvalid(testingBlocks, foundationBlocks, checkNeverTerrain)) {
+                    && !isBuildingPlacementInvalid(level, testingBlocks, foundationBlocks, checkNeverTerrain)) {
                 return pos;
             }
 

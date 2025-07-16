@@ -7,6 +7,7 @@ import com.solegendary.reignofnether.util.Faction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
@@ -21,10 +22,9 @@ public class AiPlayerServerboundPacket {
     public int z;
     public String aiName;
 
-    public static void startRTSBot(Faction faction, String aiName, Integer x, Integer y, Integer z) {
-        Minecraft MC = Minecraft.getInstance();
-        if (MC.player != null && MC.level != null) {
-            BlockState bs = MC.level.getBlockState(new BlockPos(x, y, z));
+    public static void startRTSBot(Level level, Faction faction, String aiName, Integer x, Integer y, Integer z) {
+        if (level != null) {
+            BlockState bs = level.getBlockState(new BlockPos(x, y, z));
             if (!bs.getFluidState().isEmpty()) {
                 HudClientEvents.showTemporaryMessage("Invalid starting location");
                 return;
