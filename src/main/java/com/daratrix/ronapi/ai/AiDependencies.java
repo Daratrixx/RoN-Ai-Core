@@ -118,6 +118,8 @@ public class AiDependencies {
                 TypeIds.Villagers.OfficersQuarters);
 
         // setup Villager requirements
+        setRequirements(TypeIds.Villagers.Evoker, TypeIds.Villagers.Library);
+
         setRequirements(TypeIds.Villagers.Barracks, TypeIds.Villagers.TownCentre);
         setRequirements(TypeIds.Villagers.House, TypeIds.Villagers.TownCentre);
         setRequirements(TypeIds.Villagers.Farm, TypeIds.Villagers.TownCentre);
@@ -237,6 +239,11 @@ public class AiDependencies {
                 TypeIds.Piglins.AdvancedPortals);
 
         // setup Piglin requirements
+        setRequirements(TypeIds.Piglins.Headhunter, TypeIds.Piglins.Bastion);
+        setRequirements(TypeIds.Piglins.WitherSkeleton, TypeIds.Piglins.WitherShrine);
+        setRequirements(TypeIds.Piglins.Hoglin, TypeIds.Piglins.HoglinStables);
+        setRequirements(TypeIds.Piglins.Blaze, TypeIds.Piglins.FlameSanctuary);
+        setRequirements(TypeIds.Piglins.Ghast, TypeIds.Piglins.Fortress);
         setRequirements(TypeIds.Piglins.Portal, TypeIds.Piglins.MainPortal);
         setRequirements(TypeIds.Piglins.Farm, TypeIds.Piglins.MainPortal);
         setRequirements(TypeIds.Piglins.Bastion, TypeIds.Piglins.Portal);
@@ -244,6 +251,7 @@ public class AiDependencies {
         setRequirements(TypeIds.Piglins.HoglinStables, TypeIds.Piglins.Portal);
         setRequirements(TypeIds.Piglins.FlameSanctuary, TypeIds.Piglins.HoglinStables);
         setRequirements(TypeIds.Piglins.Fortress, TypeIds.Piglins.WitherShrine, TypeIds.Piglins.FlameSanctuary);
+
         setUpgradesInto(TypeIds.Piglins.Portal, TypeIds.Piglins.CivilianPortal);
         setUpgradesInto(TypeIds.Piglins.Portal, TypeIds.Piglins.MilitaryPortal);
         setUpgradesInto(TypeIds.Piglins.Portal, TypeIds.Piglins.TransportPortal);
