@@ -1,5 +1,6 @@
 package com.daratrix.ronapi.ai.priorities;
 
+import com.daratrix.ronapi.ai.controller.AiArmyController;
 import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.ApiPlayerBase;
 import com.daratrix.ronapi.models.interfaces.IPlayer;
@@ -116,12 +117,13 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
             return; // army is too small, shouldn't try to attack
         }
 
-        if(attackTarget != null && attackTarget.isAlive()) {
+        if (attackTarget != null && attackTarget.isAlive()) {
             return; // keep attacking the same target
         }
 
         var enemies = WorldApi.getPlayerEnemies(player).toList();
         var enemyBases = enemies.stream()
+                .filter(p -> p.getArmyPop() < armyPop * AiArmyController.maxPunchUpThreshold) // make sure the target is not too strong
                 .flatMap(p -> p.getBasesFiltered(b -> !b.buildings.isEmpty()))
                 .sorted((a, b) -> GeometryUtils.distanceComparator(a, b, this.defaultGatherPoint))
                 .toList();
