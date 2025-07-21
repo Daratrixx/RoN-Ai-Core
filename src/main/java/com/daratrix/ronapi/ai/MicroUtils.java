@@ -23,6 +23,7 @@ import com.solegendary.reignofnether.ability.heroAbilities.villager.MaceSlam;
 import com.solegendary.reignofnether.ability.heroAbilities.villager.TauntingCry;
 import com.solegendary.reignofnether.building.BuildingPlacement;
 import com.solegendary.reignofnether.building.production.ProductionItems;
+import com.solegendary.reignofnether.research.ResearchClient;
 import com.solegendary.reignofnether.research.ResearchServerEvents;
 import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
 import com.solegendary.reignofnether.unit.interfaces.RangedAttackerUnit;
@@ -172,23 +173,26 @@ public class MicroUtils {
     public static void microBrute(IPlayerWidget unit) {
         var shieldAbility = unit.getAbility(ToggleShield.class);
         var bloodlustAbility = unit.getAbility(Bloodlust.class);
+        var canShield = ResearchServerEvents.playerHasResearch(unit.getOwnerName(), ProductionItems.RESEARCH_BRUTE_SHIELDS);
+        var canBloodlust = ResearchServerEvents.playerHasResearch(unit.getOwnerName(), ProductionItems.RESEARCH_BLOODLUST)
+                && unit.getHealth() > unit.getMaxHealth() / 2; // only cast bloodlust when over 50% health
 
         var target = unit.getAttackTarget();
         if (target instanceof LivingEntity e && (!(target instanceof Unit u) || !u.getOwnerName().equals(unit.getOwnerName())) && GeometryUtils.isWithinDistance(unit, e, 10)) {
-            if (bloodlustAbility.isOffCooldown()) unit.issueOrder(TypeIds.Orders.BloodLust);
+            if (canBloodlust && bloodlustAbility.isOffCooldown()) unit.issueOrder(TypeIds.Orders.BloodLust);
             if (target instanceof RangedAttackerUnit) {
-                if (!shieldAbility.isAutocasting()) unit.issueOrder(TypeIds.Orders.ShieldOn);
+                if (canShield && !shieldAbility.isAutocasting()) unit.issueOrder(TypeIds.Orders.ShieldOn);
             }
             return;
         }
 
-        if (target instanceof BuildingPlacement b && !b.ownerName.equals(unit.getOwnerName()) /*&& GeometryUtils.isWithinDistance((IBoxed) b, unit, 4)*/) {
-            if (bloodlustAbility.isOffCooldown()) unit.issueOrder(TypeIds.Orders.BloodLust);
-            if (!shieldAbility.isAutocasting()) unit.issueOrder(TypeIds.Orders.ShieldOn);
+        if (target instanceof BuildingPlacement b && !b.ownerName.equals(unit.getOwnerName())) {
+            if (canBloodlust && bloodlustAbility.isOffCooldown()) unit.issueOrder(TypeIds.Orders.BloodLust);
+            if (canShield && !shieldAbility.isAutocasting()) unit.issueOrder(TypeIds.Orders.ShieldOn);
             return;
         }
 
-        if (shieldAbility.isAutocasting()) unit.issueOrder(TypeIds.Orders.ShieldOff);
+        if (canShield && shieldAbility.isAutocasting()) unit.issueOrder(TypeIds.Orders.ShieldOff);
     }
 
     public static void microWitherSkeleton(IPlayerWidget unit) {
