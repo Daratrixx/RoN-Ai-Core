@@ -56,6 +56,7 @@ public class MicroUtils {
         defaultMicroLogics.put(TypeIds.Monsters.HeroNecromancer, MicroUtils::microNecromancer);
 
         defaultMicroLogics.put(TypeIds.Piglins.Brute, MicroUtils::microBrute);
+        defaultMicroLogics.put(TypeIds.Piglins.Headhunter, MicroUtils::microHeadhunter);
         defaultMicroLogics.put(TypeIds.Piglins.WitherSkeleton, MicroUtils::microWitherSkeleton);
         defaultMicroLogics.put(TypeIds.Piglins.HeroMerchant, MicroUtils::microMerchant);
     }
@@ -193,6 +194,18 @@ public class MicroUtils {
         }
 
         if (canShield && shieldAbility.isAutocasting()) unit.issueOrder(TypeIds.Orders.ShieldOff);
+    }
+
+    public static void microHeadhunter(IPlayerWidget unit) {
+        var bloodlustAbility = unit.getAbility(Bloodlust.class);
+        var canBloodlust = ResearchServerEvents.playerHasResearch(unit.getOwnerName(), ProductionItems.RESEARCH_BLOODLUST)
+                && unit.getHealth() > unit.getMaxHealth() / 2; // only cast bloodlust when over 50% health
+
+        var target = unit.getAttackTarget();
+        if (target instanceof LivingEntity e && (!(target instanceof Unit u) || !u.getOwnerName().equals(unit.getOwnerName())) && GeometryUtils.isWithinDistance(unit, e, 14)) {
+            if (canBloodlust && bloodlustAbility.isOffCooldown()) unit.issueOrder(TypeIds.Orders.BloodLust);
+            return;
+        }
     }
 
     public static void microWitherSkeleton(IPlayerWidget unit) {
