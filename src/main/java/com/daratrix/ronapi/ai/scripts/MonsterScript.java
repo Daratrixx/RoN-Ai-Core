@@ -43,34 +43,44 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
         hero.upgradeSkill(SoulSiphonPassive.class, 3);
     }
 
+    private static final int maxFarms = 20;
+    private static final int maxWood = 10;
+    private static final int maxOre = 6;
+    private static final int maxBuffer = 2; // make just a few more workers for buildings  and extra wood
+    private static final int targetWorkers = maxFarms + maxWood + maxOre + maxBuffer;
+
     private void setHarvestPriorities(IAiPlayer player, AiHarvestPriorities harvestingPriorities) {
+
         var farmCount = player.countDone(this.getFarmTypeId());
         var villagerCount = player.countDone(this.getWorkerTypeId());
+        var oreReduction = player.getOre() / 300;
 
-        if (player.getFood() < 300) {
-            harvestingPriorities.addPriority(TypeIds.Resources.FoodEntity, 2);
-        }
-        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 4);
-        if (player.getFood() < 200) {
-            harvestingPriorities.addPriority(TypeIds.Resources.FoodBlock, 3);
-        }
+        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 1); // at least one on wood
 
-        for (int i = 0; i < farmCount; ++i) {
-            harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, i + 1); // each farm need a wood worker
-            harvestingPriorities.addPriority(TypeIds.Resources.FoodFarm, i + 1); // each farm need a farmer
-            harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, i / 3); // for every 3 farms, add an ore worker
+        if (villagerCount < 15) {
+            harvestingPriorities.addPriority(TypeIds.Resources.FoodEntity, 2 - player.getFood() / 200 - farmCount / 2);
+            harvestingPriorities.addPriority(TypeIds.Resources.FoodBlock, 4 - player.getFood() / 100 - farmCount);
+            harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, villagerCount - farmCount); // at least one wood per farm
+            harvestingPriorities.addPriority(TypeIds.Resources.FoodFarm, farmCount); // each farm need a farmer
+            return;
         }
 
-        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 16);
-        harvestingPriorities.addPriority(TypeIds.Resources.FoodFarm, 12);
-        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 6);
+        var oreWorkers = Math.min(farmCount / 3 - oreReduction, maxOre); // for every 3 farms, add an ore worker
+        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, Math.min(oreWorkers, maxOre / 2));
+        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, farmCount / 2); // at least one wood per 2 farm
+        harvestingPriorities.addPriority(TypeIds.Resources.FoodFarm, farmCount); // each farm need a worker
+        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, farmCount);
+        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, Math.min(oreWorkers, maxOre));
 
-        // in case of excessive workers, we assign to non-food resources
-        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, 20);
-        harvestingPriorities.addPriority(TypeIds.Resources.OreBlock, 12);
+        // in case of excessive workers, assign to wood
+        harvestingPriorities.addPriority(TypeIds.Resources.WoodBlock, maxWood + maxBuffer);
     }
 
     public void setBuildingPriorities(IAiPlayer player, AiProductionPriorities priorities) {
+        var farmCount = player.countDone(this.getFarmTypeId());
+        var villagerCount = player.countDone(this.getWorkerTypeId());
+
+        priorities.setDefaultLocation(AiProductionPriorities.Location.MAIN);
 
         // until the Town Centre is done, it should be the only priority
         if (player.countDone(TypeIds.Monsters.Mausoleum) == 0) {
@@ -81,7 +91,7 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
         // dynamically add houses any time we have less than 5 pop space to spare
         int productionPower = 3 // TC buffer
                 + player.countDone(TypeIds.Monsters.Mausoleum) * 3
-                + player.countDone(TypeIds.Monsters.Graveyard) * 2
+                + Math.min(player.countDone(TypeIds.Monsters.Graveyard), farmCount / 2) * 2
                 + player.countDone(TypeIds.Monsters.Dungeon) * 2
                 + player.countDone(TypeIds.Monsters.SpiderLair) * 2
                 + player.countDone(TypeIds.Monsters.Stronghold) * 4;
@@ -104,22 +114,22 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
         //priorities.addPriority(TypeIds.Monsters.House, 1);
         priorities.addPriority(TypeIds.Monsters.Farm, 3).atFarm();
         //priorities.addPriority(TypeIds.Monsters.House, 2);
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 1).atFront();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 1).atFront().limit(farmCount / 2);
         priorities.addPriority(TypeIds.Monsters.Farm, 6).atFarm();
-        priorities.addPriority(TypeIds.Monsters.Altar, 1).atBack();
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 2).atFront();
-        priorities.addPriority(TypeIds.Monsters.Laboratory, 1).atBack();
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 3).atFront();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 2).atFront().limit(farmCount / 2);
+        priorities.addPriority(TypeIds.Monsters.Altar, 1).atBack().required();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 3).atFront().limit(farmCount / 2);
+        priorities.addPriority(TypeIds.Monsters.Laboratory, 1).atBack().required();
+        priorities.addPriority(TypeIds.Monsters.Farm, 8).atFarm();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 4).atFront().limit(farmCount / 2);
+        priorities.addPriority(TypeIds.Monsters.Farm, 10).atFarm();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 5).atFront().limit(farmCount / 2);
         priorities.addPriority(TypeIds.Monsters.Dungeon, 1).atFront();
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 4).atFront();
         priorities.addPriority(TypeIds.Monsters.SpiderLair, 1).atBack();
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 5).atFront();
-        priorities.addPriority(TypeIds.Monsters.Farm, 9).atFarm();
-        priorities.addPriority(TypeIds.Monsters.Stronghold, 1).atFront();
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 6).atFront();
+        priorities.addPriority(TypeIds.Monsters.Stronghold, 1).atFront().required();
         priorities.addPriority(TypeIds.Monsters.Dungeon, 2).atFront();
-        priorities.addPriority(TypeIds.Monsters.Graveyard, 7).atFront();
-        priorities.addPriority(TypeIds.Monsters.Farm, 12).atFarm();
+        priorities.addPriority(TypeIds.Monsters.Graveyard, 7).atFront().limit(farmCount / 2);
+        priorities.addPriority(TypeIds.Monsters.Farm, maxFarms).atFarm();
     }
 
     public void setUnitPriorities(IAiPlayer player, AiProductionPriorities priorities) {
@@ -136,21 +146,20 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
         priorities.addPriority(zombie, 4);
         priorities.addPriority(skeleton, 4);
         priorities.addPriority(TypeIds.Monsters.Villager, 16);
+        priorities.addPriority(TypeIds.Monsters.HeroNecromancer, 1);
         priorities.addPriority(zombie, 10);
         priorities.addPriority(skeleton, 8);
-        priorities.addPriority(TypeIds.Monsters.HeroNecromancer, 1);
         priorities.addPriority(TypeIds.Monsters.Villager, 24);
         priorities.addPriority(zombie, 20);
         priorities.addPriority(skeleton, 12);
         priorities.addPriority(spider, 3);
-        priorities.addPriority(TypeIds.Monsters.Villager, 28);
+        priorities.addPriority(TypeIds.Monsters.Villager, targetWorkers).required();
         priorities.addPriority(TypeIds.Monsters.Creeper, 2);
         priorities.addPriority(TypeIds.Monsters.Warden, 2);
         priorities.addPriority(zombie, 30);
         priorities.addPriority(skeleton, 20);
         priorities.addPriority(spider, 5);
         priorities.addPriority(TypeIds.Monsters.Creeper, 4);
-        priorities.addPriority(TypeIds.Monsters.Villager, 38);
         priorities.addPriority(TypeIds.Monsters.Warden, 5);
     }
 
