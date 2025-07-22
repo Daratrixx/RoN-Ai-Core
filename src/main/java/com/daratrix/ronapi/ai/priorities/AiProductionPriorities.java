@@ -28,7 +28,7 @@ public class AiProductionPriorities extends AiAbstractPriorities<AiProductionPri
         return priority;
     }
 
-    public static class AiProductionPriority extends AiAbstractPriorities.AiAbstractPriority {
+    public static class AiProductionPriority extends AiAbstractPriorities.AiAbstractPriority<AiProductionPriority> {
         public Location location = Location.ANY;
         public Proximity proximity = Proximity.RANDOM;
         public int builders = 1;
@@ -37,7 +37,11 @@ public class AiProductionPriorities extends AiAbstractPriorities<AiProductionPri
             super(typeId, count);
         }
 
-        public AiProductionPriority withBuilders(int builders) {
+        public int builders() {
+            return this.builders;
+        }
+
+        public AiProductionPriority builders(int builders) {
             this.builders = Math.max(1, builders);
             return this;
         }

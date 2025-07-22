@@ -213,7 +213,7 @@ public class AiController {
         }
     }
 
-    public void runAiUpgradeBuildings(MinecraftServer server, AiProductionPriorities.AiProductionPriority p) {
+    public boolean runAiUpgradeBuildings(MinecraftServer server, AiProductionPriorities.AiProductionPriority p) {
         var upgradeSource = AiDependencies.getUpgradeSourceTypeId(p.typeId);
         var existing = this.player.getBuildingsFiltered(b -> b.isDone() && b.is(upgradeSource) && (b.hasUpgrade(p.typeId) || !b.isUpgraded())).toList();
         var upgraded = existing.stream().filter(b -> b.hasUpgrade(p.typeId)).toList();
@@ -221,33 +221,35 @@ public class AiController {
         var idleSources = existing.stream().filter(b -> !upgraded.contains(b) && !upgrading.contains(b) && b.isIdle()).toList();
         var existingCount = upgrading.size() + upgraded.size();
         var doneCount = upgraded.size();
-        var missing = p.count - doneCount;
-        var toStart = p.count - existingCount;
+        var missing = p.count() - doneCount;
+        var toStart = p.count() - existingCount;
 
         if (missing <= 0) {
-            this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count + ")");
-            return; // already fulfilled the priority
+            this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count() + ")");
+            return true; // already fulfilled the priority
         }
 
         if (idleSources.isEmpty()) {
-            this.logger.log("Skipping upgrade " + TypeIds.toItemName(p.typeId) + " because there are no " + TypeIds.toItemName(upgradeSource) + " available " + "(" + doneCount + "/" + p.count + ")");
-            return; // can't fulfil the priority at this time
+            this.logger.log("Skipping upgrade " + TypeIds.toItemName(p.typeId) + " because there are no " + TypeIds.toItemName(upgradeSource) + " available " + "(" + doneCount + "/" + p.count() + ")");
+            return false; // can't fulfil the priority at this time
         }
 
-        this.logger.log("Attempting to upgrade " + TypeIds.toItemName(p.typeId) + "(" + toStart + " to start, " + doneCount + "/" + p.count + " done)");
+        this.logger.log("Attempting to upgrade " + TypeIds.toItemName(p.typeId) + "(" + toStart + " to start, " + doneCount + "/" + p.count() + " done)");
 
         for (var source : idleSources) {
             if (toStart <= 0) {
-                break;
+                return true;
             }
 
             if (!source.issueUpgradeOrder(p.typeId)) {
-                break; // could not start - skip remaining iterations
+                return false; // could not start - skip remaining iterations
             }
 
             this.logger.log("Started upgrade: " + TypeIds.toItemName(p.typeId));
             toStart--;
         }
+
+        return false;
     }
 
     public void runAiProduceBuildings(MinecraftServer server) {
@@ -285,18 +287,20 @@ public class AiController {
             var p = it.next();
             var upgradeSource = AiDependencies.getUpgradeSourceTypeId(p.typeId);
             if (upgradeSource != 0) {
-                runAiUpgradeBuildings(server, p);
+                if (!runAiUpgradeBuildings(server, p) && p.isRequired()) {
+                    break mainLoop;
+                }
                 continue;
             }
 
             var existingCount = this.player.count(p.typeId/*, p.location*/);
             var doneCount = this.player.countDone(p.typeId);
-            var missing = p.count - doneCount;
-            var toStart = p.count - existingCount;
+            var missing = p.count() - doneCount;
+            var toStart = p.count() - existingCount;
             var toFinish = existingCount - doneCount;
 
             if (missing <= 0) {
-                this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count + ")");
+                this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count() + ")");
                 continue; // already fulfilled the priority
             }
 
@@ -308,20 +312,29 @@ public class AiController {
             //this.logger.log(availableWorkers.size() + " available IDLE workers for " + TypeIds.toItemName(p.typeId));
 
             if (toFinish > 0 && !constructing.isEmpty()) {
+                var buildersPerStructure = Math.max(1, p.builders() / toFinish);
                 // priority started, make sure we are still working on the priority with at least one worker
                 for (IBuilding b : constructing) {
                     var currentBuilders = b.countBuilders();
-                    if (currentBuilders > 0) {
+                    if (currentBuilders >= buildersPerStructure) {
                         continue; // all good
+                    }
+
+                    var needed = Math.min(buildersPerStructure - currentBuilders, builderLimit - builderCount);
+                    if (needed == 0) {
+                        break;
                     }
 
                     // we pull workers from other resources with excess workers according to priorities that are already processed
                     for (int pullPriority : resourcePullPriority) {
+                        if (needed <= 0) {
+                            break; // pulled enough!
+                        }
+
                         var pulling = this.workerController.workerTracker.get(pullPriority);
                         if (!pulling.isEmpty()) {
                             this.logger.log("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to continue building  " + TypeIds.toItemName(p.typeId));
-                            this.workerController.transferWorkerAssignment(pulling, availableWorkers, 1);
-                            break;
+                            needed -= this.workerController.transferWorkerAssignment(pulling, availableWorkers, needed);
                         }
                     }
 
@@ -331,49 +344,55 @@ public class AiController {
                     }
 
                     // find a new builder and assign it
-                    var builder = availableWorkers.get(0);
-                    builder.issueRepairOrder(b);
-                    availableWorkers.remove(0);
-                    this.workerController.builders.add(builder);
-                    ++builderCount;
+                    for (IUnit builder : availableWorkers) {
+                        builder.issueRepairOrder(b);
+                        this.workerController.builders.add(builder);
+                        ++builderCount;
+                    }
 
                     if (builderCount >= builderLimit) {
                         this.logger.log("Skipping remaining priorities as builder limit is reached (" + builderCount + "/" + builderLimit + ")");
                         break mainLoop;
                     }
                 }
-
-                //continue mainLoop;
             }
 
             if (toStart <= 0) {
-                //this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count + ")");
+                //this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + p.count() + ")");
                 continue; // already fulfilled the priority
             }
 
             var canMake = AiDependencies.canMake(p.typeId, this.player);
             if (!canMake) {
                 this.logger.log("Skipping impossible " + TypeIds.toItemName(p.typeId) + " due to missing requirement:" + TypeIds.toItemName(AiDependencies.lastMissingrequirement));
+                if (p.isRequired()) {
+                    break mainLoop;
+                }
                 continue; // impossible to fulfill the priority
             }
 
             var canAfford = this.player.canAfford(p.typeId);
             if (!canAfford) {
                 this.logger.log("Not enough resources for " + TypeIds.toItemName(p.typeId));
+                if (p.isRequired()) {
+                    break mainLoop;
+                }
                 continue; // impossible to fulfill the priority
             }
 
-            this.logger.log("Processing " + TypeIds.toItemName(p.typeId) + " as " + p.typeId + " (" + doneCount + "/" + existingCount + "/" + p.count + ")");
+            this.logger.log("Processing " + TypeIds.toItemName(p.typeId) + " as " + p.typeId + " (" + doneCount + "/" + existingCount + "/" + p.count() + ")");
 
             // we pull workers from other resources with excess workers according to priorities that are already processed
-            if (availableWorkers.size() == 0) {
-                for (int pullPriority : resourcePullPriority) {
-                    var pulling = this.workerController.workerTracker.get(pullPriority);
-                    if (!pulling.isEmpty()) {
-                        this.logger.log("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to start building " + TypeIds.toItemName(p.typeId));
-                        this.workerController.transferWorkerAssignment(pulling, availableWorkers, 1);
-                        break;
-                    }
+            for (int pullPriority : resourcePullPriority) {
+                if (!availableWorkers.isEmpty()) {
+                    break;
+                }
+
+                var pulling = this.workerController.workerTracker.get(pullPriority);
+                if (!pulling.isEmpty()) {
+                    this.logger.log("Pulling 1 worker from " + TypeIds.toItemName(pullPriority) + " to start building " + TypeIds.toItemName(p.typeId));
+                    this.workerController.transferWorkerAssignment(pulling, availableWorkers, 1);
+                    break;
                 }
             }
 
@@ -437,11 +456,13 @@ public class AiController {
     public void runAiProduceUnits(MinecraftServer server) {
         var priorities = this.priorities.getUnitPriorities();
         var it = priorities.iterator();
+
+        mainLoop:
         while (it.hasNext()) {
             var p = it.next();
             var doneCount = this.player.countDone(p.typeId);
             var existingCount = this.player.count(p.typeId);
-            var needed = p.count - doneCount;
+            var needed = p.count() - doneCount;
 
             if (needed <= 0) {
                 this.logger.log("Skipping completed " + TypeIds.toItemName(p.typeId));
@@ -451,6 +472,9 @@ public class AiController {
             var canMake = AiDependencies.canMake(p.typeId, this.player);
             if (!canMake) {
                 this.logger.log("Skipping impossible " + TypeIds.toItemName(p.typeId) + " due to missing " + TypeIds.toItemName(AiDependencies.lastMissingrequirement));
+                if (p.isRequired()) {
+                    break mainLoop;
+                }
                 continue; // impossible to fulfill the priority
             }
 
@@ -462,10 +486,13 @@ public class AiController {
             var canAfford = this.player.canAfford(p.typeId);
             if (!canAfford) {
                 this.logger.log("Not enough resources for " + TypeIds.toItemName(p.typeId));
+                if (p.isRequired()) {
+                    break mainLoop;
+                }
                 continue; // impossible to fulfill the priority
             }
 
-            this.logger.log("Processing " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + existingCount + "/" + p.count + ")");
+            this.logger.log("Processing " + TypeIds.toItemName(p.typeId) + "(" + doneCount + "/" + existingCount + "/" + p.count() + ")");
 
             //this.logger.log("Looking for producers: " + String.join(",", AiDependencies.getSourceTypeIds(p.typeId).stream().map(x -> TypeIds.toItemName(x)).toList()));
 
@@ -477,6 +504,9 @@ public class AiController {
                     WorldApi.queueWorldUpdate();
                 } else {
                     this.logger.log("Failed to issue train order for " + TypeIds.toItemName(p.typeId));
+                    if (p.isRequired()) {
+                        break mainLoop;
+                    }
                 }
             }
         }

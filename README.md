@@ -55,14 +55,14 @@ This project consists of:
   - [ ] Build multiple Capitols
   - [x] Automatically select workers for construction projects
   - [x] Automatically pull new workers to complete buildings in case builders are killed
-    - [ ] Enforce number of builders per structure (powerbuild castle etc...)
-  - [ ] Enforce required priorities that will prevent the list from progressing until fulfilled
+    - [x] Enforce number of builders per structure (powerbuild castle etc...)
+  - [x] Enforce required priorities that will prevent the list from progressing until fulfilled
   - [ ] Automatically fulfil techtree requirements ('autobuild')
   - [x] Support building upgrades (portals, lightning rod, grand library...)
 - 80% Training units
   - [x] Process the Unit priorities to decide when to start new units
   - [x] Automatically queue new units when a production building becomes idle
-  - [ ] Enforce required priorities that will prevent the list from progressing until fulfilled
+  - [x] Enforce required priorities that will prevent the list from progressing until fulfilled
   - [ ] Automatically fulfil techtree requirements ('autobuild')
 - 70% Assigning workers to resources
   - [X] Define resource gathering priorities
