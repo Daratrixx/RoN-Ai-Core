@@ -34,7 +34,7 @@ public class TypeIds {
     private static Map<Integer, String> TypeIdToHeroName = new HashMap<>();
     private static Map<Integer, String> TypeIdToStructureName = new HashMap<>();
     private static Map<Integer, ResourceCost> TypeIdToCost = new HashMap<>();
-    private static Map<Integer, ResourceCost> TypeIdToReviveCost = new HashMap<>();
+    //private static Map<Integer, ResourceCost> TypeIdToReviveCost = new HashMap<>();
     private static Map<Integer, ProductionItem> TypeIdToProductionItem = new HashMap<>();
     private static Map<Integer, ReviveHeroProductionItem> TypeIdToReviveItem = new HashMap<>();
     private static Map<Integer, Building> TypeIdToBuildingData = new HashMap<>();
@@ -125,7 +125,7 @@ public class TypeIds {
             var typeId = add(name, cost);
             TypeIdToProductionItem.put(typeId, p);
             TypeIdToReviveItem.put(typeId, r);
-            TypeIdToReviveCost.put(typeId, r.defaultCost);
+            //TypeIdToReviveCost.put(typeId, r.defaultCost);
             TypeIdToHeroName.put(typeId, heroId);
             return typeId;
         } catch (Exception e) {
@@ -378,9 +378,9 @@ public class TypeIds {
         return TypeIdToCost.getOrDefault(typeId, null);
     }
 
-    public static ResourceCost toReviveCost(int typeId) {
-        return TypeIdToCost.getOrDefault(typeId, null);
-    }
+    //public static ResourceCost toReviveCost(int typeId) {
+    //    return TypeIdToReviveCost.getOrDefault(typeId, null);
+    //}
 
     public static UnitAction toUnitAction(int typeId, Object target) {
         if (typeId == Resources.FoodEntity) {

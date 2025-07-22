@@ -242,7 +242,7 @@ public class ApiBuilding implements IBuilding {
         }
 
         var production = TypeIds.toProductionItem(typeId);
-        if (production == null || !production.canAfford(PlayerServerEvents.serverLevel, this.getOwnerName())) {
+        if (production == null) {
             return false;
         }
 
@@ -256,7 +256,7 @@ public class ApiBuilding implements IBuilding {
         }
 
         var production = TypeIds.toReviveItem(typeId);
-        if (production == null || !production.canAfford(PlayerServerEvents.serverLevel, this.getOwnerName())) {
+        if (production == null) {
             return false;
         }
 

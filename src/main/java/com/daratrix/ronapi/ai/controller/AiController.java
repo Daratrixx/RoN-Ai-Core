@@ -409,10 +409,10 @@ public class AiController {
 
     public void runAiProduceHero(MinecraftServer server, int typeId) {
         boolean reviving = this.player.hasHero(typeId);
-        ResourceCost cost = reviving
-                ? TypeIds.toReviveCost(typeId)
-                : TypeIds.toItemCost(typeId);
-        var canAfford = this.player.canAfford(cost);
+        var cost = reviving
+                ? TypeIds.toReviveItem(typeId)
+                : TypeIds.toProductionItem(typeId);
+        var canAfford = cost.canAfford(server.overworld(), player.getName());
         if (!canAfford) {
             this.logger.log("Not enough resources for " + (reviving ? "reviving" : "training") + " " + TypeIds.toItemName(typeId));
             return; // impossible to fulfill the priority
