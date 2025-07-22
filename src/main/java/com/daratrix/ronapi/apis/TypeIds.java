@@ -391,6 +391,10 @@ public class TypeIds {
             return UnitAction.FARM;
         }
 
+        if (typeId == Resources.FoodBlock || typeId == Resources.WoodBlock || typeId == Resources.OreBlock) {
+            return UnitAction.MOVE;
+        }
+
         var itemName = TypeIdToName.getOrDefault(typeId, UnitAction.NONE.name());
         if (itemName.equals("smart_attack")) {
             if (target instanceof Building) return UnitAction.ATTACK_BUILDING;

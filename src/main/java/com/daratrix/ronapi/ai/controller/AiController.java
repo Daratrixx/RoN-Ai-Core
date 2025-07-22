@@ -147,7 +147,7 @@ public class AiController {
         var farmTypeId = this.logic.getFarmTypeId();
         var finishedFarms = this.player.getBuildings(farmTypeId).filter(IBuilding::isDone).map(IBuilding::getBuilding).collect(Collectors.toCollection(ArrayList::new));
         var busyFarms = this.workerController.farmWorkers.stream()
-                .map(u -> u.getCurrentOrderTarget() instanceof Building b ? b : null)
+                .map(u -> u.getCurrentOrderTarget() instanceof BuildingPlacement b ? b : null)
                 .filter(Objects::nonNull)
                 .distinct().collect(Collectors.toCollection(ArrayList::new));
         var idleFarms = new ArrayList<BuildingPlacement>(finishedFarms);

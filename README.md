@@ -67,9 +67,9 @@ This project consists of:
 - 70% Assigning workers to resources
   - [X] Define resource gathering priorities
   - [X] Automatically adjust worker assignment to fulfil priorities
-    - [ ] Bug: reassigned workers sometimes do not switch tasks
-    - [ ] Bug: sometimes multiple workers are assigned to the same farm when there are farms with no workers assigned
-    - [ ] Bug: sometimes the AI looses track of worker assignments
+    - [X] Bug: reassigned workers sometimes do not switch tasks
+    - [X] Bug: sometimes multiple workers are assigned to the same farm when there are farms with no workers assigned
+    - [X] Bug: sometimes the AI looses track of worker assignments
 - 100% Hero management
   - [X] Train Heroes
   - [X] Resurrect dead Heroes

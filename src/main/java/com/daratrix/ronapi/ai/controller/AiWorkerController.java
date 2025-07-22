@@ -86,18 +86,21 @@ public class AiWorkerController {
         this.builders.removeAll(this.idleWorkers);
     }
 
-    public boolean transferWorkerAssignment(List<IUnit> source, List<IUnit> target, int reassignCount) {
+    public int transferWorkerAssignment(List<IUnit> source, List<IUnit> target, int reassignCount) {
+        int reassigned = 0;
         if (source == target) {
-            return false; // illegal
+            return 0; // illegal
         }
 
         while (reassignCount > 0 && !source.isEmpty()) {
-            target.add(source.get(0));
-            source.remove(0);
+            var reassigning = source.get(0);
+            target.add(reassigning);
+            source.removeIf(u -> u == reassigning); // remove all instances
             --reassignCount;
+            ++reassigned;
         }
 
-        return true;
+        return reassigned;
     }
 
     private final HashMap<Integer, Integer> excessTracker = new HashMap<Integer, Integer>();
@@ -112,7 +115,7 @@ public class AiWorkerController {
         var maxHunters = availableAnimals;
 
         var excessPullPriority = maxFarmers > 3
-                ? new int[]{0, TypeIds.Resources.FoodBlock, TypeIds.Resources.FoodEntity, TypeIds.Resources.FoodFarm, TypeIds.Resources.WoodBlock, TypeIds.Resources.OreBlock}
+                ? new int[]{0, TypeIds.Resources.FoodBlock, TypeIds.Resources.FoodEntity, TypeIds.Resources.WoodBlock, TypeIds.Resources.FoodFarm, TypeIds.Resources.OreBlock}
                 : new int[]{0, TypeIds.Resources.FoodBlock, TypeIds.Resources.FoodEntity, TypeIds.Resources.WoodBlock, TypeIds.Resources.OreBlock};
         var it = priorities.iterator();
         if (this.player.getWood() == 0) {
@@ -152,25 +155,23 @@ public class AiWorkerController {
                 continue; // fulfilled
             }
 
-            var replacementWorkers = this.idleWorkers.stream().limit(needed).collect(Collectors.toCollection(ArrayList::new));
+            var replacementWorkers = new ArrayList<IUnit>();
+            needed -= this.transferWorkerAssignment(this.idleWorkers, replacementWorkers, needed);
             this.idleWorkers.removeAll(replacementWorkers);
 
             // if there are not enough idle workers, we try to pull workers from other resources with excess workers according to priorities that are already processed
-            if (replacementWorkers.size() < needed) {
-                for (int pullPriority : excessPullPriority) {
-                    if (pullPriority == p.typeId) {
-                        continue; // can't reassign from the same task
-                    }
+            for (int pullPriority : excessPullPriority) {
+                if (pullPriority == p.typeId) {
+                    continue; // can't reassign from the same task
+                }
 
-                    var missing = needed - replacementWorkers.size();
-                    if (missing <= 0) {
-                        break; // we pulled all the workers we needed from other resources
-                    }
+                if (needed <= 0) {
+                    break; // we pulled all the workers we needed from other resources
+                }
 
-                    var pullPriorityExcess = this.excessTracker.get(pullPriority);
-                    if (pullPriorityExcess > 0) {
-                        transferWorkerAssignment(this.workerTracker.get(pullPriority), replacementWorkers, missing);
-                    }
+                var pullPriorityExcess = this.excessTracker.get(pullPriority);
+                if (pullPriorityExcess > 0) {
+                    needed -= transferWorkerAssignment(this.workerTracker.get(pullPriority), replacementWorkers, needed);
                 }
             }
 
@@ -193,6 +194,8 @@ public class AiWorkerController {
                         worker.issueHarvestOrder(idleFarms.remove(0)); // TypeIds.Resources.[...] are properly converted to unit actions
                     } else {
                         worker.issueOrder(TypeIds.Orders.Stop);
+                        farmWorkers.removeIf(u -> u == worker);
+                        idleWorkers.add(worker);
                     }
                 } else {
                     this.assignedFarms.add(targetFarm);
@@ -214,13 +217,15 @@ public class AiWorkerController {
             while (workerIterator.hasNext()) {
                 var worker = workerIterator.next();
                 if (worker.isCarryCapacityOver(50)) {
-                    worker.issueOrder(TypeIds.Orders.Return);
-                    return;
+                    if (worker.getCurrentOrderId() != TypeIds.Orders.Return) {
+                        worker.issueOrder(TypeIds.Orders.Return);
+                    }
+                    continue;
                 }
 
-                if (worker.isIdle() || worker.getCurrentOrderId() != TypeIds.Resources.FoodFarm) {
+                if (worker.getCurrentOrderId() != TypeIds.Resources.FoodFarm) {
                     worker.issueHarvestOrder(targetFarm); // TypeIds.Resources.[...] are properly converted to unit actions
-                    return;
+                    continue;
                 }
             }
         });
@@ -237,13 +242,15 @@ public class AiWorkerController {
             while (workerIterator.hasNext()) {
                 var worker = workerIterator.next();
                 if (worker.isCarryCapacityOver(50)) {
-                    worker.issueOrder(TypeIds.Orders.Return);
-                    return;
+                    if (worker.getCurrentOrderId() != TypeIds.Orders.Return) {
+                        worker.issueOrder(TypeIds.Orders.Return);
+                    }
+                    continue;
                 }
 
-                if (worker.isIdle() || worker.getCurrentOrderId() != TypeIds.Resources.FoodEntity) {
+                if (worker.getCurrentOrderId() != TypeIds.Orders.AttackUnit) {
                     worker.issueAttackOrder(targetAnimal); // workers attack animals to hunt
-                    return;
+                    continue;
                 }
             }
         });
@@ -262,13 +269,15 @@ public class AiWorkerController {
 
         for (IUnit worker : workers) {
             if (worker.isCarryCapacityOver(50)) {
-                worker.issueOrder(TypeIds.Orders.Return);
-                return;
+                if (worker.getCurrentOrderId() != TypeIds.Orders.Return) {
+                    worker.issueOrder(TypeIds.Orders.Return);
+                }
+                continue;
             }
 
-            if (worker.isIdle() || worker.getCurrentOrderId() != taskId) {
+            if (worker.getCurrentOrderId() != taskId) {
                 worker.issueHarvestOrder(targetResource); // TypeIds.Resources.[...] are properly converted to unit actions
-                return;
+                continue;
             }
         }
     }

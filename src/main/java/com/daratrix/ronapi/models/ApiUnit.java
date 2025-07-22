@@ -19,6 +19,8 @@ import com.solegendary.reignofnether.resources.*;
 import com.solegendary.reignofnether.unit.UnitAction;
 import com.solegendary.reignofnether.unit.UnitServerEvents;
 import com.solegendary.reignofnether.unit.goals.MeleeAttackBuildingGoal;
+import com.solegendary.reignofnether.unit.goals.MoveToTargetBlockGoal;
+import com.solegendary.reignofnether.unit.goals.RangedAttackBuildingGoal;
 import com.solegendary.reignofnether.unit.interfaces.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -133,22 +135,17 @@ public class ApiUnit implements IUnit {
             }
 
             var gathering = this.worker.getGatherResourceGoal();
-            if (gathering != null) {
-                var farm = gathering.data.targetFarm;
-                var resource = gathering.getTargetResourceName();
-                if (farm != null && resource != ResourceName.NONE && resource != ResourceName.FOOD) {
-                    return 0; // ambiguous
-                } else if (farm != null) {
-                    return TypeIds.Resources.FoodFarm;
-                } else if (resource != ResourceName.NONE) {
-                    return TypeIds.get(resource);
-                }
+            var farm = gathering.data.targetFarm;
+            if (farm != null) {
+                return TypeIds.Resources.FoodFarm;
+            }
+
+            var resource = gathering.getTargetResourceName();
+            var targetBlock = gathering.data.gatherTarget;
+            if (targetBlock != null && resource != ResourceName.NONE) {
+                return TypeIds.get(resource);
             }
         }
-
-        var target = this.mob != null
-                ? this.mob.getTarget()
-                : null;
 
         if (this.attacker != null) {
             var attackMoveTarget = this.attacker.getAttackMoveTarget();
@@ -156,60 +153,125 @@ public class ApiUnit implements IUnit {
                 return TypeIds.Orders.AttackMove;
             }
 
-            if (target != null) {
-                var checkpoints = this.unit.getCheckpoints();
-                if (!checkpoints.isEmpty()) {
-                    var checkpoint = checkpoints.get(0);
-                    if (!checkpoint.isGreen && ResourceSources.isHuntableAnimal(target)) {
-                        return TypeIds.Resources.FoodEntity;
-                    }
+            var target = this.mob != null
+                    ? this.mob.getTarget()
+                    : null;
 
-                    return !checkpoint.isGreen ? TypeIds.Orders.AttackUnit : TypeIds.Orders.Follow;
+            if (target != null) {
+                return TypeIds.Orders.AttackUnit;
+            }
+
+            if (this.attacker.canAttackBuildings()) {
+                var goal = this.attacker.getAttackBuildingGoal();
+                if (goal instanceof MeleeAttackBuildingGoal melee) {
+                    var meleeTarget = melee.getBuildingTarget();
+                    if (meleeTarget != null) {
+                        return TypeIds.Orders.AttackBuilding;
+                    }
+                }
+
+                if (goal instanceof RangedAttackBuildingGoal ranged) {
+                    var rangedTarget = ranged.getBuildingTarget();
+                    if (rangedTarget != null) {
+                        return TypeIds.Orders.AttackBuilding;
+                    }
                 }
             }
         }
+
+        if (this.unit.getFollowTarget() != null) {
+            return TypeIds.Orders.Follow;
+        }
+
+        MoveToTargetBlockGoal moveToTargetBlockGoal = this.unit.getMoveGoal();
+        if (moveToTargetBlockGoal != null) {
+            var targetBlock = moveToTargetBlockGoal.getMoveTarget();
+            if (targetBlock != null && !moveToTargetBlockGoal.isAtDestination()) {
+                return TypeIds.Orders.Move;
+            }
+        }
+
         /*
         GarrisonGoal garrisonGoal = this.unit.getGarrisonGoal();
         UsePortalGoal usePortalGoal = this.unit.getUsePortalGoal();
-        MoveToTargetBlockGoal moveToTargetBlockGoal = this.unit.getMoveGoal();
-        SelectedTargetGoal<?> SelectedTargetGoal = this.unit.getTargetGoal();
         */
         return 0;
     }
 
     @Override
     public Object getCurrentOrderTarget() {
+        var returning = this.unit.getReturnResourcesGoal();
+        if (returning != null) {
+            var returnTarget = returning.getBuildingTarget();
+            if (returnTarget != null) {
+                return returnTarget;
+            }
+        }
+
         if (this.worker != null) {
             var repairing = this.worker.getBuildRepairGoal();
-            if (repairing != null) {
-                return repairing.getBuildingTarget();
+            var repairTarget = repairing.getBuildingTarget();
+            if (repairTarget != null) {
+                return repairTarget;
             }
 
             var gathering = this.worker.getGatherResourceGoal();
             if (gathering != null) {
                 var farm = gathering.data.targetFarm;
-                var resource = gathering.getTargetResourceName();
-                if (farm != null && resource != ResourceName.NONE && resource != ResourceName.FOOD) {
-                    return null; // ambiguous
-                } else if (farm != null) {
+                if (farm != null) {
                     return farm;
-                } else if (resource != ResourceName.NONE) {
-                    return gathering.getGatherTarget();
+                }
+
+                var resource = gathering.getTargetResourceName();
+                var targetBlock = gathering.data.gatherTarget;
+                if (targetBlock != null && resource != ResourceName.NONE) {
+                    return targetBlock;
                 }
             }
         }
 
-        var targetEntity = this.mob != null
-                ? this.mob.getTarget()
-                : null;
+        if (this.attacker != null) {
+            var attackMoveTarget = this.attacker.getAttackMoveTarget();
+            if (attackMoveTarget != null) {
+                return attackMoveTarget;
+            }
 
-        var attackMoveTarget = this.attacker.getAttackMoveTarget();
-        if (attackMoveTarget != null) {
-            return attackMoveTarget;
+            var targetEntity = this.mob != null
+                    ? this.mob.getTarget()
+                    : null;
+            if (targetEntity != null) {
+                return targetEntity;
+            }
+
+            if (this.attacker.canAttackBuildings()) {
+                var goal = this.attacker.getAttackBuildingGoal();
+                if (goal instanceof MeleeAttackBuildingGoal melee) {
+                    var meleeTarget = melee.getBuildingTarget();
+                    if (meleeTarget != null) {
+                        return meleeTarget;
+                    }
+                }
+
+                if (goal instanceof RangedAttackBuildingGoal ranged) {
+                    var rangedTarget = ranged.getBuildingTarget();
+                    if (rangedTarget != null) {
+                        return rangedTarget;
+                    }
+                }
+            }
         }
 
-        if (targetEntity != null) {
-            return targetEntity;
+        var followTarget = this.unit.getFollowTarget();
+        if (followTarget != null) {
+            return followTarget;
+        }
+
+        MoveToTargetBlockGoal moveToTargetBlockGoal = this.unit.getMoveGoal();
+        if (moveToTargetBlockGoal != null) {
+            var targetBlock = moveToTargetBlockGoal.getMoveTarget();
+            if (targetBlock != null && !moveToTargetBlockGoal.isAtDestination()) {
+                return targetBlock;
+            }
         }
 
         return null;
