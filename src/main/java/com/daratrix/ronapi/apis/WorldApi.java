@@ -215,6 +215,10 @@ public class WorldApi {
         return singleton.players.values().stream().filter(x -> !Objects.equals(x.getName(), playerName) && !AlliancesServerEvents.isAllied(x.getName(), playerName)).map(x -> x);
     }
 
+    public static IPlayer getPlayer(String playerName) {
+        return singleton.players.getOrDefault(playerName, null);
+    }
+
     private static String getThreatsPlayerName = null;
 
     private static boolean getThreatsPredicate(LivingEntity e) {

@@ -116,6 +116,7 @@ This project consists of:
     - [ ] Expand
     - [ ] Harass
     - [ ] Night timing attacks
+      - [x] Don't waste army during the day
     - [ ] Sculk sensor expansion
   - Piglin AI
     - [X] Attack

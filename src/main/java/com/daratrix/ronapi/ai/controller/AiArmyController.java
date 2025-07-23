@@ -27,7 +27,7 @@ public class AiArmyController {
     public final ArrayList<IUnit> harassGroup = new ArrayList<>();
     private int totalThreatPower;
 
-    public static final float maxPunchUpThreshold = 0.8f; // don't attack a player when population is comparatively too small
+    public static final float maxPunchUpThreshold = 0.85f; // don't attack a player when population is comparatively too small
 
     public AiArmyController(IAiPlayer player, IAiLogic logic, FileLogger logger) {
         this.player = player;

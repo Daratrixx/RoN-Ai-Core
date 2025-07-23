@@ -117,13 +117,19 @@ public class AiArmyPriorities extends AiAbstractPriorities<AiArmyPriorities.AiAr
             return; // army is too small, shouldn't try to attack
         }
 
-        if (attackTarget != null && attackTarget.isAlive()) {
-            return; // keep attacking the same target
+        if (this.attackTarget != null && this.attackTarget.isAlive()) {
+            var currentTargetPlayer = WorldApi.getPlayer(this.attackTarget.getOwnerName());
+            if (currentTargetPlayer == null || currentTargetPlayer.getArmyPop() * AiArmyController.maxPunchUpThreshold > armyPop ) {
+                this.attackTarget = null; // shouldn't keep fighting the target
+            }
+
+            return; // keep attacking the same target / return to base
         }
 
-        var enemies = WorldApi.getPlayerEnemies(player).toList();
+        var enemies = WorldApi.getPlayerEnemies(player)
+                .filter(p -> p.getArmyPop() * AiArmyController.maxPunchUpThreshold <= armyPop) // make sure the target is not too strong
+                .toList();
         var enemyBases = enemies.stream()
-                .filter(p -> p.getArmyPop() < armyPop * AiArmyController.maxPunchUpThreshold) // make sure the target is not too strong
                 .flatMap(p -> p.getBasesFiltered(b -> !b.buildings.isEmpty()))
                 .sorted((a, b) -> GeometryUtils.distanceComparator(a, b, this.defaultGatherPoint))
                 .toList();

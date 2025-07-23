@@ -176,6 +176,8 @@ public class MonsterScript extends IAiLogic.AbstractAiLogic {
         armyPriorities.pickDefaultGatherPoint(level, player);
         if (armyPriorities.pickDefenseTarget(player)) {
             armyPriorities.attackTarget = null; // don't attack while bases are threatened
+        } else if (level.isDay()) {
+            armyPriorities.attackTarget = null; // don't attack during the day
         } else {
             armyPriorities.pickAttackTarget(player);
         }
