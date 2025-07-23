@@ -24,8 +24,8 @@ This project consists of:
   - [x] Name must be unique as it is used to display the script for users to select when spawning bots
   - [x] Unit priorities indicate in which order units should be created
   - [x] Building priorities indicate in which order structures must be built
-  - [X] Research priorities indicate when researches need to be done
-  - [X] Harvest priorities indicate how many workers should be assigned to different tasks at all time
+  - [x] Research priorities indicate when researches need to be done
+  - [x] Harvest priorities indicate how many workers should be assigned to different tasks at all time
   - [ ] Attack priorities indicate what units to attack, raid, and defend with
 - Registering the newly created class as an available script for the server to use
   - [x] `AiLogics.registerAiLogic(new AiLogic());`
@@ -34,7 +34,8 @@ This project consists of:
   - [ ] ui to assign bots to starting locations and teams
 ### Available features
 - 0% Quality of Life
-  - [ ] command to force Ass to ally other players
+  - [ ] command to force AIs to ally other players
+  - [x] AI surrender when situation is hopeless
 - 75% Building structures
   - [x] Process the Building priorities to decide when to start new structures
     - [x] Bug: Ai sometimes starts additional capitols
@@ -65,25 +66,26 @@ This project consists of:
   - [x] Enforce required priorities that will prevent the list from progressing until fulfilled
   - [ ] Automatically fulfil techtree requirements ('autobuild')
 - 70% Assigning workers to resources
-  - [X] Define resource gathering priorities
-  - [X] Automatically adjust worker assignment to fulfil priorities
-    - [X] Bug: reassigned workers sometimes do not switch tasks
-    - [X] Bug: sometimes multiple workers are assigned to the same farm when there are farms with no workers assigned
-    - [X] Bug: sometimes the AI looses track of worker assignments
+  - [x] Define resource gathering priorities
+  - [x] Automatically adjust worker assignment to fulfil priorities
+    - [x] Bug: reassigned workers sometimes do not switch tasks
+    - [x] Bug: sometimes multiple workers are assigned to the same farm when there are farms with no workers assigned
+    - [x] Bug: sometimes the AI looses track of worker assignments
+    - [ ] Bug: workers are reassigned on world load, they should keep working in their tasks instead
 - 100% Hero management
-  - [X] Train Heroes
-  - [X] Resurrect dead Heroes
-  - [X] Learn Hero Skills
+  - [x] Train Heroes
+  - [x] Resurrect dead Heroes
+  - [x] Learn Hero Skills
 - 20% Army management
-  - [X] Army gather point
-    - [X] Bug: Army gather point is sometimes on the wrong side of the base
-  - [X] Attack
-    - [X] Select an attack target and send a group to attack
+  - [x] Army gather point
+    - [x] Bug: Army gather point is sometimes on the wrong side of the base
+  - [x] Attack
+    - [x] Select an attack target and send a group to attack
     - [ ] Attack group staging point
-  - [X] Defense
-    - [X] Seek and destroy enemy units near bases using entire idle army
+  - [x] Defense
+    - [x] Seek and destroy enemy units near bases using entire idle army
     - [ ] Defense group staging point
-    - [X] Use at little units as possible to defend
+    - [x] Use at little units as possible to defend
   - [ ] Creeping
     - [ ] Hunt neutral Creeps to level up the Heroes
   - [ ] Harass
@@ -92,38 +94,38 @@ This project consists of:
   - [ ] Micro
     - [ ] Focus-fire
     - [ ] Pullback
-    - [X] Spell-casting
+    - [x] Spell-casting
   - [ ] Map analysis
     - [ ] Routing
     - [ ] Choke points
     - [ ] Improved gather points and attack angles
 - 40% Prebuilt AIs
   - Villager AI
-    - [X] Attack
-    - [X] Produces
-    - [X] Harvest
-    - [X] Upgrades
+    - [x] Attack
+    - [x] Produces
+    - [x] Harvest
+    - [x] Upgrades
     - [ ] Expand
     - [ ] Harass
     - [ ] Enchant
     - [ ] Job management
     - [ ] Militia
   - Monster AI
-    - [X] Attack
-    - [X] Produces
-    - [X] Harvest
-    - [X] Upgrades
+    - [x] Attack
+    - [x] Produces
+    - [x] Harvest
+    - [x] Upgrades
     - [ ] Expand
     - [ ] Harass
     - [ ] Night timing attacks
       - [x] Don't waste army during the day
     - [ ] Sculk sensor expansion
   - Piglin AI
-    - [X] Attack
-    - [X] Produces
+    - [x] Attack
+    - [x] Produces
       - [ ] Bug: Ai builds outside of Nether terrain
-    - [X] Harvest
-    - [X] Upgrades
+    - [x] Harvest
+    - [x] Upgrades
     - [ ] Expand
     - [ ] Harass
     - [ ] Portal Network

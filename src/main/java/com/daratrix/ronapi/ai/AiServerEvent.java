@@ -11,6 +11,8 @@ import com.daratrix.ronapi.models.ApiWorld;
 import com.daratrix.ronapi.registers.GameRuleRegister;
 import com.daratrix.ronapi.timer.Timer;
 import com.daratrix.ronapi.timer.TimerServerEvents;
+import com.solegendary.reignofnether.player.PlayerServerEvents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -29,9 +31,21 @@ public class AiServerEvent {
             case 0:
                 WorldApi.updateWorld(server);
                 for (AiController c : controllers) {
+                    if (!c.surrender && c.shouldSurrender(server)) {
+                        c.sendSurrenderMessage();
+                        continue;
+                    }
+
+                    if(c.surrender) {
+                        c.surrender();
+                        continue;
+                    }
+
                     c.runAiUpdatePriorities(server);
                     c.runAiMicro(server);
                 }
+
+                AiController.removeDefeatedControllers();
                 break;
             case 1:
                 WorldApi.updateWorld(server);
@@ -45,7 +59,7 @@ public class AiServerEvent {
                 WorldApi.updateWorld(server);
                 for (AiController c : controllers) {
                     c.runAiArmy(server);
-                    c. runAiMicro(server);
+                    c.runAiMicro(server);
                 }
                 break;
             case 3:

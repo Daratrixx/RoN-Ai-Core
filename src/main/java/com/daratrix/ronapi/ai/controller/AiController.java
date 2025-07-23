@@ -17,10 +17,12 @@ import com.daratrix.ronapi.utils.FileLogger;
 import com.daratrix.ronapi.utils.GeometryUtils;
 import com.solegendary.reignofnether.building.Building;
 import com.solegendary.reignofnether.building.BuildingPlacement;
+import com.solegendary.reignofnether.player.PlayerServerEvents;
 import com.solegendary.reignofnether.resources.ResourceCost;
 import com.solegendary.reignofnether.resources.ResourceSources;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -38,12 +40,25 @@ public class AiController {
         AiController.controllers.clear();
     }
 
+    public static void removeDefeatedControllers() {
+        var defeated = AiController.controllers.values();
+
+        for (AiController c : defeated) {
+            if(c.defeated) {
+                AiController.controllers.remove(c.player.getName());
+            }
+        }
+    }
+
     public final FileLogger logger;
     public final IAiPlayer player;
     public final IAiLogic logic;
     public final AiArmyController armyController;
     public final AiWorkerController workerController;
     public final IAiControllerPriorities priorities;
+
+    public boolean surrender = false;
+    public boolean defeated = false;
 
     private IBuilding capitol = null;
 
@@ -559,9 +574,24 @@ public class AiController {
     }
 
     public void runAiUpdatePriorities(MinecraftServer server) {
-        this.player.checkCompletedBuildings();
+        //this.player.checkCompletedBuildings(); // done before checking for surrender
         this.priorities.reset();
         this.logic.setPriorities(server.overworld(), this.player, this.priorities);
+    }
+
+    public boolean shouldSurrender(MinecraftServer server) {
+        this.player.checkCompletedBuildings();
+        this.surrender = this.logic.shouldSurrender(server.overworld(), this.player, this.priorities);
+        return this.surrender;
+    }
+
+    public void sendSurrenderMessage() {
+        PlayerServerEvents.sendMessageToAllPlayers(this.player.getName() + ": I cannot win anymore, I must abdicate.");
+    }
+
+    public void surrender() {
+        PlayerServerEvents.defeat(this.player.getName(), Component.translatable("server.reignofnether.surrendered").getString());
+        this.defeated = true;
     }
 
     public void updateCapitol() {

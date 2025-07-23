@@ -2,7 +2,9 @@ package com.daratrix.ronapi.ai.controller.interfaces;
 
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.apis.TypeIds;
+import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.interfaces.IHero;
+import com.daratrix.ronapi.models.interfaces.IPlayer;
 import com.daratrix.ronapi.models.interfaces.IPlayerWidget;
 import com.solegendary.reignofnether.util.Faction;
 import net.minecraft.world.level.Level;
@@ -98,7 +100,30 @@ public interface IAiLogic {
     int getMaxPopulation();
 
     public Consumer<IPlayerWidget> getMicroLogic(int typeId);
+
     public Consumer<IHero> getHeroSkillLogic(int typeId);
+
+    default boolean shouldSurrender(Level level, IAiPlayer player, IAiControllerPriorities priorities) {
+        var workers = player.countDone(this.getWorkerTypeId());
+        if (workers < 3) {
+            return true; // not enough workers to do anything, doesn't matter if we have the resources or infrastructure
+        }
+
+        var capitolId = this.getCapitolTypeId();
+        var capitols = player.count(this.getCapitolTypeId());
+
+        if (capitols == 0 && workers < 10 && !player.canAfford(capitolId)) {
+            return true; // no hope to grow economy again
+        }
+
+        var army = player.getArmyPop();
+        var smallestEnemyArmy = WorldApi.getPlayerEnemies(player).map(IPlayer::getArmyPop).min(Integer::compare).orElse(0);
+        if (workers < smallestEnemyArmy * 0.5 && army <= 0.15f * smallestEnemyArmy) {
+            return true; // army is too small to do anything
+        }
+
+        return false;
+    }
 
     public abstract class AbstractAiLogic implements IAiLogic {
         protected int maxPopulation = 150;
