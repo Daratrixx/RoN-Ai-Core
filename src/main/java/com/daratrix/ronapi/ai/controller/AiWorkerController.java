@@ -69,7 +69,22 @@ public class AiWorkerController {
         var workerStream = this.player.getUnitsFiltered(u -> u.isWorker() && u.isAlive());
         workerStream.filter(u -> !this.workers.contains(u)).forEach(u -> {
             this.workers.add(u);
-            this.idleWorkers.add(u);
+            var currentOrder = u.getCurrentOrderId();
+            if (currentOrder == TypeIds.Resources.FoodFarm) {
+                this.farmWorkers.add(u);
+            } else if (currentOrder == TypeIds.Resources.FoodBlock) {
+                this.foodBlockWorkers.add(u);
+            } else if (currentOrder == TypeIds.Resources.WoodBlock) {
+                this.woodWorkers.add(u);
+            } else if (currentOrder == TypeIds.Resources.OreBlock) {
+                this.oreWorkers.add(u);
+            } else if (currentOrder == TypeIds.Orders.Repair) {
+                this.builders.add(u);
+            } else if (currentOrder == TypeIds.Orders.AttackUnit) {
+                this.huntWorkers.add(u);
+            } else {
+                this.idleWorkers.add(u);
+            }
         });
 
         // detect idle builders
