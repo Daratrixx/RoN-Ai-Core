@@ -41,7 +41,7 @@ public class AiController {
     }
 
     public static void removeDefeatedControllers() {
-        var defeated = AiController.controllers.values();
+        var defeated = AiController.controllers.values().stream().toList();
 
         for (AiController c : defeated) {
             if(c.defeated) {

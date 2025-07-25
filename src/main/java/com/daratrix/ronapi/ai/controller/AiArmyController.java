@@ -4,6 +4,7 @@ import com.daratrix.ronapi.ai.controller.interfaces.IAiLogic;
 import com.daratrix.ronapi.ai.player.interfaces.IAiPlayer;
 import com.daratrix.ronapi.ai.priorities.AiArmyPriorities;
 import com.daratrix.ronapi.apis.TypeIds;
+import com.daratrix.ronapi.apis.WorldApi;
 import com.daratrix.ronapi.models.ApiPlayerBase;
 import com.daratrix.ronapi.models.interfaces.ILocated;
 import com.daratrix.ronapi.models.interfaces.IUnit;
@@ -71,7 +72,7 @@ public class AiArmyController {
             var defensePower = this.defenseGroup.stream().map(IUnit::getPopUsed).reduce(0, Integer::sum);
 
             // check if we need to pull defenders from attacking army as well
-            if(defensePower < this.totalThreatPower) {
+            if (defensePower < this.totalThreatPower) {
                 this.attackGroup.sort((a, b) -> GeometryUtils.distanceComparator(a, b, priorities.defenseTarget));
                 while (!this.attackGroup.isEmpty() && defensePower < this.totalThreatPower) {
                     var defender = this.attackGroup.get(0);
@@ -94,13 +95,43 @@ public class AiArmyController {
     }
 
     public void groupAttackToward(Collection<IUnit> group, ILocated target) {
-        if (target == null) {
+        if (target == null || group.isEmpty()) {
             return;
         }
 
         float x = target.getX();
         float y = target.getY();
         float z = target.getZ();
+
+        var unitCount = group.size();
+        BlockPos.MutableBlockPos center = new BlockPos.MutableBlockPos();
+
+        for (IUnit u : group) {
+            var pos = u.getPos();
+            center.setX(center.getX() + pos.getX());
+            center.setY(center.getY() + pos.getY());
+            center.setZ(center.getZ() + pos.getZ());
+        }
+        center.setX(center.getX() / unitCount);
+        center.setY(center.getY() / unitCount);
+        center.setZ(center.getZ() / unitCount);
+
+        ArrayList<Float> groupDistance = new ArrayList<>(group.size());
+        for (IUnit u : group) {
+            groupDistance.add(GeometryUtils.distanceSquared(u, center));
+        }
+        groupDistance.sort(Float::compare);
+
+        var median = groupDistance.get(unitCount / 2);
+        var edgeCase = groupDistance.get(3 * unitCount / 4);
+        if (median > 10 * 10 || edgeCase > 20 * 20) {
+            this.logger.log("Army is too spread out, regrouping...");
+            for (IUnit u : group) {
+                u.issueAttackOrder(center.getX(), center.getY(), center.getZ()); // TODO: fix Y
+            }
+
+            return;
+        }
 
         for (IUnit u : group) {
             u.issueAttackOrder(x, y, z);

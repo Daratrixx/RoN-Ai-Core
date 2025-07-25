@@ -71,16 +71,18 @@ This project consists of:
     - [x] Bug: reassigned workers sometimes do not switch tasks
     - [x] Bug: sometimes multiple workers are assigned to the same farm when there are farms with no workers assigned
     - [x] Bug: sometimes the AI looses track of worker assignments
-    - [ ] Bug: workers are reassigned on world load, they should keep working in their tasks instead
+    - [x] Bug: workers are reassigned on world load, they should keep working in their tasks instead
 - 100% Hero management
   - [x] Train Heroes
   - [x] Resurrect dead Heroes
   - [x] Learn Hero Skills
-- 20% Army management
+- 30% Army management
   - [x] Army gather point
     - [x] Bug: Army gather point is sometimes on the wrong side of the base
   - [x] Attack
     - [x] Select an attack target and send a group to attack
+    - [x] Make sure the army is not too spread out when attacking
+    - [x] Regroup army that is too spread-out
     - [ ] Attack group staging point
   - [x] Defense
     - [x] Seek and destroy enemy units near bases using entire idle army
